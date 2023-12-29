@@ -1,21 +1,21 @@
 import React, { useState } from "react";
 import {
   DesktopOutlined,
-  FileOutlined,
+  // FileOutlined,
   PieChartOutlined,
-  TeamOutlined,
-  UserOutlined,
+  // TeamOutlined,
+  // UserOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import {
-  BrowserRouter as Router,
+  // BrowserRouter as Router,
   Routes,
   Route,
-  Outlet,
-  Link,
+  // Outlet,
+  // Link,
   useNavigate,
 } from "react-router-dom";
-import { Breadcrumb, Layout, Menu, theme } from "antd";
+import { Layout, Menu, theme } from "antd";
 
 import Dashboard from "./components/dashboard";
 import PricePlans from "./components/pricePlans";
@@ -75,15 +75,15 @@ const App: React.FC = () => {
   const navigate = useNavigate();
 
   const onItemClick = ({
-    item,
+    // item,
     key,
-    keyPath,
-    domEvent,
-  }: {
-    item: any;
+  }: // keyPath,
+  // domEvent,
+  {
+    // item: any;
     key: any;
-    keyPath: any;
-    domEvent: any;
+    // keyPath: any;
+    // domEvent: any;
   }) => {
     if (key == "1") {
       navigate("/dashboard");

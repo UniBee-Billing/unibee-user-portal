@@ -16,12 +16,12 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import { Breadcrumb, Layout, Menu, theme } from "antd";
+import { Layout, Menu, theme } from "antd";
 
 import Dashboard from "./components/dashboard";
 import PricePlans from "./components/pricePlans";
-import Login from "./components/login";
-import Signup from "./components/signup";
+// import Login from "./components/login";
+// import Signup from "./components/signup";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -76,17 +76,7 @@ const AppLayout: FunctionComponent<PropsWithChildren> = ({ children }) => {
 
   const navigate = useNavigate();
 
-  const onItemClick = ({
-    item,
-    key,
-    keyPath,
-    domEvent,
-  }: {
-    item: any;
-    key: any;
-    keyPath: any;
-    domEvent: any;
-  }) => {
+  const onItemClick = ({ key }: { key: any }) => {
     if (key == "1") {
       navigate("/dashboard");
     } else if (key == "2") {
