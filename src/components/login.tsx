@@ -5,6 +5,8 @@ import { Button, Checkbox, Form, Input, Tabs, Radio } from "antd";
 import OtpInput from "react-otp-input";
 import axios from "axios";
 
+const APP_PATH = import.meta.env.VITE_APP_PATH;
+
 const Index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -99,7 +101,7 @@ const Login1 = ({
         if (res.data.code != 0) {
           throw new Error(res.data.message);
         }
-        navigate("/dashboard");
+        navigate(`${APP_PATH}/dashboard`);
         // if (res.data.code) navigate("/Dashboard");
       })
       .catch((err) => {
@@ -250,7 +252,7 @@ const Login2 = ({
             setErrMsg(res.data.message);
             throw new Error(res.data.message);
           }
-          navigate("/dashboard");
+          navigate(`${APP_PATH}/dashboard`);
           // if (res.data.code) navigate("/Dashboard");
         })
         .catch((err) => {

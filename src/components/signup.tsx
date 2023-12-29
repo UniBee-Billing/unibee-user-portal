@@ -6,6 +6,7 @@ import { Button, Checkbox, Form, Input } from "antd";
 import OtpInput from "react-otp-input";
 
 import axios from "axios";
+const APP_PATH = import.meta.env.VITE_APP_PATH;
 
 const passwordRegx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/;
@@ -112,7 +113,7 @@ const Index = () => {
         if (res.data.code != 0) {
           throw new Error(res.data.message);
         }
-        navigate("/login", {
+        navigate(`${APP_PATH}/login`, {
           state: { msg: "Thanks for your sign-up on Unibee" },
         });
         //     navigate("/checkout", { state: { priceId: selectedPrice } });

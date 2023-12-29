@@ -4,7 +4,10 @@
 cd <PROJECT-FOLDER>
 yarn add typescript --dev
 yarn
-yarn build
+yarn dev --base=/userPortal     // for local development
+yarn build --base=/userPortal   // for production build
 ```
 
-The web app files are located under dist/ folder
+For dev, pen browser to [http://localhost:5173/userPortal](http://localhost:5173/userPortal)
+
+For build, the web app files are located under dist/ folder
