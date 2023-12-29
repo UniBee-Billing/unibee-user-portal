@@ -2,7 +2,8 @@
 
 ```
 cd <PROJECT-FOLDER>
-yarn add
+yarn add typescript --dev
+yarn
 yarn build
 ```
 
