@@ -1,6 +1,6 @@
 stages:
   - build
-  # - push
+  - push
   # - deploy
 
 variables:
@@ -23,23 +23,23 @@ build:
     - rm -rf /data/artifacts/user_portal_dist
     - cp -r dist /data/artifacts/user_portal_dist
 
-# push:
-#   only:
-#     - main
-#   image: docker
-#   stage: push
-#   script:
-#     - rm -rf dist
-#     - cp -r /data/artifacts/user_portal_dist dist
-#     - docker build -t ${TARGET_REPO} .
-#     - docker login --username=${REPO_ACCOUNT} --password=${REPO_PASSWORD} ${${REPO_HOST}}
-#     - docker push ${TARGET_REPO}
+push:
+  only:
+    - main
+  image: docker
+  stage: push
+  script:
+    - rm -rf dist
+    - cp -r /data/artifacts/user_portal_dist dist
+    - docker build -t ${TARGET_REPO} .
+    - docker login --username=${REPO_ACCOUNT} --password=${REPO_PASSWORD} ${${REPO_HOST}}
+    - docker push ${TARGET_REPO}
 
-# deploy:
-#   only:
-#     - main
-#   image: registry.cn-shenzhen.aliyuncs.com/heiku/kubectl:latest
-#   stage: deploy
-#   script:
-#     - kubectl --kubeconfig ${KUBE_FILE} rollout restart deployment/${DEPLOYMENT}
-#     - kubectl --kubeconfig ${KUBE_FILE} rollout status deployment/${DEPLOYMENT}
+deploy:
+  only:
+    - main
+  image: registry.cn-shenzhen.aliyuncs.com/heiku/kubectl:latest
+  stage: deploy
+  script:
+    - kubectl --kubeconfig ${KUBE_FILE} rollout restart deployment/yd-oss-unib-user-protal-prod
+    # - kubectl --kubeconfig ${KUBE_FILE} rollout status deployment/yd-oss-unib-user-protal-prod
