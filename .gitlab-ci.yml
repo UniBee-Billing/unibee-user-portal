@@ -32,7 +32,7 @@ push:
     - rm -rf dist
     - cp -r /data/artifacts/user_portal_dist dist
     - docker build -t ${TARGET_REPO} .
-    - docker login --username=${REPO_ACCOUNT} --password=${REPO_PASSWORD} ${${REPO_HOST}}
+    - docker login --username=${REPO_ACCOUNT} --password=${REPO_PASSWORD} ${REPO_HOST}
     - docker push ${TARGET_REPO}
 
 deploy:
