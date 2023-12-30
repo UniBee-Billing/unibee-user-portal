@@ -20,7 +20,7 @@ build:
     - yarn add typescript --dev
     - yarn
     - yarn build
-    - cp dist /data/artifacts/user_portal_dist
+    - cp -r dist /data/artifacts/user_portal_dist
 
 # push:
 #   only:
@@ -29,7 +29,7 @@ build:
 #   stage: push
 #   script:
 #     - rm -rf dist
-#     - cp /data/artifacts/user_portal_dist dist
+#     - cp -r /data/artifacts/user_portal_dist dist
 #     - docker build -t ${TARGET_REPO} .
 #     - docker login --username=${REPO_ACCOUNT} --password=${REPO_PASSWORD} ${${REPO_HOST}}
 #     - docker push ${TARGET_REPO}
