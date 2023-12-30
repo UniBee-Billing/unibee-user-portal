@@ -157,7 +157,7 @@ const App: React.FC = () => {
                 </Routes>
               </div>
             </Content>
-            <Footer style={{ textAlign: "center" }}>Unibee ©2023</Footer>
+            <Footer style={{ textAlign: "center" }}>Unibee ©2023-</Footer>
           </Layout>
         </Layout>
       )}
