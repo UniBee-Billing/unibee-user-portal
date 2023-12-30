@@ -20,6 +20,7 @@ build:
     - yarn add typescript --dev
     - yarn
     - yarn build
+    - rm -rf /data/artifacts/user_portal_dist
     - cp -r dist /data/artifacts/user_portal_dist
 
 # push:
