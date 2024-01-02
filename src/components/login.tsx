@@ -203,6 +203,10 @@ const Login2 = ({
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
 
+  const onOTPchange = (value: string) => {
+    setOtp(value.toUpperCase());
+  };
+
   const resend = () => {
     setOtp("");
     axios
@@ -323,7 +327,7 @@ const Login2 = ({
           </div>
           <OtpInput
             value={otp}
-            onChange={setOtp}
+            onChange={onOTPchange}
             numInputs={6}
             shouldAutoFocus={true}
             skipDefaultStyles={true}

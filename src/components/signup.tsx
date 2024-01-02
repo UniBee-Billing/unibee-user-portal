@@ -44,6 +44,9 @@ const Index = () => {
     setPassword2(evt.target.value);
   // const onCodeChange = (evt) => setVerificationCode(evt.target.value);
   const [otp, setOtp] = useState("");
+  const onOTPchange = (value: string) => {
+    setOtp(value.toUpperCase());
+  };
 
   const onSubmit = () => {
     if (
@@ -151,7 +154,7 @@ const Index = () => {
             <Form
               name="basic"
               labelCol={{
-                span: 8,
+                span: 10,
               }}
               wrapperCol={{
                 span: 16,
@@ -300,7 +303,7 @@ const Index = () => {
                 <span style={{ color: "red" }}>{errMsg}</span>
               </Form.Item>
 
-              <Form.Item
+              {/* <Form.Item
                 name="remember"
                 valuePropName="checked"
                 wrapperCol={{
@@ -309,7 +312,7 @@ const Index = () => {
                 }}
               >
                 <Checkbox>Remember me</Checkbox>
-              </Form.Item>
+              </Form.Item> */}
 
               <Form.Item
                 wrapperCol={{
@@ -343,7 +346,7 @@ const Index = () => {
           </div>
           <OtpInput
             value={otp}
-            onChange={setOtp}
+            onChange={onOTPchange}
             numInputs={6}
             shouldAutoFocus={true}
             skipDefaultStyles={true}
