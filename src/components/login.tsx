@@ -6,6 +6,7 @@ import OtpInput from "react-otp-input";
 import axios from "axios";
 
 const APP_PATH = import.meta.env.BASE_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
   const [email, setEmail] = useState("");
@@ -50,6 +51,7 @@ const Index = () => {
           border: "1px solid #e0e0e0",
           borderRadius: "8px",
           marginTop: "36px",
+          background: "#FFF",
         }}
       >
         {/* <div style={{ height: "36px" }}></div> */}
@@ -92,7 +94,7 @@ const Login1 = ({
   const onSubmit = () => {
     setErrMsg("");
     axios
-      .post("http://localhost:8088/gooverseapay/auth/v1/sso/login", {
+      .post(`${API_URL}/auth/v1/sso/login`, {
         email,
         password,
       })
@@ -101,7 +103,8 @@ const Login1 = ({
         if (res.data.code != 0) {
           throw new Error(res.data.message);
         }
-        navigate(`${APP_PATH}/dashboard`);
+        localStorage.setItem("token", res.data.data.Token);
+        navigate(`${APP_PATH}dashboard`);
         // if (res.data.code) navigate("/Dashboard");
       })
       .catch((err) => {
@@ -203,7 +206,7 @@ const Login2 = ({
   const resend = () => {
     setOtp("");
     axios
-      .post("http://localhost:8088/gooverseapay/auth/v1/sso/loginOTP", {
+      .post(`${API_URL}/auth/v1/sso/loginOTP`, {
         email,
       })
       .then((res) => {
@@ -225,7 +228,7 @@ const Login2 = ({
     console.log("submitting..");
     if (currentStep == 0) {
       axios
-        .post("http://localhost:8088/gooverseapay/auth/v1/sso/loginOTP", {
+        .post(`${API_URL}/auth/v1/sso/loginOTP`, {
           email,
         })
         .then((res) => {
@@ -242,17 +245,18 @@ const Login2 = ({
         });
     } else {
       axios
-        .post("http://localhost:8088/gooverseapay/auth/v1/sso/loginOTPVerify", {
+        .post(`${API_URL}/auth/v1/sso/loginOTPVerify`, {
           email,
           verificationCode: otp,
         })
         .then((res) => {
-          console.log("login res: ", res);
+          console.log("otp loginVerify res: ", res);
           if (res.data.code != 0) {
             setErrMsg(res.data.message);
             throw new Error(res.data.message);
           }
-          navigate(`${APP_PATH}/dashboard`);
+          localStorage.setItem("token", res.data.data.Token);
+          navigate(`${APP_PATH}dashboard`);
           // if (res.data.code) navigate("/Dashboard");
         })
         .catch((err) => {

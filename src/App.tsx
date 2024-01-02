@@ -66,7 +66,7 @@ const items: MenuItem[] = [
 
 const APP_PATH = import.meta.env.BASE_URL; // import.meta.env.VITE_APP_PATH;
 console.log("base url: ", APP_PATH);
-const noSiderRoutes = [`${APP_PATH}/login`, `${APP_PATH}/signup`];
+const noSiderRoutes = [`${APP_PATH}login`, `${APP_PATH}signup`];
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -88,10 +88,15 @@ const App: React.FC = () => {
     // domEvent: any;
   }) => {
     if (key == "1") {
-      navigate(`${APP_PATH}/dashboard`);
+      navigate(`${APP_PATH}dashboard`);
     } else if (key == "2") {
-      navigate(`${APP_PATH}/price-plan`);
+      navigate(`${APP_PATH}price-plan`);
     }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    navigate(`${APP_PATH}login`);
   };
 
   return (
@@ -99,8 +104,8 @@ const App: React.FC = () => {
       {noSiderRoutes.findIndex((r) => r == location.pathname) != -1 ? (
         <Layout style={{ minHeight: "100vh" }}>
           <Routes>
-            <Route path={`${APP_PATH}/login`} Component={Login} />
-            <Route path={`${APP_PATH}/signup`} Component={Signup} />
+            <Route path={`${APP_PATH}login`} Component={Login} />
+            <Route path={`${APP_PATH}signup`} Component={Signup} />
           </Routes>
         </Layout>
       ) : (
@@ -120,7 +125,7 @@ const App: React.FC = () => {
               onClick={onItemClick}
             />
             <div
-              onClick={() => navigate(`${APP_PATH}/login`)}
+              onClick={logout}
               style={{
                 color: "#FFF",
                 position: "absolute",
@@ -129,6 +134,7 @@ const App: React.FC = () => {
                 alignItems: "center",
                 justifyContent: "center",
                 width: "100%",
+                cursor: "pointer",
               }}
             >
               logout
@@ -148,10 +154,10 @@ const App: React.FC = () => {
                 }}
               >
                 <Routes>
-                  <Route path={`${APP_PATH}/`} Component={Dashboard} />
-                  <Route path={`${APP_PATH}/dashboard`} Component={Dashboard} />
+                  <Route path={`${APP_PATH}`} Component={Dashboard} />
+                  <Route path={`${APP_PATH}dashboard`} Component={Dashboard} />
                   <Route
-                    path={`${APP_PATH}/price-plan`}
+                    path={`${APP_PATH}price-plan`}
                     Component={PricePlans}
                   />
                 </Routes>

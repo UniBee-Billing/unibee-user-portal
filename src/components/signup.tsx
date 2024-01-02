@@ -7,6 +7,7 @@ import OtpInput from "react-otp-input";
 
 import axios from "axios";
 const APP_PATH = import.meta.env.BASE_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const passwordRegx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/;
@@ -58,8 +59,7 @@ const Index = () => {
     setSubmitting(true);
     const user_name = "ewo" + Math.random();
     axios
-      // .post("http://localhost:8088/gooverseapay/auth/v1/sso/register", { firstName, lastName, email, password })
-      .post("http://localhost:8088/gooverseapay/auth/v1/sso/register", {
+      .post(`${API_URL}/auth/v1/sso/register`, {
         email,
         firstName,
         lastName,
@@ -102,8 +102,7 @@ const Index = () => {
     setSubmitting(true);
     // const user_name = "ewo" + Math.random();
     axios
-      // .post("http://localhost:8088/gooverseapay/auth/v1/sso/register", { firstName, lastName, email, password })
-      .post("http://localhost:8088/gooverseapay/auth/v1/sso/registerVerify", {
+      .post(`${API_URL}/auth/v1/sso/registerVerify`, {
         email,
         verificationCode: otp,
       })
@@ -113,7 +112,7 @@ const Index = () => {
         if (res.data.code != 0) {
           throw new Error(res.data.message);
         }
-        navigate(`${APP_PATH}/login`, {
+        navigate(`${APP_PATH}login`, {
           state: { msg: "Thanks for your sign-up on Unibee" },
         });
         //     navigate("/checkout", { state: { priceId: selectedPrice } });
