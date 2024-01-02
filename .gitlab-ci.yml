@@ -1,0 +1,45 @@
+stages:
+  - build
+  - push
+  - deploy
+
+variables:
+  # IMAGE_GROUP: xxx
+  # NAME_SPACE: xxx
+  # GOPATH: ${CI_PROJECT_DIR}/.go
+  # GOMODCACHE: ${CI_PROJECT_DIR}/.go/pkg/mod
+  # GOCACHE: ${CI_PROJECT_DIR}/.go/.cache/go-build
+  # GOLANGCI_LINT_CACHE: ${CI_PROJECT_DIR}/.go/.cache/golangci-lint
+
+build:
+  only:
+    - main
+  stage: build
+  image: node:21 # 利用Golang容器进行打包Golang项目
+  script:
+    - yarn add typescript --dev
+    - yarn
+    - yarn build
+    - rm -rf /data/artifacts/user_portal_dist
+    - cp -r dist /data/artifacts/user_portal_dist
+
+push:
+  only:
+    - main
+  image: docker
+  stage: push
+  script:
+    - rm -rf dist
+    - cp -r /data/artifacts/user_portal_dist dist
+    - docker build -t ${TARGET_REPO} .
+    - docker login --username=${REPO_ACCOUNT} --password=${REPO_PASSWORD} ${REPO_HOST}
+    - docker push ${TARGET_REPO}
+
+deploy:
+  only:
+    - main
+  image: registry.cn-shenzhen.aliyuncs.com/heiku/kubectl:latest
+  stage: deploy
+  script:
+    - kubectl --kubeconfig ${KUBE_FILE} rollout restart deployment/yd-oss-unib-user-protal-prod
+    # - kubectl --kubeconfig ${KUBE_FILE} rollout status deployment/yd-oss-unib-user-protal-prod
