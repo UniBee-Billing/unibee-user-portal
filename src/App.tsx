@@ -64,8 +64,8 @@ const items: MenuItem[] = [
   */
 ];
 
-const APP_PATH = import.meta.env.VITE_APP_PATH;
-console.log("base url: ", import.meta.env.BASE_URL);
+const APP_PATH = import.meta.env.BASE_URL; // import.meta.env.VITE_APP_PATH;
+console.log("base url: ", APP_PATH);
 const noSiderRoutes = [`${APP_PATH}/login`, `${APP_PATH}/signup`];
 
 const App: React.FC = () => {

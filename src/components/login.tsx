@@ -5,7 +5,7 @@ import { Button, Checkbox, Form, Input, Tabs, Radio } from "antd";
 import OtpInput from "react-otp-input";
 import axios from "axios";
 
-const APP_PATH = import.meta.env.VITE_APP_PATH;
+const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = () => {
   const [email, setEmail] = useState("");

@@ -6,7 +6,7 @@ import { Button, Checkbox, Form, Input } from "antd";
 import OtpInput from "react-otp-input";
 
 import axios from "axios";
-const APP_PATH = import.meta.env.VITE_APP_PATH;
+const APP_PATH = import.meta.env.BASE_URL;
 
 const passwordRegx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/;
@@ -143,6 +143,7 @@ const Index = () => {
               width: "640px",
               border: "1px solid #e0e0e0",
               borderRadius: "8px",
+              background: "#FFF",
               display: "flex",
               justifyContent: "center",
               paddingTop: "24px",
