@@ -4,7 +4,8 @@ import {
   // FileOutlined,
   PieChartOutlined,
   // TeamOutlined,
-  // UserOutlined,
+  // UserOutlined
+  LogoutOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import {
@@ -19,6 +20,8 @@ import { Layout, Menu, theme } from "antd";
 
 import Dashboard from "./components/dashboard";
 import PricePlans from "./components/pricePlans";
+import Subscription from "./components/subscription";
+import Profile from "./components/profile";
 import Login from "./components/login";
 import Signup from "./components/signup";
 
@@ -41,8 +44,8 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("Dashboard", "1", <PieChartOutlined />),
-  getItem("Price plans", "2", <DesktopOutlined />),
+  getItem("Profile", "1", <PieChartOutlined />),
+  getItem("My subscription", "2", <DesktopOutlined />),
   /*
   getItem("User", "sub1", <UserOutlined />, [
     getItem("Tom", "3"),
@@ -88,9 +91,9 @@ const App: React.FC = () => {
     // domEvent: any;
   }) => {
     if (key == "1") {
-      navigate(`${APP_PATH}dashboard`);
+      navigate(`${APP_PATH}profile`);
     } else if (key == "2") {
-      navigate(`${APP_PATH}price-plan`);
+      navigate(`${APP_PATH}subscription`);
     }
   };
 
@@ -116,7 +119,16 @@ const App: React.FC = () => {
             onCollapse={(value) => setCollapsed(value)}
           >
             <div className="demo-logo-vertical" />
-            <div style={{ color: "#FFF" }}>Logo here</div>
+            <div
+              style={{
+                color: "#FFF",
+                margin: "18px 0",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <img src={"/multiLoginLogo.png"} width={"200px"} />
+            </div>
             <Menu
               theme="dark"
               defaultSelectedKeys={["1"]}
@@ -137,7 +149,8 @@ const App: React.FC = () => {
                 cursor: "pointer",
               }}
             >
-              logout
+              <LogoutOutlined />
+              &nbsp;Logout
             </div>
           </Sider>
           <Layout>
@@ -154,11 +167,11 @@ const App: React.FC = () => {
                 }}
               >
                 <Routes>
-                  <Route path={`${APP_PATH}`} Component={Dashboard} />
-                  <Route path={`${APP_PATH}dashboard`} Component={Dashboard} />
+                  <Route path={`${APP_PATH}`} Component={Profile} />
+                  <Route path={`${APP_PATH}profile`} Component={Profile} />
                   <Route
-                    path={`${APP_PATH}price-plan`}
-                    Component={PricePlans}
+                    path={`${APP_PATH}subscription`}
+                    Component={Subscription}
                   />
                 </Routes>
               </div>
