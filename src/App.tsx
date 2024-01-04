@@ -24,7 +24,10 @@ import Subscription from "./components/subscription";
 import Profile from "./components/profile";
 import Login from "./components/login";
 import Signup from "./components/signup";
+import axios from "axios";
 
+const APP_PATH = import.meta.env.BASE_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 const { Header, Content, Footer, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
@@ -67,8 +70,6 @@ const items: MenuItem[] = [
   */
 ];
 
-const APP_PATH = import.meta.env.BASE_URL; // import.meta.env.VITE_APP_PATH;
-console.log("base url: ", APP_PATH);
 const noSiderRoutes = [`${APP_PATH}login`, `${APP_PATH}signup`];
 
 const App: React.FC = () => {
@@ -98,7 +99,21 @@ const App: React.FC = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    axios
+      .post(`${API_URL}/user/auth/sso/logout`, {})
+      .then((res) => {
+        console.log("logout res: ", res);
+        if (res.data.code != 0) {
+          throw new Error(res.data.message);
+        }
+        localStorage.removeItem("token");
+        navigate(`${APP_PATH}login`);
+      })
+      .catch((err) => {
+        localStorage.removeItem("token");
+        navigate(`${APP_PATH}login`);
+      });
+
     navigate(`${APP_PATH}login`);
   };
 

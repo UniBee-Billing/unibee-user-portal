@@ -1,7 +1,7 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import type { RadioChangeEvent } from "antd";
-import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, Form, Input, Tabs, Radio } from "antd";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Button, Checkbox, Form, Input, Tabs, Radio, message } from "antd";
 import OtpInput from "react-otp-input";
 import axios from "axios";
 
@@ -9,6 +9,8 @@ const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
+  const location = useLocation();
+  const [messageApi, contextHolder] = message.useMessage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const onEmailChange = (evt: ChangeEvent<HTMLInputElement>) =>
@@ -16,12 +18,21 @@ const Index = () => {
   const onPasswordChange = (evt: ChangeEvent<HTMLInputElement>) =>
     setPassword(evt.target.value);
   const [loginType, setLoginType] = useState("password"); // [password, OTP]
-  // const { state } = useLocation();
 
   const onLoginTypeChange = (e: RadioChangeEvent) => {
-    console.log("radio checked", e.target.value);
+    // console.log("radio checked", e.target.value);
     setLoginType(e.target.value);
   };
+
+  useEffect(() => {
+    if (location.state && location.state.msg) {
+      messageApi.open({
+        type: "info",
+        content: location.state.msg,
+      });
+    }
+  }, []);
+
   return (
     <div
       style={{
@@ -32,6 +43,7 @@ const Index = () => {
         marginTop: "200px",
       }}
     >
+      {contextHolder}
       <Radio.Group
         options={[
           { label: "Password", value: "password" },
@@ -94,7 +106,7 @@ const Login1 = ({
   const onSubmit = () => {
     setErrMsg("");
     axios
-      .post(`${API_URL}/auth/v1/sso/login`, {
+      .post(`${API_URL}/user/auth/sso/login`, {
         email,
         password,
       })
@@ -232,7 +244,7 @@ const Login2 = ({
     console.log("submitting..");
     if (currentStep == 0) {
       axios
-        .post(`${API_URL}/auth/v1/sso/loginOTP`, {
+        .post(`${API_URL}/user/auth/sso/loginOTP`, {
           email,
         })
         .then((res) => {
@@ -249,7 +261,7 @@ const Login2 = ({
         });
     } else {
       axios
-        .post(`${API_URL}/auth/v1/sso/loginOTPVerify`, {
+        .post(`${API_URL}/user/auth/sso/loginOTPVerify`, {
           email,
           verificationCode: otp,
         })

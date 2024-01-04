@@ -62,7 +62,7 @@ const Index = () => {
     setSubmitting(true);
     const user_name = "ewo" + Math.random();
     axios
-      .post(`${API_URL}/auth/v1/sso/register`, {
+      .post(`${API_URL}/user/auth/sso/register`, {
         email,
         firstName,
         lastName,
@@ -84,20 +84,6 @@ const Index = () => {
         setSubmitting(false);
         console.log("reg err: ", err);
       });
-    // navigate("/Dashboard");
-    /* 
-    login({ email: username, password })
-      .then((res) => {
-        // console.log("login res: ", res);
-        // todo: res has many other fields, save them in profile obj(in redux/zustand) for other use.
-        localStorage.setItem("@authToken", res.token);
-        localStorage.setItem("@refreshToken", res.refreshToken);
-        navigate("/suppliers");
-      })
-      .catch((err) => {
-        console.log("login err: ", err);
-      });
-      */
   };
 
   const onSubmit2 = () => {
@@ -105,7 +91,7 @@ const Index = () => {
     setSubmitting(true);
     // const user_name = "ewo" + Math.random();
     axios
-      .post(`${API_URL}/auth/v1/sso/registerVerify`, {
+      .post(`${API_URL}/user/auth/sso/registerVerify`, {
         email,
         verificationCode: otp,
       })
@@ -118,7 +104,6 @@ const Index = () => {
         navigate(`${APP_PATH}login`, {
           state: { msg: "Thanks for your sign-up on Unibee" },
         });
-        //     navigate("/checkout", { state: { priceId: selectedPrice } });
       })
       .catch((err) => {
         setSubmitting(false);
