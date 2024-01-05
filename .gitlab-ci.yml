@@ -19,7 +19,7 @@ build:
   script:
     - yarn add typescript --dev
     - yarn
-    - yarn build --base=/userPortal
+    - yarn build --base=/userPortal/
     - rm -rf /data/artifacts/user_portal_dist
     - cp -r dist /data/artifacts/user_portal_dist
 
