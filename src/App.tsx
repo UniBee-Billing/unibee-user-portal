@@ -142,7 +142,7 @@ const App: React.FC = () => {
                 justifyContent: "center",
               }}
             >
-              <img src={"/multiLoginLogo.png"} width={"200px"} />
+              <img src={"/MultiloginLogo.png"} height={"80px"} />
             </div>
             <Menu
               theme="dark"
