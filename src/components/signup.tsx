@@ -6,7 +6,8 @@ import { Button, Checkbox, Form, Input } from "antd";
 import OtpInput from "react-otp-input";
 
 import axios from "axios";
-const APP_PATH = import.meta.env.VITE_APP_PATH;
+const APP_PATH = import.meta.env.BASE_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const passwordRegx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/;
@@ -43,6 +44,9 @@ const Index = () => {
     setPassword2(evt.target.value);
   // const onCodeChange = (evt) => setVerificationCode(evt.target.value);
   const [otp, setOtp] = useState("");
+  const onOTPchange = (value: string) => {
+    setOtp(value.toUpperCase());
+  };
 
   const onSubmit = () => {
     if (
@@ -58,8 +62,7 @@ const Index = () => {
     setSubmitting(true);
     const user_name = "ewo" + Math.random();
     axios
-      // .post("http://localhost:8088/gooverseapay/auth/v1/sso/register", { firstName, lastName, email, password })
-      .post("http://localhost:8088/gooverseapay/auth/v1/sso/register", {
+      .post(`${API_URL}/user/auth/sso/register`, {
         email,
         firstName,
         lastName,
@@ -81,20 +84,6 @@ const Index = () => {
         setSubmitting(false);
         console.log("reg err: ", err);
       });
-    // navigate("/Dashboard");
-    /* 
-    login({ email: username, password })
-      .then((res) => {
-        // console.log("login res: ", res);
-        // todo: res has many other fields, save them in profile obj(in redux/zustand) for other use.
-        localStorage.setItem("@authToken", res.token);
-        localStorage.setItem("@refreshToken", res.refreshToken);
-        navigate("/suppliers");
-      })
-      .catch((err) => {
-        console.log("login err: ", err);
-      });
-      */
   };
 
   const onSubmit2 = () => {
@@ -102,8 +91,7 @@ const Index = () => {
     setSubmitting(true);
     // const user_name = "ewo" + Math.random();
     axios
-      // .post("http://localhost:8088/gooverseapay/auth/v1/sso/register", { firstName, lastName, email, password })
-      .post("http://localhost:8088/gooverseapay/auth/v1/sso/registerVerify", {
+      .post(`${API_URL}/user/auth/sso/registerVerify`, {
         email,
         verificationCode: otp,
       })
@@ -113,10 +101,9 @@ const Index = () => {
         if (res.data.code != 0) {
           throw new Error(res.data.message);
         }
-        navigate(`${APP_PATH}/login`, {
+        navigate(`${APP_PATH}login`, {
           state: { msg: "Thanks for your sign-up on Unibee" },
         });
-        //     navigate("/checkout", { state: { priceId: selectedPrice } });
       })
       .catch((err) => {
         setSubmitting(false);
@@ -143,6 +130,7 @@ const Index = () => {
               width: "640px",
               border: "1px solid #e0e0e0",
               borderRadius: "8px",
+              background: "#FFF",
               display: "flex",
               justifyContent: "center",
               paddingTop: "24px",
@@ -151,7 +139,7 @@ const Index = () => {
             <Form
               name="basic"
               labelCol={{
-                span: 8,
+                span: 10,
               }}
               wrapperCol={{
                 span: 16,
@@ -300,7 +288,7 @@ const Index = () => {
                 <span style={{ color: "red" }}>{errMsg}</span>
               </Form.Item>
 
-              <Form.Item
+              {/* <Form.Item
                 name="remember"
                 valuePropName="checked"
                 wrapperCol={{
@@ -309,7 +297,7 @@ const Index = () => {
                 }}
               >
                 <Checkbox>Remember me</Checkbox>
-              </Form.Item>
+              </Form.Item> */}
 
               <Form.Item
                 wrapperCol={{
@@ -343,7 +331,7 @@ const Index = () => {
           </div>
           <OtpInput
             value={otp}
-            onChange={setOtp}
+            onChange={onOTPchange}
             numInputs={6}
             shouldAutoFocus={true}
             skipDefaultStyles={true}

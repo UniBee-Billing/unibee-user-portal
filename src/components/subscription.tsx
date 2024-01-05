@@ -6,20 +6,20 @@ const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
-  const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  console.log("token: ", token);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
     axios
       .post(
-        `${API_URL}/subscription/v1/subscription_plan_list`,
+        `${API_URL}/user/plan/subscription_plan_list`,
         {
           merchantId: 15621,
-          type: 1,
-          status: 0,
-          currency: "usd",
+          // type: 1,
+          // status: 0,
+          // currency: "usd",
+          page: 0,
+          count: 100,
         },
         {
           headers: {
@@ -33,19 +33,20 @@ const Index = () => {
         if (statuCode != 0) {
           if (statuCode == 61) {
             console.log("invalid token");
-            navigate(`${APP_PATH}login`);
-            throw new Error(res.data.message);
+            navigate(`${APP_PATH}login`, {
+              state: { msg: "session expired, please re-login" },
+            });
+            return;
           }
-          setErrMsg(res.data.message);
+          throw new Error(res.data.message);
         }
       })
       .catch((err) => {
         console.log("get subscription list err: ", err);
-        setErrMsg(err.message);
+        // setErrMsg(err.message);
       });
   }, []);
-
-  return <div>dashboard</div>;
+  return <div>subscription</div>;
 };
 
 export default Index;

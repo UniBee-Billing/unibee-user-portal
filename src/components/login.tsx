@@ -1,13 +1,16 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import type { RadioChangeEvent } from "antd";
-import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, Form, Input, Tabs, Radio } from "antd";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Button, Checkbox, Form, Input, Tabs, Radio, message } from "antd";
 import OtpInput from "react-otp-input";
 import axios from "axios";
 
-const APP_PATH = import.meta.env.VITE_APP_PATH;
+const APP_PATH = import.meta.env.BASE_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
+  const location = useLocation();
+  const [messageApi, contextHolder] = message.useMessage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const onEmailChange = (evt: ChangeEvent<HTMLInputElement>) =>
@@ -15,12 +18,21 @@ const Index = () => {
   const onPasswordChange = (evt: ChangeEvent<HTMLInputElement>) =>
     setPassword(evt.target.value);
   const [loginType, setLoginType] = useState("password"); // [password, OTP]
-  // const { state } = useLocation();
 
   const onLoginTypeChange = (e: RadioChangeEvent) => {
-    console.log("radio checked", e.target.value);
+    // console.log("radio checked", e.target.value);
     setLoginType(e.target.value);
   };
+
+  useEffect(() => {
+    if (location.state && location.state.msg) {
+      messageApi.open({
+        type: "info",
+        content: location.state.msg,
+      });
+    }
+  }, []);
+
   return (
     <div
       style={{
@@ -31,6 +43,7 @@ const Index = () => {
         marginTop: "200px",
       }}
     >
+      {contextHolder}
       <Radio.Group
         options={[
           { label: "Password", value: "password" },
@@ -50,6 +63,7 @@ const Index = () => {
           border: "1px solid #e0e0e0",
           borderRadius: "8px",
           marginTop: "36px",
+          background: "#FFF",
         }}
       >
         {/* <div style={{ height: "36px" }}></div> */}
@@ -92,7 +106,7 @@ const Login1 = ({
   const onSubmit = () => {
     setErrMsg("");
     axios
-      .post("http://localhost:8088/gooverseapay/auth/v1/sso/login", {
+      .post(`${API_URL}/user/auth/sso/login`, {
         email,
         password,
       })
@@ -101,7 +115,8 @@ const Login1 = ({
         if (res.data.code != 0) {
           throw new Error(res.data.message);
         }
-        navigate(`${APP_PATH}/dashboard`);
+        localStorage.setItem("token", res.data.data.Token);
+        navigate(`${APP_PATH}profile`);
         // if (res.data.code) navigate("/Dashboard");
       })
       .catch((err) => {
@@ -200,10 +215,14 @@ const Login2 = ({
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
 
+  const onOTPchange = (value: string) => {
+    setOtp(value.toUpperCase());
+  };
+
   const resend = () => {
     setOtp("");
     axios
-      .post("http://localhost:8088/gooverseapay/auth/v1/sso/loginOTP", {
+      .post(`${API_URL}/auth/v1/sso/loginOTP`, {
         email,
       })
       .then((res) => {
@@ -225,7 +244,7 @@ const Login2 = ({
     console.log("submitting..");
     if (currentStep == 0) {
       axios
-        .post("http://localhost:8088/gooverseapay/auth/v1/sso/loginOTP", {
+        .post(`${API_URL}/user/auth/sso/loginOTP`, {
           email,
         })
         .then((res) => {
@@ -242,17 +261,18 @@ const Login2 = ({
         });
     } else {
       axios
-        .post("http://localhost:8088/gooverseapay/auth/v1/sso/loginOTPVerify", {
+        .post(`${API_URL}/user/auth/sso/loginOTPVerify`, {
           email,
           verificationCode: otp,
         })
         .then((res) => {
-          console.log("login res: ", res);
+          console.log("otp loginVerify res: ", res);
           if (res.data.code != 0) {
             setErrMsg(res.data.message);
             throw new Error(res.data.message);
           }
-          navigate(`${APP_PATH}/dashboard`);
+          localStorage.setItem("token", res.data.data.Token);
+          navigate(`${APP_PATH}dashboard`);
           // if (res.data.code) navigate("/Dashboard");
         })
         .catch((err) => {
@@ -319,7 +339,7 @@ const Login2 = ({
           </div>
           <OtpInput
             value={otp}
-            onChange={setOtp}
+            onChange={onOTPchange}
             numInputs={6}
             shouldAutoFocus={true}
             skipDefaultStyles={true}
