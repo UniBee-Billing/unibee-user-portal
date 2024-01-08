@@ -93,21 +93,32 @@ const Index = () => {
 
   console.log("plans: ", plans);
   return (
-    <div style={{ display: "flex", gap: "18px" }}>
-      {plans.map(
-        (p) =>
-          p && (
-            <Plan
-              plan={p}
-              selectedPlan={selectedPlan}
-              setSelectedPlan={setSelectedPlan}
-            />
-          )
-      )}
-      <Button type="primary" onClick={onConfirm}>
-        Confirm
-      </Button>
-    </div>
+    <>
+      <div style={{ display: "flex", gap: "18px" }}>
+        {plans.map(
+          (p) =>
+            p && (
+              <Plan
+                plan={p}
+                selectedPlan={selectedPlan}
+                setSelectedPlan={setSelectedPlan}
+              />
+            )
+        )}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "68px",
+        }}
+      >
+        <Button type="primary" onClick={onConfirm}>
+          Confirm
+        </Button>
+      </div>
+    </>
   );
 };
 

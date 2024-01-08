@@ -20,6 +20,7 @@ import { Layout, Menu, theme } from "antd";
 
 import Dashboard from "./components/dashboard";
 import PricePlans from "./components/pricePlans";
+import NotFound from "./components/notFound";
 import Subscription from "./components/subscription";
 import Profile from "./components/profile";
 import Login from "./components/login";
@@ -170,7 +171,7 @@ const App: React.FC = () => {
           </Sider>
           <Layout>
             <Header style={{ padding: 0, background: colorBgContainer }}>
-              this is app header
+              {/* this is app header */}
             </Header>
             <Content style={{ margin: "0 16px" }}>
               <div
@@ -182,6 +183,7 @@ const App: React.FC = () => {
                 }}
               >
                 <Routes>
+                  <Route path="*" Component={NotFound} />
                   <Route path={`${APP_PATH}`} Component={Profile} />
                   <Route path={`${APP_PATH}profile`} Component={Profile} />
                   <Route
