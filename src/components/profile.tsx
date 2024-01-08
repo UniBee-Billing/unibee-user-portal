@@ -24,7 +24,7 @@ import {
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
-const APP_PATH = import.meta.env.BASE_URL;
+const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 const API_URL = import.meta.env.VITE_API_URL;
 
 const normFile = (e: any) => {
@@ -59,7 +59,7 @@ const Index = () => {
         if (res.data.code != 0) {
           if (res.data.code == 61) {
             // TODO: save all statu code in a constant
-            navigate("/login", {
+            navigate(`${APP_PATH}login`, {
               state: { msg: "Session expired, please re-login" },
             });
             return;
@@ -99,7 +99,7 @@ const Index = () => {
         if (res.data.code != 0) {
           if (res.data.code == 61) {
             // TODO: save all statu code in a constant
-            navigate("/login", {
+            navigate(`${APP_PATH}login`, {
               state: { msg: "Session expired, please re-login" },
             });
             return;

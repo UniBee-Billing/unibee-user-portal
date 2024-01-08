@@ -116,7 +116,7 @@ const Login1 = ({
           throw new Error(res.data.message);
         }
         localStorage.setItem("token", res.data.data.Token);
-        navigate(`${APP_PATH}profile`);
+        navigate(`${APP_PATH}subscription`);
         // if (res.data.code) navigate("/Dashboard");
       })
       .catch((err) => {
@@ -272,7 +272,7 @@ const Login2 = ({
             throw new Error(res.data.message);
           }
           localStorage.setItem("token", res.data.data.Token);
-          navigate(`${APP_PATH}dashboard`);
+          navigate(`${APP_PATH}subscription`);
           // if (res.data.code) navigate("/Dashboard");
         })
         .catch((err) => {
