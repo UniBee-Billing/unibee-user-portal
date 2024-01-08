@@ -47,8 +47,8 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("Profile", "1", <PieChartOutlined />),
   getItem("My subscription", "2", <DesktopOutlined />),
+  getItem("Profile", "1", <PieChartOutlined />),
   /*
   getItem("User", "sub1", <UserOutlined />, [
     getItem("Tom", "3"),
@@ -146,7 +146,7 @@ const App: React.FC = () => {
             </div>
             <Menu
               theme="dark"
-              defaultSelectedKeys={["1"]}
+              defaultSelectedKeys={["2"]}
               mode="inline"
               items={items}
               onClick={onItemClick}
