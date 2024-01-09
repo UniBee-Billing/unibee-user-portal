@@ -43,6 +43,7 @@ const Index = () => {
   const [plans, setPlans] = useState<PlanType[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
   const [modalOpen, setModalOpen] = useState(false);
+  const [preview, setPreview] = useState<unknown | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
 
   const onAddonChange = (addonId: number, quantity: number) => {
@@ -165,17 +166,101 @@ const Index = () => {
     }
 
     toggleModal();
+    createPrivew();
+  };
+
+  const createPrivew = () => {
+    setPreview(null); // clear the last preview, otherwise, users might see the old value
+    const token = localStorage.getItem("token");
+    const plan = plans.find((p) => p.id == selectedPlan);
+    const addons = plan?.addons.filter((a) => a.checked);
+
+    axios
+      .post(
+        `${API_URL}/user/subscription/subscription_create_preview`,
+        {
+          // merchantId: 15621,
+          planId: selectedPlan,
+          quantity: 1,
+          channelId: 25,
+          UserId: 2235428006,
+          addonParams:
+            addons?.map((a) => ({ quantity: a.quantity, addonPlanId: a.id })) ||
+            [],
+        },
+        {
+          headers: {
+            Authorization: `${token}`, // Bearer: ******
+          },
+        }
+      )
+      .then((res) => {
+        console.log("subscription create preview res: ", res);
+        const statuCode = res.data.code;
+        if (statuCode != 0) {
+          if (statuCode == 61) {
+            console.log("invalid token");
+            navigate(`${APP_PATH}login`, {
+              state: { msg: "session expired, please re-login" },
+            });
+            return;
+          }
+          throw new Error(res.data.message);
+        }
+        setPreview(res.data.data);
+      })
+      .catch((err) => {
+        console.log("subscription create preview err: ", err);
+        // setErrMsg(err.message);
+      });
   };
 
   const onConfirm = () => {
     console.log("confirm ....");
+    const token = localStorage.getItem("token");
+    axios
+      .post(
+        `${API_URL}/user/subscription/subscription_create_submit`,
+        {
+          planId: selectedPlan,
+          quantity: 1,
+          channelId: 25,
+          UserId: 2235428006,
+          addonParams: preview.addonParams,
+          confirmTotalAmount: preview.totalAmount,
+          confirmCurrency: preview.currency,
+          returnUrl: "http://localhost:5173/payment-result",
+        },
+        {
+          headers: {
+            Authorization: `${token}`, // Bearer: ******
+          },
+        }
+      )
+      .then((res) => {
+        console.log("subscription create submit res: ", res);
+        const statuCode = res.data.code;
+        if (statuCode != 0) {
+          if (statuCode == 61) {
+            console.log("invalid token");
+            navigate(`${APP_PATH}login`, {
+              state: { msg: "session expired, please re-login" },
+            });
+            return;
+          }
+          throw new Error(res.data.message);
+        }
+      })
+      .catch((err) => {
+        console.log("subscription create submit err: ", err);
+        // setErrMsg(err.message);
+        messageApi.open({
+          type: "error",
+          content: err.message,
+        });
+      });
   };
 
-  let plan: PlanType;
-  if (selectedPlan != null) {
-    plan = plans.find((p) => p.id == selectedPlan);
-  }
-  console.log("final plan: ", plans);
   return (
     <>
       {contextHolder}
@@ -187,31 +272,58 @@ const Index = () => {
           onCancel={toggleModal}
           width={"640px"}
         >
-          {/* <Row>
-            <Col span={8}>Plan name</Col>
-            <Col span={12}>{plan.planName}</Col>
-          </Row>
-          <Row>
-            <Col span={8}>Plan description</Col>
-            <Col span={12}>{plan.description}</Col>
-          </Row>
-          <Row>
-            <Col span={8}>Amount</Col>
-            <Col span={12}>
-              {`${CURRENCY_SYMBOL[plan.currency]} ${plan.amount}/${
-                plan.intervalCount
-              }${plan.intervalUnit}`}
-            </Col>
-          </Row>
-          <Row>
-            <Col span={8}>Addons</Col>
-            <Col span={12}>
-              {plan.addons.length == 0 ||
-              plan.addons.filter((a) => a.checked).length == 0
-                ? "no addon"
-                : "hehe"}
-            </Col>
-              </Row>*/}
+          {preview != null && (
+            <>
+              <Row gutter={[16, 16]}>
+                <Col span={8}>Plan name</Col>
+                <Col span={12}>{preview.planId.planName}</Col>{" "}
+              </Row>
+              <Row gutter={[16, 16]}>
+                <Col span={8}>Plan description</Col>
+                <Col span={12}>{preview.planId.channelProductDescription}</Col>
+              </Row>
+              <Row gutter={[16, 16]}>
+                <Col span={8}>Plan amount</Col>
+                <Col span={12}>{preview.planId.amount}</Col>
+              </Row>
+              <Row gutter={[16, 16]}>
+                <Col span={8}>Plan description</Col>
+                <Col span={12}>{`${CURRENCY_SYMBOL[preview.planId.currency]} ${
+                  preview.planId.amount
+                }/${preview.planId.intervalCount}${
+                  preview.planId.intervalUnit
+                }`}</Col>
+              </Row>
+              <Row gutter={[16, 16]}>
+                <Col span={8}>Addons</Col>
+                <Col span={12}>
+                  {preview.addons &&
+                    preview.addons.map((a) => (
+                      <div>
+                        <span>{a.AddonPlan.planName}</span>:&nbsp;
+                        <span>
+                          {`${CURRENCY_SYMBOL[a.AddonPlan.currency]} ${
+                            a.AddonPlan.amount
+                          }/${a.AddonPlan.intervalCount}${
+                            a.AddonPlan.intervalUnit
+                          } × ${a.Quantity}`}
+                        </span>
+                      </div>
+                    ))}
+                </Col>
+              </Row>
+              <Row gutter={[32, 32]}>
+                <Col span={8}>
+                  <span>Total</span>
+                </Col>
+                <Col span={12}>
+                  <span>{`${CURRENCY_SYMBOL[preview.currency]} ${
+                    preview.totalAmount
+                  }`}</span>
+                </Col>
+              </Row>
+            </>
+          )}
         </Modal>
       )}
       <div style={{ display: "flex", gap: "18px" }}>
@@ -248,7 +360,7 @@ const Index = () => {
 export default Index;
 
 const CURRENCY_SYMBOL: { [key: string]: string } = {
-  CNY: "¥",
+  CNY: "¥", // normalize: 100,
   USD: "$",
   JPY: "¥",
 };
@@ -306,6 +418,7 @@ const Plan = ({
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {plan.addons.map((a) => (
             <div
+              key={a.id}
               style={{
                 display: "flex",
                 width: "100%",

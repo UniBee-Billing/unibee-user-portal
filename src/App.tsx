@@ -25,6 +25,7 @@ import Subscription from "./components/subscription";
 import Profile from "./components/profile";
 import Login from "./components/login";
 import Signup from "./components/signup";
+import PaymentResult from "./components/paymentResult";
 import axios from "axios";
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -48,8 +49,10 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("My subscription", "2", <DesktopOutlined />),
+  getItem("Plan list", "2", <DesktopOutlined />),
+  getItem("My Subscription", "1", <PieChartOutlined />),
   getItem("Profile", "1", <PieChartOutlined />),
+
   /*
   getItem("User", "sub1", <UserOutlined />, [
     getItem("Tom", "3"),
@@ -71,7 +74,11 @@ const items: MenuItem[] = [
   */
 ];
 
-const noSiderRoutes = [`${APP_PATH}login`, `${APP_PATH}signup`];
+const noSiderRoutes = [
+  `${APP_PATH}login`,
+  `${APP_PATH}signup`,
+  `${APP_PATH}payment-result`,
+];
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -95,6 +102,8 @@ const App: React.FC = () => {
     if (key == "1") {
       navigate(`${APP_PATH}profile`);
     } else if (key == "2") {
+      navigate(`${APP_PATH}subscription`);
+    } else if (key == "3") {
       navigate(`${APP_PATH}subscription`);
     }
   };
@@ -125,6 +134,10 @@ const App: React.FC = () => {
           <Routes>
             <Route path={`${APP_PATH}login`} Component={Login} />
             <Route path={`${APP_PATH}signup`} Component={Signup} />
+            <Route
+              path={`${APP_PATH}payment-result`}
+              Component={PaymentResult}
+            />
           </Routes>
         </Layout>
       ) : (
