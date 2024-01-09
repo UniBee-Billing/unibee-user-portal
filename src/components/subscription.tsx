@@ -1,10 +1,28 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, Form, Input, Tabs, Radio, message } from "antd";
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  Tabs,
+  Radio,
+  message,
+  Modal,
+  Col,
+  Row,
+} from "antd";
+import update from "immutability-helper";
+import type { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
+
+interface AddonType extends PlanType {
+  quantity: number | null;
+  checked: boolean;
+}
 
 interface PlanType {
   id: number;
@@ -17,13 +35,48 @@ interface PlanType {
   intervalCount: number;
   status: number;
   // isPublished: boolean;
-  addons?: PlanType[];
+  addons?: AddonType[];
 }
 
 const Index = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<PlanType[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
+  const [modalOpen, setModalOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const onAddonChange = (addonId: number, quantity: number) => {
+    console.log("plans: ", plans);
+    const planIdx = plans.findIndex((p) => p.id == selectedPlan);
+    if (planIdx == -1) {
+      return;
+    }
+    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
+    if (addonIdx == -1) {
+      return;
+    }
+    const newPlans = update(plans, {
+      [planIdx]: { addons: { [addonIdx]: { quantity: { $set: quantity } } } },
+    });
+    setPlans(newPlans);
+  };
+
+  const onAddonCheck = (addonId: number, checked: boolean) => {
+    console.log("addonId: ", addonId, "//", checked);
+    const planIdx = plans.findIndex((p) => p.id == selectedPlan);
+    if (planIdx == -1) {
+      return;
+    }
+    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
+    if (addonIdx == -1) {
+      return;
+    }
+    console.log("idx: ", planIdx, "///", addonIdx);
+    const newPlans = update(plans, {
+      [planIdx]: { addons: { [addonIdx]: { checked: { $set: checked } } } },
+    });
+    setPlans(newPlans);
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -58,8 +111,8 @@ const Index = () => {
           throw new Error(res.data.message);
         }
         const plans: PlanType[] = res.data.data.Plans.map((p: any) => {
-          console.log("plan id: ", p.plan.id);
-          let p2 = p.plan;
+          // console.log("plan id: ", p.plan.id);
+          const p2 = p.plan;
           if (p.plan.type == 2) {
             return null;
           }
@@ -79,7 +132,7 @@ const Index = () => {
             addons: p.addons,
           };
         });
-        setPlans(plans);
+        setPlans(plans.filter((p) => p != null));
       })
       .catch((err) => {
         console.log("get subscription list err: ", err);
@@ -87,24 +140,90 @@ const Index = () => {
       });
   }, []);
 
-  const onConfirm = () => {
-    console.log("confirm sub");
+  const toggleModal = () => setModalOpen(!modalOpen);
+  const openModal = () => {
+    const plan = plans.find((p) => p.id == selectedPlan);
+    let valid = true;
+    if (plan?.addons != null && plan.addons.length > 0) {
+      for (let i = 0; i < plan.addons.length; i++) {
+        if (plan.addons[i].checked) {
+          const q = Number(plan.addons[i].quantity);
+          console.log("q: ", q);
+          if (!Number.isInteger(q) || q <= 0) {
+            valid = false;
+            break;
+          }
+        }
+      }
+    }
+    if (!valid) {
+      messageApi.open({
+        type: "error",
+        content: "Addon quantity must be greater than 0.",
+      });
+      return;
+    }
+
+    toggleModal();
   };
 
-  console.log("plans: ", plans);
+  const onConfirm = () => {
+    console.log("confirm ....");
+  };
+
+  let plan: PlanType;
+  if (selectedPlan != null) {
+    plan = plans.find((p) => p.id == selectedPlan);
+  }
+  console.log("final plan: ", plans);
   return (
     <>
+      {contextHolder}
+      {selectedPlan != null && (
+        <Modal
+          title="Subscription Preview"
+          open={modalOpen}
+          onOk={onConfirm}
+          onCancel={toggleModal}
+          width={"640px"}
+        >
+          {/* <Row>
+            <Col span={8}>Plan name</Col>
+            <Col span={12}>{plan.planName}</Col>
+          </Row>
+          <Row>
+            <Col span={8}>Plan description</Col>
+            <Col span={12}>{plan.description}</Col>
+          </Row>
+          <Row>
+            <Col span={8}>Amount</Col>
+            <Col span={12}>
+              {`${CURRENCY_SYMBOL[plan.currency]} ${plan.amount}/${
+                plan.intervalCount
+              }${plan.intervalUnit}`}
+            </Col>
+          </Row>
+          <Row>
+            <Col span={8}>Addons</Col>
+            <Col span={12}>
+              {plan.addons.length == 0 ||
+              plan.addons.filter((a) => a.checked).length == 0
+                ? "no addon"
+                : "hehe"}
+            </Col>
+              </Row>*/}
+        </Modal>
+      )}
       <div style={{ display: "flex", gap: "18px" }}>
-        {plans.map(
-          (p) =>
-            p && (
-              <Plan
-                plan={p}
-                selectedPlan={selectedPlan}
-                setSelectedPlan={setSelectedPlan}
-              />
-            )
-        )}
+        {plans.map((p) => (
+          <Plan
+            plan={p}
+            selectedPlan={selectedPlan}
+            setSelectedPlan={setSelectedPlan}
+            onAddonChange={onAddonChange}
+            onAddonCheck={onAddonCheck}
+          />
+        ))}
       </div>
       <div
         style={{
@@ -114,7 +233,11 @@ const Index = () => {
           height: "68px",
         }}
       >
-        <Button type="primary" onClick={onConfirm}>
+        <Button
+          type="primary"
+          onClick={openModal}
+          disabled={selectedPlan == null}
+        >
           Confirm
         </Button>
       </div>
@@ -134,13 +257,33 @@ interface IPLanProps {
   plan: PlanType;
   selectedPlan: number | null;
   setSelectedPlan: (p: number) => void;
+  onAddonChange: (addonId: number, quantity: number) => void;
+  onAddonCheck: (addonId: number, checked: boolean) => void;
 }
-const Plan = ({ plan, selectedPlan, setSelectedPlan }: IPLanProps) => {
+
+const Plan = ({
+  plan,
+  selectedPlan,
+  setSelectedPlan,
+  onAddonChange,
+  onAddonCheck,
+}: IPLanProps) => {
+  const addonCheck = (addonId: number) => (e: CheckboxChangeEvent) => {
+    console.log("add checked: ", e.target.checked);
+    onAddonCheck(addonId, e.target.checked);
+  };
+  const addonQuantityChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("quantity change: ", evt);
+    onAddonChange(Number(evt.target.id), Number(evt.target.value)); // TODO: add validation check later
+  };
+
   return (
     <div
+      onClick={() => setSelectedPlan(plan.id)}
       style={{
-        width: "180px",
+        width: "240px",
         height: "320px",
+        padding: "8px",
         border: "1px solid #EEE",
         borderRadius: "4px",
         display: "flex",
@@ -148,31 +291,69 @@ const Plan = ({ plan, selectedPlan, setSelectedPlan }: IPLanProps) => {
         justifyContent: "center",
         alignItems: "center",
         gap: "32px",
-        background: "#FBFBFB",
+        background: selectedPlan == plan.id ? "#FFF" : "#FBFBFB",
         boxShadow:
           selectedPlan == plan.id
             ? "rgba(0, 0, 0, 0.35) 0px 5px 15px"
             : "unset",
+        cursor: "pointer",
       }}
     >
       <div style={{ fontSize: "28px" }}>{plan.planName}</div>
       <div>{plan.description}</div>
 
       {plan.addons && (
-        <div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {plan.addons.map((a) => (
-            <div>{a.planName}</div>
+            <div
+              style={{
+                display: "flex",
+                width: "100%",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Checkbox onChange={addonCheck(a.id)} checked={a.checked}>
+                <div style={{ display: "flex" }}>
+                  <div>
+                    <div
+                      style={{
+                        width: "120px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {a.planName}
+                    </div>
+                    <div style={{ fontSize: "11px" }}>{`${
+                      CURRENCY_SYMBOL[a.currency]
+                    } ${a.amount}/${a.intervalCount}${a.intervalUnit}`}</div>
+                  </div>
+
+                  <Input
+                    id={a.id.toString()}
+                    value={a.quantity || 0}
+                    onChange={addonQuantityChange}
+                    disabled={!a.checked}
+                    size="small"
+                    style={{ width: "64px", height: "24px" }}
+                    placeholder="count"
+                  />
+                </div>
+              </Checkbox>
+            </div>
           ))}
         </div>
       )}
       <div style={{ fontSize: "24px" }}>{`${CURRENCY_SYMBOL[plan.currency]} ${
         plan.amount
       }/${plan.intervalCount}${plan.intervalUnit}`}</div>
-      <div>
+      {/* <div>
         <Button type="primary" onClick={() => setSelectedPlan(plan.id)}>
           Choose
         </Button>
-      </div>
+    </div> */}
     </div>
   );
 };
