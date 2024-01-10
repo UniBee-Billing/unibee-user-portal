@@ -116,8 +116,7 @@ const Login1 = ({
           throw new Error(res.data.message);
         }
         localStorage.setItem("token", res.data.data.Token);
-        navigate(`${APP_PATH}subscription`);
-        // if (res.data.code) navigate("/Dashboard");
+        navigate(`${APP_PATH}profile/subscription`);
       })
       .catch((err) => {
         console.log("login err: ", err.message);
@@ -272,8 +271,7 @@ const Login2 = ({
             throw new Error(res.data.message);
           }
           localStorage.setItem("token", res.data.data.Token);
-          navigate(`${APP_PATH}subscription`);
-          // if (res.data.code) navigate("/Dashboard");
+          navigate(`${APP_PATH}profile/subscription`);
         })
         .catch((err) => {
           console.log("login err: ", err.message);

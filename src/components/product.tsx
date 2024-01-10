@@ -86,9 +86,6 @@ const Index = () => {
         `${API_URL}/user/plan/subscription_plan_list`,
         {
           merchantId: 15621,
-          // type: 1,
-          // status: 0,
-          // currency: "usd",
           page: 0,
           count: 100,
         },
@@ -99,7 +96,7 @@ const Index = () => {
         }
       )
       .then((res) => {
-        console.log("subscription list res: ", res);
+        console.log("product list res: ", res);
         const statuCode = res.data.code;
         if (statuCode != 0) {
           if (statuCode == 61) {
@@ -136,8 +133,11 @@ const Index = () => {
         setPlans(plans.filter((p) => p != null));
       })
       .catch((err) => {
-        console.log("get subscription list err: ", err);
-        // setErrMsg(err.message);
+        console.log("get product list err: ", err);
+        messageApi.open({
+          type: "error",
+          content: err.message,
+        });
       });
   }, []);
 
@@ -164,7 +164,6 @@ const Index = () => {
       });
       return;
     }
-
     toggleModal();
     createPrivew();
   };
@@ -211,12 +210,14 @@ const Index = () => {
       })
       .catch((err) => {
         console.log("subscription create preview err: ", err);
-        // setErrMsg(err.message);
+        messageApi.open({
+          type: "error",
+          content: err.message,
+        });
       });
   };
 
   const onConfirm = () => {
-    console.log("confirm ....");
     const token = localStorage.getItem("token");
     axios
       .post(
@@ -253,7 +254,6 @@ const Index = () => {
       })
       .catch((err) => {
         console.log("subscription create submit err: ", err);
-        // setErrMsg(err.message);
         messageApi.open({
           type: "error",
           content: err.message,
@@ -329,6 +329,7 @@ const Index = () => {
       <div style={{ display: "flex", gap: "18px" }}>
         {plans.map((p) => (
           <Plan
+            key={p.id}
             plan={p}
             selectedPlan={selectedPlan}
             setSelectedPlan={setSelectedPlan}
@@ -345,13 +346,15 @@ const Index = () => {
           height: "68px",
         }}
       >
-        <Button
-          type="primary"
-          onClick={openModal}
-          disabled={selectedPlan == null}
-        >
-          Confirm
-        </Button>
+        {plans.length != 0 && (
+          <Button
+            type="primary"
+            onClick={openModal}
+            disabled={selectedPlan == null}
+          >
+            Confirm
+          </Button>
+        )}
       </div>
     </>
   );
