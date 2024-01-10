@@ -22,6 +22,7 @@ import Dashboard from "./components/dashboard";
 import PricePlans from "./components/pricePlans";
 import NotFound from "./components/notFound";
 import Products from "./components/product";
+// import CheckoutForm from "./components/checkoutForm";
 import PaymentResult from "./components/paymentResult";
 import ProfileBasic from "./components/profile/basicInfo";
 import ProfileSubscription from "./components/profile/subscription";
@@ -165,7 +166,7 @@ getItem('Products', 'products', <PieChartOutlined />),
                 justifyContent: "center",
               }}
             >
-              <img src={"/MultiloginLogo.png"} height={"80px"} />
+              <img src={`${APP_PATH}multiLoginLogo.png`} height={"80px"} />
             </div>
             <Menu
               theme="dark"
@@ -208,13 +209,13 @@ getItem('Products', 'products', <PieChartOutlined />),
                   <Route path="*" Component={NotFound} />
                   <Route path={`${APP_PATH}product`} Component={ProfileBasic} />
                   <Route
-                    path={`${APP_PATH}product-payment-result`}
-                    Component={PaymentResult}
-                  />
-                  <Route
                     path={`${APP_PATH}payment-result`}
                     Component={PaymentResult}
                   />
+                  {/* <Route
+                    path={`${APP_PATH}checkout`}
+                    Component={CheckoutForm}
+              /> */}
                   <Route
                     path={`${APP_PATH}profile/basic-info`}
                     Component={ProfileBasic}

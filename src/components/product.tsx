@@ -219,6 +219,7 @@ const Index = () => {
 
   const onConfirm = () => {
     const token = localStorage.getItem("token");
+    const UserId = Number(localStorage.getItem("userId"));
     axios
       .post(
         `${API_URL}/user/subscription/subscription_create_submit`,
@@ -226,7 +227,7 @@ const Index = () => {
           planId: selectedPlan,
           quantity: 1,
           channelId: 25,
-          UserId: 2235428006,
+          UserId,
           addonParams: preview.addonParams,
           confirmTotalAmount: preview.totalAmount,
           confirmCurrency: preview.currency,
@@ -251,6 +252,8 @@ const Index = () => {
           }
           throw new Error(res.data.message);
         }
+        navigate(`${APP_PATH}profile/subscription`);
+        window.open(res.data.data.link, "_blank");
       })
       .catch((err) => {
         console.log("subscription create submit err: ", err);
