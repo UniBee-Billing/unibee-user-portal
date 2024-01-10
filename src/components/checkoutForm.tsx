@@ -5,13 +5,14 @@ import {
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
 import axios from "axios";
+import { useProfileStore } from "../stores";
 
 const STRIPE_PUBLIC_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
 
 export default function CheckoutForm() {
+  const profileStore = useProfileStore();
   useEffect(() => {
-    const token = localStorage.getItem("token");
     // Create a Checkout Session as soon as the page loads
     axios
       .post(
@@ -19,7 +20,7 @@ export default function CheckoutForm() {
         {},
         {
           headers: {
-            Authorization: `${token}`, // Bearer: ******
+            Authorization: `${profileStore.token}`, // Bearer: ******
           },
         }
       )

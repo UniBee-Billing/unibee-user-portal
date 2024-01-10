@@ -1,15 +1,15 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useProfileStore } from "../stores";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
+  const profileStore = useProfileStore();
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  console.log("token: ", token);
 
   useEffect(() => {
     axios
@@ -23,7 +23,7 @@ const Index = () => {
         },
         {
           headers: {
-            Authorization: `${token}`, // Bearer: ******
+            Authorization: `${profileStore.token}`, // Bearer: ******
           },
         }
       )

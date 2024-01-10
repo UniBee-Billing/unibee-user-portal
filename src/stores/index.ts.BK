@@ -1,0 +1,53 @@
+import create, { StoreApi, UseBoundStore } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { IProfile } from "../shared.types";
+import { createStore } from "zustand";
+
+interface BearSlice {
+  bears: number;
+  addBear: () => void;
+}
+
+const createBearSlice: StateCreator<BearSlice, [], []> = (set) => ({
+  bears: 0,
+  addBear: () => set((state) => ({ bears: state.bears + 1 })),
+});
+
+const INITIAL_PROFILE: IProfile = {
+  adress: "",
+  country: "", // use ISO code to represent country
+  companyName: "",
+  email: "",
+  facebook: "",
+  firstName: "",
+  lastName: "",
+  id: 0,
+  phone: "",
+  paymentMethod: "",
+  linkedIn: "",
+  telegram: "",
+  tikTok: "",
+  vATNumber: "",
+  weChat: "",
+  whatsAPP: "",
+  otherSocialInfo: "",
+};
+
+interface ProfileSlice extends IProfile {
+  getProfile: () => IProfile;
+  setProfile: (p: IProfile) => void;
+  // setProfileField: (field: string, value: any) => void;
+}
+
+const useProfileStore: UseBoundStore<ProfileSlice> = createStore;
+
+const createProfileSlice: StateCreator<ProfileSlice, [], []> = (set, get) => ({
+  ...INITIAL_PROFILE,
+  getProfile: () => get(),
+  setProfile: (p) => ({ ...p }),
+});
+
+export const useBoundStore = create<BearSlice & ProfileSlice>()((...a) => ({
+  ...createBearSlice(...a),
+  ...createProfileSlice(...a),
+}));

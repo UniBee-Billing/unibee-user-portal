@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useProfileStore } from "../../stores";
 
 import { PlusOutlined } from "@ant-design/icons";
 import {
@@ -35,6 +36,7 @@ const normFile = (e: any) => {
 };
 
 const Index = () => {
+  const profileStore = useProfileStore();
   const [errMsg, setErrMsg] = useState("");
   const [firstLoading, setFirstLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -44,13 +46,12 @@ const Index = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const onSave = () => {
-    const token = localStorage.getItem("token");
     console.log("form: ", form.getFieldsValue());
     setUpdating(true);
     axios
       .post(`${API_URL}/user/profile`, form.getFieldsValue(), {
         headers: {
-          Authorization: `${token}`, // Bearer: ******
+          Authorization: `${profileStore.token}`, // Bearer: ******
         },
       })
       .then((res) => {
@@ -85,12 +86,11 @@ const Index = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     setFirstLoading(true);
     axios
       .get(`${API_URL}/user/profile`, {
         headers: {
-          Authorization: `${token}`, // Bearer: ******
+          Authorization: `${profileStore.token}`, // Bearer: ******
         },
       })
       .then((res) => {

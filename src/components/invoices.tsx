@@ -8,8 +8,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 const Index = () => {
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  console.log("token: ", token);
 
   useEffect(() => {}, []);
 

@@ -15,6 +15,7 @@ import {
 } from "antd";
 import update from "immutability-helper";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
+import { useProfileStore } from "../stores";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -39,6 +40,7 @@ interface PlanType {
 }
 
 const Index = () => {
+  const profileStore = useProfileStore();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<PlanType[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
@@ -80,7 +82,6 @@ const Index = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     axios
       .post(
         `${API_URL}/user/plan/subscription_plan_list`,
@@ -91,7 +92,7 @@ const Index = () => {
         },
         {
           headers: {
-            Authorization: `${token}`, // Bearer: ******
+            Authorization: `${profileStore.token}`, // Bearer: ******
           },
         }
       )
@@ -170,7 +171,6 @@ const Index = () => {
 
   const createPrivew = () => {
     setPreview(null); // clear the last preview, otherwise, users might see the old value
-    const token = localStorage.getItem("token");
     const plan = plans.find((p) => p.id == selectedPlan);
     const addons = plan?.addons.filter((a) => a.checked);
 
@@ -182,14 +182,14 @@ const Index = () => {
           planId: selectedPlan,
           quantity: 1,
           channelId: 25,
-          UserId: 2235428006,
+          UserId: profileStore.id,
           addonParams:
             addons?.map((a) => ({ quantity: a.quantity, addonPlanId: a.id })) ||
             [],
         },
         {
           headers: {
-            Authorization: `${token}`, // Bearer: ******
+            Authorization: `${profileStore.token}`, // Bearer: ******
           },
         }
       )
@@ -218,8 +218,6 @@ const Index = () => {
   };
 
   const onConfirm = () => {
-    const token = localStorage.getItem("token");
-    const UserId = Number(localStorage.getItem("userId"));
     axios
       .post(
         `${API_URL}/user/subscription/subscription_create_submit`,
@@ -227,7 +225,7 @@ const Index = () => {
           planId: selectedPlan,
           quantity: 1,
           channelId: 25,
-          UserId,
+          UserId: profileStore.id,
           addonParams: preview.addonParams,
           confirmTotalAmount: preview.totalAmount,
           confirmCurrency: preview.currency,
@@ -235,7 +233,7 @@ const Index = () => {
         },
         {
           headers: {
-            Authorization: `${token}`, // Bearer: ******
+            Authorization: `${profileStore.token}`, // Bearer: ******
           },
         }
       )

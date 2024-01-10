@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { message } from "antd";
 import axios from "axios";
+import { useProfileStore } from "../stores";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -16,6 +17,7 @@ const STATUS: { [key: number]: string } = {
 };
 
 export default function PaymentResult() {
+  const profileStore = useProfileStore();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -23,8 +25,6 @@ export default function PaymentResult() {
   const [payStatus, setPayStatus] = useState<number | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
     const subscriptionId =
       searchParams.get("subId") || "sub20240109hcHUQ1kvcxwICk3";
     console.log("subId: ", subscriptionId);
@@ -36,7 +36,7 @@ export default function PaymentResult() {
         },
         {
           headers: {
-            Authorization: `${token}`, // Bearer: ******
+            Authorization: `${profileStore.token}}`, // Bearer: ******
           },
         }
       )
