@@ -247,7 +247,10 @@ const Index = () => {
   const createPrivew = () => {
     setPreview(null); // clear the last preview, otherwise, users might see the old value
     const plan = plans.find((p) => p.id == selectedPlan);
-    const addons = plan?.addons.filter((a) => a.checked);
+    const addons =
+      plan != null && plan.addons != null
+        ? plan.addons.filter((a) => a.checked)
+        : [];
 
     axios
       .post(
@@ -259,7 +262,7 @@ const Index = () => {
           channelId: 25,
           UserId: profileStore.id,
           addonParams:
-            addons?.map((a) => ({ quantity: a.quantity, addonPlanId: a.id })) ||
+            addons.map((a) => ({ quantity: a.quantity, addonPlanId: a.id })) ||
             [],
         },
         {
@@ -470,7 +473,7 @@ const Plan = ({
     let amount = plan.amount;
     if (plan.addons != null && plan.addons.length > 0) {
       plan.addons.forEach((a) => {
-        if (a.checked) {
+        if (a.checked && Number.isInteger(Number(a.quantity))) {
           amount += Number(a.amount) * Number(a.quantity);
         }
       });
