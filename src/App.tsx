@@ -22,6 +22,7 @@ import Dashboard from "./components/dashboard";
 import PricePlans from "./components/pricePlans";
 import NotFound from "./components/notFound";
 import Products from "./components/product";
+import ProductsUpdate from "./components/productUpdate";
 // import CheckoutForm from "./components/checkoutForm";
 import PaymentResult from "./components/paymentResult";
 import ProfileBasic from "./components/profile/basicInfo";
@@ -119,6 +120,7 @@ getItem('Products', 'products', <PieChartOutlined />),
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
     axios
       .post(`${API_URL}/user/auth/sso/logout`, {})
       .then((res) => {
@@ -126,15 +128,11 @@ getItem('Products', 'products', <PieChartOutlined />),
         if (res.data.code != 0) {
           throw new Error(res.data.message);
         }
-        localStorage.removeItem("token");
         navigate(`${APP_PATH}login`);
       })
       .catch((err) => {
-        localStorage.removeItem("token");
         navigate(`${APP_PATH}login`);
       });
-
-    navigate(`${APP_PATH}login`);
   };
 
   return (
@@ -207,7 +205,6 @@ getItem('Products', 'products', <PieChartOutlined />),
               >
                 <Routes>
                   <Route path="*" Component={NotFound} />
-                  <Route path={`${APP_PATH}product`} Component={ProfileBasic} />
                   <Route
                     path={`${APP_PATH}payment-result`}
                     Component={PaymentResult}
@@ -223,6 +220,10 @@ getItem('Products', 'products', <PieChartOutlined />),
                   <Route
                     path={`${APP_PATH}profile/subscription`}
                     Component={ProfileSubscription}
+                  />
+                  <Route
+                    path={`${APP_PATH}products/update`}
+                    Component={ProductsUpdate}
                   />
                   <Route path={`${APP_PATH}products`} Component={Products} />
                   <Route path={`${APP_PATH}invoices`} Component={Invoices} />

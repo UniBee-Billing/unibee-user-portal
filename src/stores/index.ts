@@ -1,8 +1,9 @@
 import { StoreApi, UseBoundStore } from "zustand";
 import { create } from "zustand";
-import { immer } from "zustand/middleware/immer";
+// import { immer } from "zustand/middleware/immer";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { IProfile } from "../shared.types";
-import { createStore } from "zustand";
+// import { createStore } from "zustand";
 
 const INITIAL_PROFILE: IProfile = {
   adress: "",
@@ -31,8 +32,13 @@ interface ProfileSlice extends IProfile {
   // setProfileField: (field: string, value: any) => void;
 }
 
-export const useProfileStore = create<ProfileSlice>()((set, get) => ({
-  ...INITIAL_PROFILE,
-  getProfile: () => get(),
-  setProfile: (p) => set({ ...p }),
-}));
+export const useProfileStore = create<ProfileSlice>()(
+  persist(
+    (set, get) => ({
+      ...INITIAL_PROFILE,
+      getProfile: () => get(),
+      setProfile: (p) => set({ ...p }),
+    }),
+    { name: "profile" }
+  )
+);

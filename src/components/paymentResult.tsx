@@ -21,10 +21,12 @@ export default function PaymentResult() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-
   const [payStatus, setPayStatus] = useState<number | null>(null);
 
   useEffect(() => {
+    // I cannot use token from store, because this page was redirected from stripe checkout page.
+    // the whole webapp was reloaded without hydrating the store, the store was empty at this moment
+    const token = localStorage.getItem("token");
     const subscriptionId =
       searchParams.get("subId") || "sub20240109hcHUQ1kvcxwICk3";
     console.log("subId: ", subscriptionId);
@@ -36,7 +38,7 @@ export default function PaymentResult() {
         },
         {
           headers: {
-            Authorization: `${profileStore.token}}`, // Bearer: ******
+            Authorization: token, // Bearer: ******
           },
         }
       )
@@ -56,7 +58,7 @@ export default function PaymentResult() {
         setPayStatus(res.data.data.payStatus);
       })
       .catch((err) => {
-        console.log("get subscription list err: ", err);
+        console.log("get pay result status err: ", err);
         messageApi.open({
           type: "error",
           content: err.message,

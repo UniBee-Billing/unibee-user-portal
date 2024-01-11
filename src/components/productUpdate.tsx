@@ -16,9 +16,15 @@ import {
 import update from "immutability-helper";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useProfileStore } from "../stores";
+// import { getActiveSub } from "../requests/getActiveSubscriptionList";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
+const CURRENCY_SYMBOL: { [key: string]: string } = {
+  CNY: "¥", // normalize: 100,
+  USD: "$",
+  JPY: "¥",
+};
 
 interface AddonType extends PlanType {
   quantity: number | null;
@@ -39,6 +45,22 @@ interface PlanType {
   addons?: AddonType[];
 }
 
+interface SubAddonType {
+  Quantity: number;
+  AddonPlanId: number;
+}
+interface SubscriptionType {
+  subscriptionId: number;
+  planId: number;
+  amount: number;
+  currency: string;
+  // id: number;
+  merchantId: number;
+  quantity: number;
+  status: number;
+  addons: SubAddonType[];
+}
+
 const Index = () => {
   const profileStore = useProfileStore();
   const navigate = useNavigate();
@@ -47,14 +69,24 @@ const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [preview, setPreview] = useState<unknown | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const [activeSub, setActiveSub] = useState<SubscriptionType | null>(null); // null: when page is loading, no data is ready yet.
 
   const onAddonChange = (addonId: number, quantity: number) => {
-    console.log("plans: ", plans);
+    console.log(
+      "plans in onAddonChange: ",
+      plans,
+      "//",
+      addonId,
+      "///",
+      quantity
+    );
     const planIdx = plans.findIndex((p) => p.id == selectedPlan);
+    console.log("planidx: ", planIdx);
     if (planIdx == -1) {
       return;
     }
     const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
+    console.log("addonidx: ", addonIdx);
     if (addonIdx == -1) {
       return;
     }
@@ -65,12 +97,14 @@ const Index = () => {
   };
 
   const onAddonCheck = (addonId: number, checked: boolean) => {
-    console.log("addonId: ", addonId, "//", checked);
+    console.log("addon on check: ", addonId, "//", checked);
     const planIdx = plans.findIndex((p) => p.id == selectedPlan);
+    console.log("planidx: ", planIdx);
     if (planIdx == -1) {
       return;
     }
     const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
+    console.log("addon idx: ", addonIdx);
     if (addonIdx == -1) {
       return;
     }
@@ -81,9 +115,82 @@ const Index = () => {
     setPlans(newPlans);
   };
 
+  const addonChange = (addonId: number, checked: boolean, quantity: number) => {
+    console.log("addon on check: ", addonId, "//", checked);
+    const planIdx = plans.findIndex((p) => p.id == selectedPlan);
+    console.log("planidx: ", planIdx);
+    if (planIdx == -1) {
+      return;
+    }
+    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
+    console.log("addon idx: ", addonIdx);
+    if (addonIdx == -1) {
+      return;
+    }
+    console.log("idx: ", planIdx, "///", addonIdx);
+    const newPlans = update(plans, {
+      [planIdx]: {
+        addons: {
+          [addonIdx]: {
+            checked: { $set: checked },
+            quantity: { $set: quantity },
+          },
+        },
+      },
+    });
+    setPlans(newPlans);
+  };
+
   useEffect(() => {
-    axios
-      .post(
+    const fetchData = async () => {
+      const subListRes = await axios.post(
+        `${API_URL}/user/subscription/subscription_list`,
+        {
+          merchantId: 15621,
+          userId: profileStore.id,
+          status: 2, // active subscription
+          page: 0,
+          count: 100,
+        },
+        {
+          headers: {
+            Authorization: `${profileStore.token}`, // Bearer: ******
+          },
+        }
+      );
+
+      console.log("subList res: ", subListRes.data);
+      const statuCode = subListRes.data.code;
+      if (statuCode != 0) {
+        if (statuCode == 61) {
+          console.log("invalid token");
+          navigate(`${APP_PATH}login`, {
+            state: { msg: "session expired, please re-login" },
+          });
+          return;
+        }
+        throw new Error(subListRes.data.message);
+      }
+      const sub = subListRes.data.data.Subscriptions.find(
+        (s) => s.Subscription.id == 38
+      );
+      console.log("active sub choosen: ", sub);
+      const localActiveSub: SubscriptionType = {
+        subscriptionId: sub.Subscription.subscriptionId,
+        planId: sub.Subscription.planId,
+        amount: sub.Subscription.amount,
+        currency: sub.Subscription.currency,
+        merchantId: sub.Subscription.merchantId,
+        quantity: sub.Subscription.quantity,
+        status: sub.Subscription.status,
+        addons: sub.AddonParams,
+      };
+      setActiveSub(localActiveSub);
+      setSelectedPlan(sub.Subscription.planId);
+
+      // ********************* //
+
+      const planListRes = await axios.post(
         `${API_URL}/user/plan/subscription_plan_list`,
         {
           merchantId: 15621,
@@ -95,7 +202,146 @@ const Index = () => {
             Authorization: `${profileStore.token}`, // Bearer: ******
           },
         }
-      )
+      );
+      console.log("planList res: ", planListRes.data);
+      const statuCode2 = planListRes.data.code;
+      if (statuCode2 != 0) {
+        if (statuCode2 == 61) {
+          console.log("invalid token");
+          navigate(`${APP_PATH}login`, {
+            state: { msg: "session expired, please re-login" },
+          });
+          return;
+        }
+        throw new Error(planListRes.data.message);
+      }
+      let plans: PlanType[] = planListRes.data.data.Plans.map((p: any) => {
+        // console.log("plan id: ", p.plan.id);
+        const p2 = p.plan;
+        if (p.plan.type == 2) {
+          return null;
+        }
+        if (p.plan.id != 31 && p.plan.id != 37 && p.plan.id != 32) {
+          return null;
+        }
+        return {
+          id: p2.id,
+          planName: p2.planName,
+          description: p2.description,
+          type: p2.type,
+          amount: p2.amount,
+          currency: p2.currency,
+          intervalUnit: p2.intervalUnit,
+          intervalCount: p2.intervalCount,
+          status: p2.status,
+          addons: p.addons,
+        };
+      });
+      plans = plans.filter((p) => p != null);
+      const planIdx = plans.findIndex((p) => p.id == localActiveSub.planId);
+      if (planIdx != -1) {
+        plans[planIdx].addons?.forEach((addon, i) => {
+          const addonIdx = localActiveSub.addons.findIndex(
+            (subAddon) => subAddon.AddonPlanId == addon.id
+          );
+          if (addonIdx != -1) {
+            plans[planIdx].addons[i].checked = true;
+            plans[planIdx].addons[i].quantity =
+              localActiveSub.addons[addonIdx].Quantity;
+          }
+        });
+      }
+
+      setPlans(plans);
+      /*
+      localActiveSub.addons.forEach((a) => {
+        console.log("selected addon: ", a);
+        // onAddonCheck(a.AddonPlanId, true);
+        // onAddonChange(a.AddonPlanId, a.Quantity);
+        addonChange(a.AddonPlanId, true, a.Quantity);
+      });
+      */
+    };
+    fetchData();
+
+    /*
+    // get user active sub
+    const fetchSubList = async () => {
+      const result = await axios.post(
+        `${API_URL}/user/subscription/subscription_list`,
+        {
+          merchantId: 15621,
+          userId: profileStore.id,
+          status: 2, // active subscription
+          page: 0,
+          count: 100,
+        },
+        {
+          headers: {
+            Authorization: `${profileStore.token}`, // Bearer: ******
+          },
+        }
+      );
+      return result;
+    };
+
+    // get active plans from this merchant
+    const fetchPlanList = async () => {
+      const result = await axios.post(
+        `${API_URL}/user/plan/subscription_plan_list`,
+        {
+          merchantId: 15621,
+          page: 0,
+          count: 100,
+        },
+        {
+          headers: {
+            Authorization: `${profileStore.token}`, // Bearer: ******
+          },
+        }
+      );
+      return result;
+    };
+
+    fetchSubList()
+      .then((res) => {
+        console.log("user active subscription list res: ", res);
+        const statuCode = res.data.code;
+        if (statuCode != 0) {
+          if (statuCode == 61) {
+            console.log("invalid token");
+            navigate(`${APP_PATH}login`, {
+              state: { msg: "session expired, please re-login" },
+            });
+            return;
+          }
+          throw new Error(res.data.message);
+        }
+        const sub = res.data.data.Subscriptions.find(
+          (s) => s.Subscription.id == 38
+        );
+        console.log("active sub choosen: ", sub);
+        setActiveSub({
+          subscriptionId: sub.Subscription.subscriptionId,
+          planId: sub.Subscription.planId,
+          amount: sub.Subscription.amount,
+          currency: sub.Subscription.currency,
+          merchantId: sub.Subscription.merchantId,
+          quantity: sub.Subscription.quantity,
+          status: sub.Subscription.status,
+          addons: sub.AddonParams,
+        });
+        setSelectedPlan(sub.Subscription.planId);
+      })
+      .catch((err) => {
+        console.log("user active subscription list err: ", err);
+        messageApi.open({
+          type: "error",
+          content: err.message,
+        });
+      });
+
+    fetchPlanList()
       .then((res) => {
         console.log("product list res: ", res);
         const statuCode = res.data.code;
@@ -140,7 +386,21 @@ const Index = () => {
           content: err.message,
         });
       });
+      */
   }, []);
+
+  /*
+  useEffect(() => {
+    if (activeSub != null && plans.length > 0) {
+      activeSub.addons.forEach((a) => {
+        console.log("selected addon: ", a);
+        // onAddonCheck(a.AddonPlanId, true);
+        // onAddonChange(a.AddonPlanId, a.Quantity);
+        addonChange(a.AddonPlanId, true, a.Quantity);
+      });
+    }
+  }, [activeSub, plans]);
+  */
 
   const toggleModal = () => setModalOpen(!modalOpen);
   const openModal = () => {
@@ -262,6 +522,7 @@ const Index = () => {
       });
   };
 
+  console.log("plans: ", plans);
   return (
     <>
       {contextHolder}
@@ -348,13 +609,17 @@ const Index = () => {
         }}
       >
         {plans.length != 0 && (
-          <Button
-            type="primary"
-            onClick={openModal}
-            disabled={selectedPlan == null}
-          >
-            Confirm
-          </Button>
+          <>
+            <Button
+              type="primary"
+              onClick={openModal}
+              disabled={selectedPlan == null}
+            >
+              Confirm
+            </Button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <Button>Terminate Subscription</Button>
+          </>
         )}
       </div>
     </>
@@ -362,12 +627,6 @@ const Index = () => {
 };
 
 export default Index;
-
-const CURRENCY_SYMBOL: { [key: string]: string } = {
-  CNY: "¥", // normalize: 100,
-  USD: "$",
-  JPY: "¥",
-};
 
 interface IPLanProps {
   plan: PlanType;
@@ -392,6 +651,8 @@ const Plan = ({
     console.log("quantity change: ", evt);
     onAddonChange(Number(evt.target.id), Number(evt.target.value)); // TODO: add validation check later
   };
+
+  console.log("insdie plan component, addons: ", plan.addons);
 
   return (
     <div
