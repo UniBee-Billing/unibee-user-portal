@@ -17,14 +17,10 @@ import update from "immutability-helper";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useProfileStore } from "../stores";
 // import { getActiveSub } from "../requests/getActiveSubscriptionList";
+import { CURRENCY } from "../constants";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
-const CURRENCY_SYMBOL: { [key: string]: string } = {
-  CNY: "¥", // normalize: 100,
-  USD: "$",
-  JPY: "¥",
-};
 
 interface AddonType extends PlanType {
   quantity: number | null;
@@ -177,7 +173,6 @@ const Index = () => {
         throw new Error(planListRes.data.message);
       }
       let plans: PlanType[] = planListRes.data.data.Plans.map((p: any) => {
-        // console.log("plan id: ", p.plan.id);
         const p2 = p.plan;
         if (p.plan.type == 2) {
           return null;
@@ -367,7 +362,7 @@ const Index = () => {
               </Row>
               <Row gutter={[16, 16]}>
                 <Col span={8}>Plan description</Col>
-                <Col span={12}>{`${CURRENCY_SYMBOL[preview.planId.currency]} ${
+                <Col span={12}>{`${CURRENCY[preview.planId.currency].symbol} ${
                   preview.planId.amount
                 }/${preview.planId.intervalCount}${
                   preview.planId.intervalUnit
@@ -381,7 +376,7 @@ const Index = () => {
                       <div>
                         <span>{a.AddonPlan.planName}</span>:&nbsp;
                         <span>
-                          {`${CURRENCY_SYMBOL[a.AddonPlan.currency]} ${
+                          {`${CURRENCY[a.AddonPlan.currency].symbol} ${
                             a.AddonPlan.amount
                           }/${a.AddonPlan.intervalCount}${
                             a.AddonPlan.intervalUnit
@@ -396,7 +391,7 @@ const Index = () => {
                   <span>Total</span>
                 </Col>
                 <Col span={12}>
-                  <span>{`${CURRENCY_SYMBOL[preview.currency]} ${
+                  <span>{`${CURRENCY[preview.currency].symbol} ${
                     preview.totalAmount
                   }`}</span>
                 </Col>
@@ -534,7 +529,7 @@ const Plan = ({
                       {a.planName}
                     </div>
                     <div style={{ fontSize: "11px" }}>{`${
-                      CURRENCY_SYMBOL[a.currency]
+                      CURRENCY[a.currency].symbol
                     } ${a.amount}/${a.intervalCount}${a.intervalUnit}`}</div>
                   </div>
 
@@ -553,12 +548,12 @@ const Plan = ({
           ))}
         </div>
       )}
-      <div style={{ fontSize: "14px" }}>{`${CURRENCY_SYMBOL[plan.currency]} ${
+      <div style={{ fontSize: "14px" }}>{`${CURRENCY[plan.currency].symbol} ${
         plan.amount
       }/${plan.intervalCount}${plan.intervalUnit}`}</div>
       <div style={{ fontSize: "24px" }}>
         Total:{" "}
-        {`${CURRENCY_SYMBOL[plan.currency]} ${totalAmount}/${
+        {`${CURRENCY[plan.currency].symbol} ${totalAmount}/${
           plan.intervalCount
         }${plan.intervalUnit}`}
       </div>
