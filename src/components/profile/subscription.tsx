@@ -73,7 +73,6 @@ const columns: ColumnsType<SubscriptionType> = [
 
 const Index = () => {
   const profileStore = useProfileStore();
-  console.log("userId from store: ", profileStore.id);
   const [errMsg, setErrMsg] = useState("");
   const [firstLoading, setFirstLoading] = useState(false);
   const [updating, setUpdating] = useState(false);

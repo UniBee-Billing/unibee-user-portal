@@ -22,12 +22,12 @@ import { CURRENCY } from "../constants";
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
-interface AddonType extends PlanType {
+interface IAddon extends IPlan {
   quantity: number | null;
   checked: boolean;
 }
 
-interface PlanType {
+interface IPlan {
   id: number;
   planName: string; // plan name
   description: string;
@@ -38,14 +38,14 @@ interface PlanType {
   intervalCount: number;
   status: number;
   // isPublished: boolean;
-  addons?: AddonType[];
+  addons?: IAddon[];
 }
 
-interface SubAddonType {
+interface ISubAddon {
   Quantity: number;
   AddonPlanId: number;
 }
-interface SubscriptionType {
+interface ISubscription {
   subscriptionId: number;
   planId: number;
   amount: number;
@@ -54,18 +54,18 @@ interface SubscriptionType {
   merchantId: number;
   quantity: number;
   status: number;
-  addons: SubAddonType[];
+  addons: ISubAddon[];
 }
 
 const Index = () => {
   const profileStore = useProfileStore();
   const navigate = useNavigate();
-  const [plans, setPlans] = useState<PlanType[]>([]);
+  const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
   const [modalOpen, setModalOpen] = useState(false);
   const [preview, setPreview] = useState<unknown | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
-  const [activeSub, setActiveSub] = useState<SubscriptionType | null>(null); // null: when page is loading, no data is ready yet.
+  const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
 
   const onAddonChange = (
     addonId: number,
@@ -132,7 +132,7 @@ const Index = () => {
         (s) => s.Subscription.id == 38
       );
       console.log("active sub choosen: ", sub);
-      const localActiveSub: SubscriptionType = {
+      const localActiveSub: ISubscription = {
         subscriptionId: sub.Subscription.subscriptionId,
         planId: sub.Subscription.planId,
         amount: sub.Subscription.amount,
@@ -172,7 +172,7 @@ const Index = () => {
         }
         throw new Error(planListRes.data.message);
       }
-      let plans: PlanType[] = planListRes.data.data.Plans.map((p: any) => {
+      let plans: IPlan[] = planListRes.data.data.Plans.map((p: any) => {
         const p2 = p.plan;
         if (p.plan.type == 2) {
           return null;
@@ -440,7 +440,7 @@ const Index = () => {
 export default Index;
 
 interface IPLanProps {
-  plan: PlanType;
+  plan: IPlan;
   selectedPlan: number | null;
   setSelectedPlan: (p: number) => void;
   onAddonChange: (

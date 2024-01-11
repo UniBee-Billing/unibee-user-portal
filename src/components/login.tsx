@@ -118,7 +118,6 @@ const Login1 = ({
           throw new Error(res.data.message);
         }
         localStorage.setItem("token", res.data.data.Token);
-        // localStorage.setItem("userId", res.data.data.User.id);
         res.data.data.User.token = res.data.data.Token;
         profileStore.setProfile(res.data.data.User);
         navigate(`${APP_PATH}profile/subscription`);
@@ -276,7 +275,6 @@ const Login2 = ({
             throw new Error(res.data.message);
           }
           localStorage.setItem("token", res.data.data.Token);
-          localStorage.setItem("userId", res.data.data.User.id);
           navigate(`${APP_PATH}profile/subscription`);
         })
         .catch((err) => {
