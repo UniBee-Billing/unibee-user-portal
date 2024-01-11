@@ -12,10 +12,13 @@ import {
   Modal,
   Col,
   Row,
+  Spin,
 } from "antd";
 import update from "immutability-helper";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useProfileStore } from "../stores";
+import { getActiveSub } from "../requests/getActiveSubscriptionList";
+// import {useInvalidToken} from "./hooks/useInvalidToken";
 // import { getActiveSub } from "../requests/getActiveSubscriptionList";
 import { CURRENCY } from "../constants";
 
@@ -65,7 +68,13 @@ const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [preview, setPreview] = useState<unknown | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = useState(true);
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
+
+  const relogin = () =>
+    navigate(`${APP_PATH}login`, {
+      state: { msg: "session expired, please re-login" },
+    });
 
   const onAddonChange = (
     addonId: number,
@@ -100,34 +109,24 @@ const Index = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const subListRes = await axios.post(
-        `${API_URL}/user/subscription/subscription_list`,
-        {
-          merchantId: 15621,
-          userId: profileStore.id,
-          status: 2, // active subscription
-          page: 0,
-          count: 100,
-        },
-        {
-          headers: {
-            Authorization: `${profileStore.token}`, // Bearer: ******
-          },
+      let subListRes;
+      try {
+        subListRes = await getActiveSub();
+        console.log("subList res: ", subListRes.data);
+        const statusCode = subListRes.data.code;
+        statusCode == 61 && relogin();
+        if (statusCode != 0) {
+          throw new Error(subListRes.data.message);
         }
-      );
-
-      console.log("subList res: ", subListRes.data);
-      const statuCode = subListRes.data.code;
-      if (statuCode != 0) {
-        if (statuCode == 61) {
-          console.log("invalid token");
-          navigate(`${APP_PATH}login`, {
-            state: { msg: "session expired, please re-login" },
-          });
-          return;
-        }
-        throw new Error(subListRes.data.message);
+      } catch (err) {
+        console.log("err: ", err.message);
+        messageApi.open({
+          type: "error",
+          content: err.message,
+        });
+        return;
       }
+
       const sub = subListRes.data.data.Subscriptions.find(
         (s) => s.Subscription.id == 38
       );
@@ -208,6 +207,7 @@ const Index = () => {
         });
       }
       setPlans(plans);
+      setLoading(false);
     };
     fetchData();
   }, []);
@@ -337,6 +337,7 @@ const Index = () => {
 
   return (
     <>
+      <Spin spinning={loading} fullscreen />
       {contextHolder}
       {selectedPlan != null && (
         <Modal
