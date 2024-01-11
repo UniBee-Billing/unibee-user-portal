@@ -71,73 +71,34 @@ const Index = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [activeSub, setActiveSub] = useState<SubscriptionType | null>(null); // null: when page is loading, no data is ready yet.
 
-  const onAddonChange = (addonId: number, quantity: number) => {
-    console.log(
-      "plans in onAddonChange: ",
-      plans,
-      "//",
-      addonId,
-      "///",
-      quantity
-    );
+  const onAddonChange = (
+    addonId: number,
+    quantity: number | null, // null means: don't update this field, keep its original value
+    checked: boolean | null // ditto
+  ) => {
     const planIdx = plans.findIndex((p) => p.id == selectedPlan);
-    console.log("planidx: ", planIdx);
     if (planIdx == -1) {
       return;
     }
     const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
-    console.log("addonidx: ", addonIdx);
     if (addonIdx == -1) {
       return;
     }
-    const newPlans = update(plans, {
-      [planIdx]: { addons: { [addonIdx]: { quantity: { $set: quantity } } } },
-    });
-    setPlans(newPlans);
-  };
 
-  const onAddonCheck = (addonId: number, checked: boolean) => {
-    console.log("addon on check: ", addonId, "//", checked);
-    const planIdx = plans.findIndex((p) => p.id == selectedPlan);
-    console.log("planidx: ", planIdx);
-    if (planIdx == -1) {
-      return;
-    }
-    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
-    console.log("addon idx: ", addonIdx);
-    if (addonIdx == -1) {
-      return;
-    }
-    console.log("idx: ", planIdx, "///", addonIdx);
-    const newPlans = update(plans, {
-      [planIdx]: { addons: { [addonIdx]: { checked: { $set: checked } } } },
-    });
-    setPlans(newPlans);
-  };
-
-  const addonChange = (addonId: number, checked: boolean, quantity: number) => {
-    console.log("addon on check: ", addonId, "//", checked);
-    const planIdx = plans.findIndex((p) => p.id == selectedPlan);
-    console.log("planidx: ", planIdx);
-    if (planIdx == -1) {
-      return;
-    }
-    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
-    console.log("addon idx: ", addonIdx);
-    if (addonIdx == -1) {
-      return;
-    }
-    console.log("idx: ", planIdx, "///", addonIdx);
-    const newPlans = update(plans, {
-      [planIdx]: {
-        addons: {
-          [addonIdx]: {
-            checked: { $set: checked },
-            quantity: { $set: quantity },
-          },
+    let newPlans = plans;
+    if (quantity == null) {
+      newPlans = update(plans, {
+        [planIdx]: {
+          addons: { [addonIdx]: { checked: { $set: checked as boolean } } },
         },
-      },
-    });
+      });
+    } else if (checked == null) {
+      newPlans = update(plans, {
+        [planIdx]: {
+          addons: { [addonIdx]: { quantity: { $set: quantity as number } } },
+        },
+      });
+    }
     setPlans(newPlans);
   };
 
@@ -251,156 +212,10 @@ const Index = () => {
           }
         });
       }
-
       setPlans(plans);
-      /*
-      localActiveSub.addons.forEach((a) => {
-        console.log("selected addon: ", a);
-        // onAddonCheck(a.AddonPlanId, true);
-        // onAddonChange(a.AddonPlanId, a.Quantity);
-        addonChange(a.AddonPlanId, true, a.Quantity);
-      });
-      */
     };
     fetchData();
-
-    /*
-    // get user active sub
-    const fetchSubList = async () => {
-      const result = await axios.post(
-        `${API_URL}/user/subscription/subscription_list`,
-        {
-          merchantId: 15621,
-          userId: profileStore.id,
-          status: 2, // active subscription
-          page: 0,
-          count: 100,
-        },
-        {
-          headers: {
-            Authorization: `${profileStore.token}`, // Bearer: ******
-          },
-        }
-      );
-      return result;
-    };
-
-    // get active plans from this merchant
-    const fetchPlanList = async () => {
-      const result = await axios.post(
-        `${API_URL}/user/plan/subscription_plan_list`,
-        {
-          merchantId: 15621,
-          page: 0,
-          count: 100,
-        },
-        {
-          headers: {
-            Authorization: `${profileStore.token}`, // Bearer: ******
-          },
-        }
-      );
-      return result;
-    };
-
-    fetchSubList()
-      .then((res) => {
-        console.log("user active subscription list res: ", res);
-        const statuCode = res.data.code;
-        if (statuCode != 0) {
-          if (statuCode == 61) {
-            console.log("invalid token");
-            navigate(`${APP_PATH}login`, {
-              state: { msg: "session expired, please re-login" },
-            });
-            return;
-          }
-          throw new Error(res.data.message);
-        }
-        const sub = res.data.data.Subscriptions.find(
-          (s) => s.Subscription.id == 38
-        );
-        console.log("active sub choosen: ", sub);
-        setActiveSub({
-          subscriptionId: sub.Subscription.subscriptionId,
-          planId: sub.Subscription.planId,
-          amount: sub.Subscription.amount,
-          currency: sub.Subscription.currency,
-          merchantId: sub.Subscription.merchantId,
-          quantity: sub.Subscription.quantity,
-          status: sub.Subscription.status,
-          addons: sub.AddonParams,
-        });
-        setSelectedPlan(sub.Subscription.planId);
-      })
-      .catch((err) => {
-        console.log("user active subscription list err: ", err);
-        messageApi.open({
-          type: "error",
-          content: err.message,
-        });
-      });
-
-    fetchPlanList()
-      .then((res) => {
-        console.log("product list res: ", res);
-        const statuCode = res.data.code;
-        if (statuCode != 0) {
-          if (statuCode == 61) {
-            console.log("invalid token");
-            navigate(`${APP_PATH}login`, {
-              state: { msg: "session expired, please re-login" },
-            });
-            return;
-          }
-          throw new Error(res.data.message);
-        }
-        const plans: PlanType[] = res.data.data.Plans.map((p: any) => {
-          // console.log("plan id: ", p.plan.id);
-          const p2 = p.plan;
-          if (p.plan.type == 2) {
-            return null;
-          }
-          if (p.plan.id != 31 && p.plan.id != 37 && p.plan.id != 32) {
-            return null;
-          }
-          return {
-            id: p2.id,
-            planName: p2.planName,
-            description: p2.description,
-            type: p2.type,
-            amount: p2.amount,
-            currency: p2.currency,
-            intervalUnit: p2.intervalUnit,
-            intervalCount: p2.intervalCount,
-            status: p2.status,
-            addons: p.addons,
-          };
-        });
-        setPlans(plans.filter((p) => p != null));
-      })
-      .catch((err) => {
-        console.log("get product list err: ", err);
-        messageApi.open({
-          type: "error",
-          content: err.message,
-        });
-      });
-      */
   }, []);
-
-  /*
-  useEffect(() => {
-    if (activeSub != null && plans.length > 0) {
-      activeSub.addons.forEach((a) => {
-        console.log("selected addon: ", a);
-        // onAddonCheck(a.AddonPlanId, true);
-        // onAddonChange(a.AddonPlanId, a.Quantity);
-        addonChange(a.AddonPlanId, true, a.Quantity);
-      });
-    }
-  }, [activeSub, plans]);
-  */
 
   const toggleModal = () => setModalOpen(!modalOpen);
   const openModal = () => {
@@ -522,7 +337,6 @@ const Index = () => {
       });
   };
 
-  console.log("plans: ", plans);
   return (
     <>
       {contextHolder}
@@ -596,7 +410,6 @@ const Index = () => {
             selectedPlan={selectedPlan}
             setSelectedPlan={setSelectedPlan}
             onAddonChange={onAddonChange}
-            onAddonCheck={onAddonCheck}
           />
         ))}
       </div>
@@ -632,8 +445,11 @@ interface IPLanProps {
   plan: PlanType;
   selectedPlan: number | null;
   setSelectedPlan: (p: number) => void;
-  onAddonChange: (addonId: number, quantity: number) => void;
-  onAddonCheck: (addonId: number, checked: boolean) => void;
+  onAddonChange: (
+    addonId: number,
+    quantity: number | null,
+    checked: boolean | null
+  ) => void;
 }
 
 const Plan = ({
@@ -641,18 +457,28 @@ const Plan = ({
   selectedPlan,
   setSelectedPlan,
   onAddonChange,
-  onAddonCheck,
 }: IPLanProps) => {
+  const [totalAmount, setTotalAmount] = useState(0);
   const addonCheck = (addonId: number) => (e: CheckboxChangeEvent) => {
-    console.log("add checked: ", e.target.checked);
-    onAddonCheck(addonId, e.target.checked);
+    onAddonChange(addonId, null, e.target.checked);
   };
-  const addonQuantityChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("quantity change: ", evt);
-    onAddonChange(Number(evt.target.id), Number(evt.target.value)); // TODO: add validation check later
+  const addonQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onAddonChange(Number(e.target.id), Number(e.target.value), null);
   };
 
-  console.log("insdie plan component, addons: ", plan.addons);
+  useEffect(() => {
+    let amount = plan.amount;
+    if (plan.addons != null && plan.addons.length > 0) {
+      plan.addons.forEach((a) => {
+        if (a.checked) {
+          amount += Number(a.amount) * Number(a.quantity);
+        }
+      });
+      if (!isNaN(amount)) {
+        setTotalAmount(amount);
+      }
+    }
+  }, [plan]);
 
   return (
     <div
@@ -667,7 +493,7 @@ const Plan = ({
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        gap: "32px",
+        gap: "24px",
         background: selectedPlan == plan.id ? "#FFF" : "#FBFBFB",
         boxShadow:
           selectedPlan == plan.id
@@ -724,14 +550,15 @@ const Plan = ({
           ))}
         </div>
       )}
-      <div style={{ fontSize: "24px" }}>{`${CURRENCY_SYMBOL[plan.currency]} ${
+      <div style={{ fontSize: "14px" }}>{`${CURRENCY_SYMBOL[plan.currency]} ${
         plan.amount
       }/${plan.intervalCount}${plan.intervalUnit}`}</div>
-      {/* <div>
-        <Button type="primary" onClick={() => setSelectedPlan(plan.id)}>
-          Choose
-        </Button>
-    </div> */}
+      <div style={{ fontSize: "24px" }}>
+        Total:{" "}
+        {`${CURRENCY_SYMBOL[plan.currency]} ${totalAmount}/${
+          plan.intervalCount
+        }${plan.intervalUnit}`}
+      </div>
     </div>
   );
 };
