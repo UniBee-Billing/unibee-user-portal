@@ -24,6 +24,7 @@ interface IPlan {
 interface IPLanProps {
   plan: IPlan;
   selectedPlan: number | null;
+  isActive: boolean;
   setSelectedPlan: (p: number) => void;
   onAddonChange: (
     addonId: number,
@@ -35,6 +36,7 @@ interface IPLanProps {
 const Index = ({
   plan,
   selectedPlan,
+  isActive,
   setSelectedPlan,
   onAddonChange,
 }: IPLanProps) => {
@@ -48,7 +50,6 @@ const Index = ({
 
   useEffect(() => {
     let amount = plan.amount;
-    console.log("plan amt: ", plan.amount);
     if (plan.addons != null && plan.addons.length > 0) {
       plan.addons.forEach((a) => {
         if (a.checked && Number.isInteger(Number(a.quantity))) {
@@ -63,89 +64,103 @@ const Index = ({
   }, [plan]);
 
   return (
-    <div
-      onClick={() => setSelectedPlan(plan.id)}
-      style={{
-        width: "240px",
-        height: "320px",
-        padding: "8px",
-        border: "1px solid #EEE",
-        borderRadius: "4px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "24px",
-        background: selectedPlan == plan.id ? "#FFF" : "#FBFBFB",
-        boxShadow:
-          selectedPlan == plan.id
-            ? "rgba(0, 0, 0, 0.35) 0px 5px 15px"
-            : "unset",
-        cursor: "pointer",
-      }}
-    >
-      <div style={{ fontSize: "28px" }}>{plan.planName}</div>
-      <div>{plan.description}</div>
+    <div>
+      <div
+        style={{
+          height: "32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isActive ? (
+          <span style={{ color: "orange" }}>My Subscription</span>
+        ) : null}
+      </div>
+      <div
+        onClick={() => setSelectedPlan(plan.id)}
+        style={{
+          width: "240px",
+          height: "320px",
+          padding: "8px",
+          border: `1px solid ${isActive ? "orange" : "#EEE"}`,
+          borderRadius: "4px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "24px",
+          background: selectedPlan == plan.id ? "#FFF" : "#FBFBFB",
+          boxShadow:
+            selectedPlan == plan.id
+              ? "rgba(0, 0, 0, 0.35) 0px 5px 15px"
+              : "unset",
+          cursor: "pointer",
+        }}
+      >
+        <div style={{ fontSize: "28px" }}>{plan.planName}</div>
+        <div>{plan.description}</div>
 
-      {plan.addons && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          {plan.addons.map((a) => (
-            <div
-              key={a.id}
-              style={{
-                display: "flex",
-                width: "100%",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Checkbox onChange={addonCheck(a.id)} checked={a.checked}>
-                <div style={{ display: "flex" }}>
-                  <div>
-                    <div
-                      style={{
-                        width: "120px",
-                        textOverflow: "ellipsis",
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {a.planName}
+        {plan.addons && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {plan.addons.map((a) => (
+              <div
+                key={a.id}
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Checkbox onChange={addonCheck(a.id)} checked={a.checked}>
+                  <div style={{ display: "flex" }}>
+                    <div>
+                      <div
+                        style={{
+                          width: "120px",
+                          textOverflow: "ellipsis",
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {a.planName}
+                      </div>
+                      <div style={{ fontSize: "11px" }}>{` ${showAmount(
+                        a.amount,
+                        a.currency
+                      )}/${a.intervalCount == 1 ? "" : a.intervalCount}${
+                        a.intervalUnit
+                      }`}</div>
                     </div>
-                    <div style={{ fontSize: "11px" }}>{` ${showAmount(
-                      a.amount,
-                      a.currency
-                    )}/${a.intervalCount == 1 ? "" : a.intervalCount}${
-                      a.intervalUnit
-                    }`}</div>
-                  </div>
 
-                  <Input
-                    id={a.id.toString()}
-                    value={a.quantity || 0}
-                    onChange={addonQuantityChange}
-                    disabled={!a.checked}
-                    size="small"
-                    style={{ width: "64px", height: "24px" }}
-                    placeholder="count"
-                  />
-                </div>
-              </Checkbox>
-            </div>
-          ))}
+                    <Input
+                      id={a.id.toString()}
+                      value={a.quantity || 0}
+                      onChange={addonQuantityChange}
+                      disabled={!a.checked}
+                      size="small"
+                      style={{ width: "64px", height: "24px" }}
+                      placeholder="count"
+                    />
+                  </div>
+                </Checkbox>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{ fontSize: "14px" }}>{`${showAmount(
+          plan.amount,
+          plan.currency
+        )}/${plan.intervalCount == 1 ? "" : plan.intervalCount}${
+          plan.intervalUnit
+        }`}</div>
+        <div style={{ fontSize: "24px" }}>
+          Total:&nbsp;
+          {`${showAmount(totalAmount, plan.currency)}/${
+            plan.intervalCount == 1 ? "" : plan.intervalCount
+          }${plan.intervalUnit}`}
         </div>
-      )}
-      <div style={{ fontSize: "14px" }}>{`${showAmount(
-        plan.amount,
-        plan.currency
-      )}/${plan.intervalCount == 1 ? "" : plan.intervalCount}${
-        plan.intervalUnit
-      }`}</div>
-      <div style={{ fontSize: "24px" }}>
-        Total:&nbsp;
-        {`${showAmount(totalAmount, plan.currency)}/${
-          plan.intervalCount == 1 ? "" : plan.intervalCount
-        }${plan.intervalUnit}`}
       </div>
     </div>
   );

@@ -3,15 +3,16 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, message, Modal, Col, Row, Spin } from "antd";
 import update from "immutability-helper";
-import { useProfileStore } from "../stores";
+// import { useProfileStore } from "../stores";
 import {
   getActiveSub,
   getPlanList,
-  createPreview,
+  createPreviewReq,
   updateSubscription,
+  terminateSub,
 } from "../requests";
 import Plan from "./plan";
-import { CURRENCY } from "../constants";
+// import { CURRENCY } from "../constants";
 import { showAmount } from "../helpers";
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -41,11 +42,11 @@ interface ISubAddon {
   AddonPlanId: number;
 }
 interface ISubscription {
+  id: number; // not used, but keep it here
   subscriptionId: string;
   planId: number;
   amount: number;
   currency: string;
-  // id: number;
   merchantId: number;
   quantity: number;
   status: number;
@@ -65,7 +66,7 @@ interface IPreview {
 }
 
 const Index = () => {
-  const profileStore = useProfileStore();
+  // const profileStore = useProfileStore();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
@@ -73,6 +74,7 @@ const Index = () => {
   const [preview, setPreview] = useState<IPreview | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(true);
+  const [terminateModal, setTerminateModal] = useState(false);
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
 
   const relogin = () =>
@@ -125,16 +127,19 @@ const Index = () => {
           throw new Error(subListRes.data.message);
         }
       } catch (err) {
-        console.log("err: ", err.message);
-        toastErr(err.message);
+        if (err instanceof Error) {
+          console.log("err: ", err.message);
+          toastErr(err.message);
+        }
         return;
       }
 
       const sub = subListRes.data.data.Subscriptions.find(
-        (s) => s.Subscription.id == 38
+        (s: any) => s.Subscription.id == 38
       );
       console.log("active sub choosen: ", sub);
       const localActiveSub: ISubscription = {
+        id: sub.Subscription.id,
         subscriptionId: sub.Subscription.subscriptionId,
         planId: sub.Subscription.planId,
         amount: sub.Subscription.amount,
@@ -154,11 +159,13 @@ const Index = () => {
         const code = planListRes.data.code;
         code == 61 && relogin();
         if (code != 0) {
-          throw new Error(subListRes.data.message);
+          throw new Error(planListRes.data.message);
         }
       } catch (err) {
-        console.log("err: ", err.message);
-        toastErr(err.message);
+        if (err instanceof Error) {
+          console.log("err: ", err.message);
+          toastErr(err.message);
+        }
         return;
       }
 
@@ -171,7 +178,8 @@ const Index = () => {
           p.plan.id != 31 &&
           p.plan.id != 37 &&
           p.plan.id != 38 &&
-          p.plan.id != 32
+          p.plan.id != 32 &&
+          p.plan.id != 41
         ) {
           return null;
         }
@@ -190,17 +198,30 @@ const Index = () => {
       });
       plans = plans.filter((p) => p != null);
       const planIdx = plans.findIndex((p) => p.id == localActiveSub.planId);
-      if (planIdx != -1) {
+      if (planIdx != -1 && plans[planIdx].addons != null) {
+        for (let i = 0; i < plans[planIdx].addons!.length; i++) {
+          const addonIdx = localActiveSub.addons.findIndex(
+            (subAddon) => subAddon.AddonPlanId == plans[planIdx].addons![i].id
+          );
+          if (addonIdx != -1) {
+            plans[planIdx].addons![i].checked = true;
+            plans[planIdx].addons![i].quantity =
+              localActiveSub.addons[addonIdx].Quantity;
+          }
+        }
+
+        /*
         plans[planIdx].addons?.forEach((addon, i) => {
           const addonIdx = localActiveSub.addons.findIndex(
             (subAddon) => subAddon.AddonPlanId == addon.id
           );
           if (addonIdx != -1) {
-            plans[planIdx].addons[i].checked = true;
-            plans[planIdx].addons[i].quantity =
-              localActiveSub.addons[addonIdx].Quantity;
+            plans[planIdx] && plans[planIdx].addons && plans[planIdx].addons?[i] && plans[planIdx].addons![i].checked
+            plans[planIdx].addons?[i].checked = true
+            plans[planIdx].addons?[i].quantity = localActiveSub.addons[addonIdx].Quantity;
           }
         });
+        */
       }
       setPlans(plans);
       setLoading(false);
@@ -229,27 +250,27 @@ const Index = () => {
       return;
     }
     toggleModal();
-    createPrivew();
+    createPreview();
   };
 
-  const createPrivew = async () => {
+  const createPreview = async () => {
     setPreview(null); // clear the last preview, otherwise, users might see the old value before the new value return
     const plan = plans.find((p) => p.id == selectedPlan);
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : [];
-    console.log("active sub: ", activeSub?.subscriptionId, "///", activeSub);
+    // console.log("active sub: ", activeSub?.subscriptionId, "///", activeSub);
     let previewRes;
     try {
-      previewRes = await createPreview(
+      previewRes = await createPreviewReq(
         false,
         selectedPlan as number,
         addons.map((a) => ({
           quantity: a.quantity as number,
           addonPlanId: a.id,
         })),
-        activeSub?.subscriptionId
+        activeSub?.subscriptionId as string
       );
       console.log("subscription create preview res: ", previewRes);
       const code = previewRes.data.code;
@@ -258,9 +279,11 @@ const Index = () => {
         throw new Error(previewRes.data.message);
       }
     } catch (err) {
-      console.log("err creating preview: ", err.message);
-      toastErr(err.message);
-      setModalOpen(false);
+      if (err instanceof Error) {
+        console.log("err creating preview: ", err.message);
+        toastErr(err.message);
+        setModalOpen(false);
+      }
       return;
     }
 
@@ -299,9 +322,11 @@ const Index = () => {
         throw new Error(updateSubRes.data.message);
       }
     } catch (err) {
-      console.log("err creating preview: ", err.message);
-      toastErr(err.message);
-      setModalOpen(false);
+      if (err instanceof Error) {
+        console.log("err creating preview: ", err.message);
+        toastErr(err.message);
+        setModalOpen(false);
+      }
       return;
     }
 
@@ -316,13 +341,45 @@ const Index = () => {
     window.open(updateSubRes.data.data.link, "_blank");
   };
 
+  const onTerminateSub = async () => {
+    let terminateRes;
+    try {
+      terminateRes = await terminateSub(activeSub?.subscriptionId as string);
+      console.log("update subscription submit res: ", terminateRes);
+      const code = terminateRes.data.code;
+      code == 61 && relogin();
+      if (code != 0) {
+        throw new Error(terminateRes.data.message);
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log("err creating preview: ", err.message);
+        toastErr(err.message);
+        setTerminateModal(false);
+      }
+      return;
+    }
+    navigate(`${APP_PATH}profile/subscription`, {
+      // receiving route hasn't read this msg yet.
+      state: { msg: "Subscription ended on next billing cycle." },
+    });
+  };
+
   return (
     <>
       <Spin spinning={loading} fullscreen />
       {contextHolder}
+      <Modal
+        title="Terminate Subscription"
+        open={terminateModal}
+        onOk={onTerminateSub}
+        onCancel={() => setTerminateModal(false)}
+      >
+        <div>subscription detail here</div>
+      </Modal>
       {selectedPlan != null && (
         <Modal
-          title="Subscription Preview"
+          title="Subscription Update Preview"
           open={modalOpen}
           onOk={onConfirm}
           onCancel={toggleModal}
@@ -360,6 +417,7 @@ const Index = () => {
             selectedPlan={selectedPlan}
             setSelectedPlan={setSelectedPlan}
             onAddonChange={onAddonChange}
+            isActive={p.id == activeSub?.planId}
           />
         ))}
       </div>
@@ -381,7 +439,9 @@ const Index = () => {
               Confirm
             </Button>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <Button>Terminate Subscription</Button>
+            <Button type="primary" onClick={() => setTerminateModal(true)}>
+              Terminate Subscription
+            </Button>
           </>
         )}
       </div>

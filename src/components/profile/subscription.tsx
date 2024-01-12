@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Space, Table, message, Tag, Tooltip } from "antd";
 import { useProfileStore } from "../../stores";
 import type { ColumnsType } from "antd/es/table";
@@ -72,6 +72,7 @@ const columns: ColumnsType<SubscriptionType> = [
 ];
 
 const Index = () => {
+  const location = useLocation();
   const profileStore = useProfileStore();
   const [errMsg, setErrMsg] = useState("");
   const [firstLoading, setFirstLoading] = useState(false);
@@ -136,17 +137,14 @@ const Index = () => {
       });
   }, []);
 
-  /*
- id: number;
-  subscriptionId: string;
-  planName: string;
-  addons: string;
-  amount: number;
-  currency: string;
-  channelId: number;
-  firstPayTime: string;
-  nextPayDate: string;
-  */
+  useEffect(() => {
+    if (location.state && location.state.msg) {
+      messageApi.open({
+        type: "info",
+        content: location.state.msg,
+      });
+    }
+  }, []);
 
   return (
     <div>
@@ -160,20 +158,6 @@ const Index = () => {
           dataSource={subscriptions}
           rowKey={"id"}
           pagination={false}
-          /*
-        onRow={(record, rowIndex) => {
-          return {
-            onClick: (event) => {
-              console.log("row click: ", record, "///", rowIndex);
-              navigate(`${APP_PATH}price-plan/${record.id}`);
-            }, // click row
-            // onDoubleClick: (event) => {}, // double click row
-            // onContextMenu: (event) => {}, // right button click row
-            // onMouseEnter: (event) => {}, // mouse enter row
-            // onMouseLeave: (event) => {}, // mouse leave row
-          };
-        }}
-        */
         />
       </div>
     </div>

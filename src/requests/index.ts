@@ -44,11 +44,11 @@ export const getPlanList = async () => {
   );
 };
 
-export const createPreview = async (
+export const createPreviewReq = async (
   isNew: boolean,
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
-  subscriptionId?: string
+  subscriptionId: string | null
 ) => {
   // isNew: true: create new subscription, false: update existing sub
   const profile = useProfileStore.getState();
@@ -58,11 +58,11 @@ export const createPreview = async (
 
   const body = {
     subscriptionId,
+    UserId: profile.id,
+    channelId: 25,
     planId,
     newPlanId: planId,
     quantity: 1,
-    // channelId: 25,
-    // UserId: profile.id,
     addonParams: addons,
   };
   return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
@@ -93,6 +93,50 @@ export const updateSubscription = async (
   };
   return await axios.post(
     `${API_URL}/user/subscription/subscription_update_submit`,
+    body,
+    {
+      headers: {
+        Authorization: `${profile.token}`, // Bearer: ******
+      },
+    }
+  );
+};
+
+export const createSubscription = async (
+  planId: number,
+  addons: { quantity: number; addonPlanId: number }[],
+  confirmTotalAmount: number,
+  confirmCurrency: string
+) => {
+  const profile = useProfileStore.getState();
+  const body = {
+    planId,
+    quantity: 1,
+    channelId: 25,
+    UserId: profile.id,
+    addonParams: addons,
+    confirmTotalAmount,
+    confirmCurrency,
+    returnUrl: `${window.location.origin}/payment-result`, // .origin doesn't work on IE
+  };
+  return await axios.post(
+    `${API_URL}/user/subscription/subscription_create_submit`,
+    body,
+    {
+      headers: {
+        Authorization: `${profile.token}`, // Bearer: ******
+      },
+    }
+  );
+};
+
+export const terminateSub = async (SubscriptionId: string) => {
+  const profile = useProfileStore.getState();
+  const body = {
+    SubscriptionId,
+  };
+  return await axios.post(
+    `${API_URL}/user/subscription/subscription_cancel_at_period_end`,
     body,
     {
       headers: {
