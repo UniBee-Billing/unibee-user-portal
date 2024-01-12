@@ -164,11 +164,7 @@ getItem('Products', 'products', <PieChartOutlined />),
                 justifyContent: "center",
               }}
             >
-<<<<<<< HEAD
-              <img src={`${APP_PATH}/MultiloginLogo.png`} height={"80px"} />
-=======
               <img src={`${APP_PATH}multiLoginLogo.png`} height={"80px"} />
->>>>>>> development
             </div>
             <Menu
               theme="dark"
