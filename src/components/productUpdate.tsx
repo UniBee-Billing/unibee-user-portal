@@ -4,9 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { Button, message, Modal, Col, Row, Spin } from "antd";
 import update from "immutability-helper";
 import { useProfileStore } from "../stores";
-import { getActiveSub, getPlanList } from "../requests";
+import {
+  getActiveSub,
+  getPlanList,
+  createPreview,
+  updateSubscription,
+} from "../requests";
 import Plan from "./plan";
 import { CURRENCY } from "../constants";
+import { showAmount } from "../helpers";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -35,7 +41,7 @@ interface ISubAddon {
   AddonPlanId: number;
 }
 interface ISubscription {
-  subscriptionId: number;
+  subscriptionId: string;
   planId: number;
   amount: number;
   currency: string;
@@ -46,13 +52,25 @@ interface ISubscription {
   addons: ISubAddon[];
 }
 
+interface IPreview {
+  totalAmount: number;
+  prorationDate: number;
+  currency: string;
+  invoices: {
+    amount: number;
+    currency: string;
+    description: string;
+    probation: boolean;
+  }[];
+}
+
 const Index = () => {
   const profileStore = useProfileStore();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
   const [modalOpen, setModalOpen] = useState(false);
-  const [preview, setPreview] = useState<unknown | null>(null);
+  const [preview, setPreview] = useState<IPreview | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(true);
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
@@ -149,7 +167,12 @@ const Index = () => {
         if (p.plan.type == 2) {
           return null;
         }
-        if (p.plan.id != 31 && p.plan.id != 37 && p.plan.id != 32) {
+        if (
+          p.plan.id != 31 &&
+          p.plan.id != 37 &&
+          p.plan.id != 38 &&
+          p.plan.id != 32
+        ) {
           return null;
         }
         return {
@@ -209,94 +232,88 @@ const Index = () => {
     createPrivew();
   };
 
-  const createPrivew = () => {
-    setPreview(null); // clear the last preview, otherwise, users might see the old value
+  const createPrivew = async () => {
+    setPreview(null); // clear the last preview, otherwise, users might see the old value before the new value return
     const plan = plans.find((p) => p.id == selectedPlan);
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : [];
+    console.log("active sub: ", activeSub?.subscriptionId, "///", activeSub);
+    let previewRes;
+    try {
+      previewRes = await createPreview(
+        false,
+        selectedPlan as number,
+        addons.map((a) => ({
+          quantity: a.quantity as number,
+          addonPlanId: a.id,
+        })),
+        activeSub?.subscriptionId
+      );
+      console.log("subscription create preview res: ", previewRes);
+      const code = previewRes.data.code;
+      code == 61 && relogin();
+      if (code != 0) {
+        throw new Error(previewRes.data.message);
+      }
+    } catch (err) {
+      console.log("err creating preview: ", err.message);
+      toastErr(err.message);
+      setModalOpen(false);
+      return;
+    }
 
-    axios
-      .post(
-        `${API_URL}/user/subscription/subscription_create_preview`,
-        {
-          // merchantId: 15621,
-          planId: selectedPlan,
-          quantity: 1,
-          channelId: 25,
-          UserId: profileStore.id,
-          addonParams:
-            addons.map((a) => ({ quantity: a.quantity, addonPlanId: a.id })) ||
-            [],
-        },
-        {
-          headers: {
-            Authorization: `${profileStore.token}`, // Bearer: ******
-          },
-        }
-      )
-      .then((res) => {
-        console.log("subscription create preview res: ", res);
-        const statuCode = res.data.code;
-        if (statuCode != 0) {
-          if (statuCode == 61) {
-            console.log("invalid token");
-            navigate(`${APP_PATH}login`, {
-              state: { msg: "session expired, please re-login" },
-            });
-            return;
-          }
-          throw new Error(res.data.message);
-        }
-        setPreview(res.data.data);
-      })
-      .catch((err) => {
-        console.log("subscription create preview err: ", err);
-        toastErr(err.message);
-      });
+    const p: IPreview = {
+      totalAmount: previewRes.data.data.totalAmount,
+      currency: previewRes.data.data.currency,
+      prorationDate: previewRes.data.data.prorationDate,
+      invoices: previewRes.data.data.invoice.lines,
+    };
+    setPreview(p);
   };
 
-  const onConfirm = () => {
-    axios
-      .post(
-        `${API_URL}/user/subscription/subscription_create_submit`,
-        {
-          planId: selectedPlan,
-          quantity: 1,
-          channelId: 25,
-          UserId: profileStore.id,
-          addonParams: preview.addonParams,
-          confirmTotalAmount: preview.totalAmount,
-          confirmCurrency: preview.currency,
-          returnUrl: `${window.location.origin}/payment-result`, // .origin doesn't work on IE
-        },
-        {
-          headers: {
-            Authorization: `${profileStore.token}`, // Bearer: ******
-          },
-        }
-      )
-      .then((res) => {
-        console.log("subscription create submit res: ", res);
-        const statuCode = res.data.code;
-        if (statuCode != 0) {
-          if (statuCode == 61) {
-            console.log("invalid token");
-            navigate(`${APP_PATH}login`, {
-              state: { msg: "session expired, please re-login" },
-            });
-            return;
-          }
-          throw new Error(res.data.message);
-        }
-        navigate(`${APP_PATH}profile/subscription`);
-        window.open(res.data.data.link, "_blank");
-      })
-      .catch((err) => {
-        console.log("subscription create submit err: ", err);
-        toastErr(err.message);
+  const onConfirm = async () => {
+    const plan = plans.find((p) => p.id == selectedPlan);
+    const addons =
+      plan != null && plan.addons != null
+        ? plan.addons.filter((a) => a.checked)
+        : [];
+    let updateSubRes;
+    try {
+      updateSubRes = await updateSubscription(
+        selectedPlan as number,
+        activeSub?.subscriptionId as string,
+        addons.map((a) => ({
+          quantity: a.quantity as number,
+          addonPlanId: a.id,
+        })),
+        preview?.totalAmount as number,
+        preview?.currency as string,
+        preview?.prorationDate as number
+      );
+      console.log("update subscription submit res: ", updateSubRes);
+      const code = updateSubRes.data.code;
+      code == 61 && relogin();
+      if (code != 0) {
+        throw new Error(updateSubRes.data.message);
+      }
+    } catch (err) {
+      console.log("err creating preview: ", err.message);
+      toastErr(err.message);
+      setModalOpen(false);
+      return;
+    }
+
+    if (updateSubRes.data.data.paid) {
+      navigate(`${APP_PATH}profile/subscription`, {
+        // receiving route hasn't read this msg yet.
+        state: { msg: "Subscription updated" },
       });
+      return;
+    }
+    toggleModal();
+    window.open(updateSubRes.data.data.link, "_blank");
   };
 
   return (
@@ -311,54 +328,24 @@ const Index = () => {
           onCancel={toggleModal}
           width={"640px"}
         >
-          {preview != null && (
+          {preview && (
             <>
+              {preview.invoices.map((i, idx) => (
+                <Row key={idx} gutter={[16, 16]}>
+                  <Col span={6}>{`${showAmount(i.amount, i.currency)}`}</Col>
+                  <Col span={18}>{i.description}</Col>
+                </Row>
+              ))}
+              <hr />
               <Row gutter={[16, 16]}>
-                <Col span={8}>Plan name</Col>
-                <Col span={12}>{preview.planId.planName}</Col>{" "}
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>Plan description</Col>
-                <Col span={12}>{preview.planId.channelProductDescription}</Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>Plan amount</Col>
-                <Col span={12}>{preview.planId.amount}</Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>Plan description</Col>
-                <Col span={12}>{`${CURRENCY[preview.planId.currency].symbol} ${
-                  preview.planId.amount
-                }/${preview.planId.intervalCount}${
-                  preview.planId.intervalUnit
-                }`}</Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>Addons</Col>
-                <Col span={12}>
-                  {preview.addons &&
-                    preview.addons.map((a) => (
-                      <div>
-                        <span>{a.AddonPlan.planName}</span>:&nbsp;
-                        <span>
-                          {`${CURRENCY[a.AddonPlan.currency].symbol} ${
-                            a.AddonPlan.amount
-                          }/${a.AddonPlan.intervalCount}${
-                            a.AddonPlan.intervalUnit
-                          } × ${a.Quantity}`}
-                        </span>
-                      </div>
-                    ))}
+                <Col span={6}>
+                  <span style={{ fontSize: "18px" }}>Total</span>
                 </Col>
-              </Row>
-              <Row gutter={[32, 32]}>
-                <Col span={8}>
-                  <span>Total</span>
-                </Col>
-                <Col span={12}>
-                  <span>{`${CURRENCY[preview.currency].symbol} ${
-                    preview.totalAmount
-                  }`}</span>
+                <Col span={18}>
+                  <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                    {" "}
+                    {`${showAmount(preview.totalAmount, preview.currency)}`}
+                  </span>
                 </Col>
               </Row>
             </>

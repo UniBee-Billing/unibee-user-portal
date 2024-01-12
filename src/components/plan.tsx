@@ -48,16 +48,18 @@ const Index = ({
 
   useEffect(() => {
     let amount = plan.amount;
+    console.log("plan amt: ", plan.amount);
     if (plan.addons != null && plan.addons.length > 0) {
       plan.addons.forEach((a) => {
         if (a.checked && Number.isInteger(Number(a.quantity))) {
           amount += Number(a.amount) * Number(a.quantity);
         }
       });
-      if (!isNaN(amount)) {
-        setTotalAmount(amount);
+      if (isNaN(amount)) {
+        amount = plan.amount;
       }
     }
+    setTotalAmount(amount);
   }, [plan]);
 
   return (
@@ -136,7 +138,9 @@ const Index = ({
       <div style={{ fontSize: "14px" }}>{`${showAmount(
         plan.amount,
         plan.currency
-      )}/${plan.intervalCount}${plan.intervalUnit}`}</div>
+      )}/${plan.intervalCount == 1 ? "" : plan.intervalCount}${
+        plan.intervalUnit
+      }`}</div>
       <div style={{ fontSize: "24px" }}>
         Total:&nbsp;
         {`${showAmount(totalAmount, plan.currency)}/${

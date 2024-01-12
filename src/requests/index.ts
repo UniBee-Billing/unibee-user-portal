@@ -43,3 +43,61 @@ export const getPlanList = async () => {
     }
   );
 };
+
+export const createPreview = async (
+  isNew: boolean,
+  planId: number,
+  addons: { quantity: number; addonPlanId: number }[],
+  subscriptionId?: string
+) => {
+  // isNew: true: create new subscription, false: update existing sub
+  const profile = useProfileStore.getState();
+  const urlPath = isNew
+    ? "subscription_create_preview"
+    : "subscription_update_preview";
+
+  const body = {
+    subscriptionId,
+    planId,
+    newPlanId: planId,
+    quantity: 1,
+    // channelId: 25,
+    // UserId: profile.id,
+    addonParams: addons,
+  };
+  return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
+    headers: {
+      Authorization: `${profile.token}`, // Bearer: ******
+    },
+  });
+};
+
+export const updateSubscription = async (
+  newPlanId: number,
+  subscriptionId: string,
+  addons: { quantity: number; addonPlanId: number }[],
+  confirmTotalAmount: number,
+  confirmCurrency: string,
+  prorationDate: number
+) => {
+  const profile = useProfileStore.getState();
+  // "subscription_create_submit"
+  const body = {
+    subscriptionId,
+    newPlanId,
+    quantity: 1,
+    addonParams: addons,
+    confirmTotalAmount,
+    confirmCurrency,
+    prorationDate,
+  };
+  return await axios.post(
+    `${API_URL}/user/subscription/subscription_update_submit`,
+    body,
+    {
+      headers: {
+        Authorization: `${profile.token}`, // Bearer: ******
+      },
+    }
+  );
+};
