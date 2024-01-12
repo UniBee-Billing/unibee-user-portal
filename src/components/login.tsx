@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Checkbox, Form, Input, Tabs, Radio, message } from "antd";
 import OtpInput from "react-otp-input";
 import axios from "axios";
+import { useProfileStore } from "../stores";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -97,6 +98,7 @@ const Login1 = ({
   password: string;
   onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
+  const profileStore = useProfileStore();
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
   // const [email, setEmail] = useState("");
@@ -116,8 +118,9 @@ const Login1 = ({
           throw new Error(res.data.message);
         }
         localStorage.setItem("token", res.data.data.Token);
-        navigate(`${APP_PATH}subscription`);
-        // if (res.data.code) navigate("/Dashboard");
+        res.data.data.User.token = res.data.data.Token;
+        profileStore.setProfile(res.data.data.User);
+        navigate(`${APP_PATH}profile/subscription`);
       })
       .catch((err) => {
         console.log("login err: ", err.message);
@@ -272,8 +275,7 @@ const Login2 = ({
             throw new Error(res.data.message);
           }
           localStorage.setItem("token", res.data.data.Token);
-          navigate(`${APP_PATH}subscription`);
-          // if (res.data.code) navigate("/Dashboard");
+          navigate(`${APP_PATH}profile/subscription`);
         })
         .catch((err) => {
           console.log("login err: ", err.message);

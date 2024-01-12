@@ -12,13 +12,16 @@
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
     "@stripe/react-stripe-js": "^2.4.0",
-    "@stripe/stripe-js": "^2.2.2",
+    "@stripe/stripe-js": "^2.3.0",
     "antd": "^5.12.5",
     "axios": "^1.6.3",
+    "immer": "^10.0.3",
+    "immutability-helper": "^3.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-otp-input": "^3.1.1",
-    "react-router-dom": "^6.21.1"
+    "react-router-dom": "^6.21.1",
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

@@ -20,8 +20,14 @@ import { Layout, Menu, theme } from "antd";
 
 import Dashboard from "./components/dashboard";
 import PricePlans from "./components/pricePlans";
-import Subscription from "./components/subscription";
-import Profile from "./components/profile";
+import NotFound from "./components/notFound";
+import Products from "./components/product";
+import ProductsUpdate from "./components/productUpdate";
+// import CheckoutForm from "./components/checkoutForm";
+import PaymentResult from "./components/paymentResult";
+import ProfileBasic from "./components/profile/basicInfo";
+import ProfileSubscription from "./components/profile/subscription";
+import Invoices from "./components/invoices";
 import Login from "./components/login";
 import Signup from "./components/signup";
 import axios from "axios";
@@ -45,32 +51,35 @@ function getItem(
     label,
   } as MenuItem;
 }
-
+/*
+// old design, obsolete
 const items: MenuItem[] = [
-  getItem("My subscription", "2", <DesktopOutlined />),
-  getItem("Profile", "1", <PieChartOutlined />),
-  /*
-  getItem("User", "sub1", <UserOutlined />, [
-    getItem("Tom", "3"),
-    getItem("Bill", "4"),
-    getItem("Alex", "5"),
+  getItem("product list", "2", <DesktopOutlined />),
+  getItem("My Subscription", "1", <PieChartOutlined />),
+  getItem("Profile", "3", <PieChartOutlined />),
+];
+*/
+const items: MenuItem[] = [
+  getItem("Products", "products", <PieChartOutlined />),
+  getItem("Profile", "profile", <DesktopOutlined />, [
+    getItem("My Subscription", "profile/subscription"),
+    getItem("Basic Info", "profile/basic-info"),
   ]),
-  
-  getItem("Team", "sub2", <TeamOutlined />, [
-    getItem("Team 1", "6"),
-    getItem("Team 2", "8"),
-  ]),
-  */
+  getItem("Invoices", "invoices", <DesktopOutlined />),
   /*
-  getItem("Events", "3", <FileOutlined />),
-  getItem("Billable items", "4", <FileOutlined />),
-  getItem("Customers", "5", <FileOutlined />),
-  getItem("Billings", "6", <FileOutlined />),
-  getItem("Admin center", "7", <FileOutlined />),
+  getItem('Navigation Two', 'sub2', <DesktopOutlined />, [
+    getItem('Option 9', '9'),
+    getItem('Option 10', '10'),
+    getItem('Submenu', 'sub3', null, [getItem('Option 11', '11'), getItem('Option 12', '12')]),
+  ]),
   */
 ];
 
-const noSiderRoutes = [`${APP_PATH}login`, `${APP_PATH}signup`];
+const noSiderRoutes = [
+  `${APP_PATH}login`,
+  `${APP_PATH}signup`,
+  // `${APP_PATH}payment-result`,
+];
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -80,6 +89,14 @@ const App: React.FC = () => {
 
   const navigate = useNavigate();
 
+  /*
+getItem('Products', 'products', <PieChartOutlined />),
+  getItem('Profile', 'profile', <DesktopOutlined />, [
+    getItem('My Subscription', 'profile/subscription'),
+    getItem('Basic Info', 'profile/basic-info'),
+  ]),
+  getItem('Invoices', 'invoices', <DesktopOutlined />),
+  */
   const onItemClick = ({
     // item,
     key,
@@ -87,18 +104,23 @@ const App: React.FC = () => {
   // domEvent,
   {
     // item: any;
-    key: any;
+    key: string;
     // keyPath: any;
     // domEvent: any;
   }) => {
-    if (key == "1") {
-      navigate(`${APP_PATH}profile`);
-    } else if (key == "2") {
-      navigate(`${APP_PATH}subscription`);
+    if (key == "products") {
+      navigate(`${APP_PATH}products`);
+    } else if (key == "profile/subscription") {
+      navigate(`${APP_PATH}profile/subscription`);
+    } else if (key == "profile/basic-info") {
+      navigate(`${APP_PATH}profile/basic-info`);
+    } else if (key == "invoices") {
+      navigate(`${APP_PATH}invoices`);
     }
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
     axios
       .post(`${API_URL}/user/auth/sso/logout`, {})
       .then((res) => {
@@ -106,15 +128,11 @@ const App: React.FC = () => {
         if (res.data.code != 0) {
           throw new Error(res.data.message);
         }
-        localStorage.removeItem("token");
         navigate(`${APP_PATH}login`);
       })
       .catch((err) => {
-        localStorage.removeItem("token");
         navigate(`${APP_PATH}login`);
       });
-
-    navigate(`${APP_PATH}login`);
   };
 
   return (
@@ -124,6 +142,10 @@ const App: React.FC = () => {
           <Routes>
             <Route path={`${APP_PATH}login`} Component={Login} />
             <Route path={`${APP_PATH}signup`} Component={Signup} />
+            <Route
+              path={`${APP_PATH}payment-result`}
+              Component={PaymentResult}
+            />
           </Routes>
         </Layout>
       ) : (
@@ -142,7 +164,11 @@ const App: React.FC = () => {
                 justifyContent: "center",
               }}
             >
+<<<<<<< HEAD
               <img src={`${APP_PATH}/MultiloginLogo.png`} height={"80px"} />
+=======
+              <img src={`${APP_PATH}multiLoginLogo.png`} height={"80px"} />
+>>>>>>> development
             </div>
             <Menu
               theme="dark"
@@ -170,7 +196,7 @@ const App: React.FC = () => {
           </Sider>
           <Layout>
             <Header style={{ padding: 0, background: colorBgContainer }}>
-              this is app header
+              {/* this is app header */}
             </Header>
             <Content style={{ margin: "0 16px" }}>
               <div
@@ -182,12 +208,29 @@ const App: React.FC = () => {
                 }}
               >
                 <Routes>
-                  <Route path={`${APP_PATH}`} Component={Profile} />
-                  <Route path={`${APP_PATH}profile`} Component={Profile} />
+                  <Route path="*" Component={NotFound} />
                   <Route
-                    path={`${APP_PATH}subscription`}
-                    Component={Subscription}
+                    path={`${APP_PATH}payment-result`}
+                    Component={PaymentResult}
                   />
+                  {/* <Route
+                    path={`${APP_PATH}checkout`}
+                    Component={CheckoutForm}
+              /> */}
+                  <Route
+                    path={`${APP_PATH}profile/basic-info`}
+                    Component={ProfileBasic}
+                  />
+                  <Route
+                    path={`${APP_PATH}profile/subscription`}
+                    Component={ProfileSubscription}
+                  />
+                  <Route
+                    path={`${APP_PATH}products/update`}
+                    Component={ProductsUpdate}
+                  />
+                  <Route path={`${APP_PATH}products`} Component={Products} />
+                  <Route path={`${APP_PATH}invoices`} Component={Invoices} />
                 </Routes>
               </div>
             </Content>
