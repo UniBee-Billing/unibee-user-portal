@@ -17,10 +17,9 @@ import {
 import update from "immutability-helper";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useProfileStore } from "../stores";
-import { getActiveSub } from "../requests/getActiveSubscriptionList";
-// import {useInvalidToken} from "./hooks/useInvalidToken";
-// import { getActiveSub } from "../requests/getActiveSubscriptionList";
+import { getActiveSub, getPlanList } from "../requests";
 import { CURRENCY } from "../constants";
+import { showAmount } from "../helpers";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -76,6 +75,8 @@ const Index = () => {
       state: { msg: "session expired, please re-login" },
     });
 
+  const toastErr = (msg: string) => message.error(msg);
+
   const onAddonChange = (
     addonId: number,
     quantity: number | null, // null means: don't update this field, keep its original value
@@ -113,17 +114,14 @@ const Index = () => {
       try {
         subListRes = await getActiveSub();
         console.log("subList res: ", subListRes.data);
-        const statusCode = subListRes.data.code;
-        statusCode == 61 && relogin();
-        if (statusCode != 0) {
+        const code = subListRes.data.code;
+        code == 61 && relogin();
+        if (code != 0) {
           throw new Error(subListRes.data.message);
         }
       } catch (err) {
         console.log("err: ", err.message);
-        messageApi.open({
-          type: "error",
-          content: err.message,
-        });
+        toastErr(err.message);
         return;
       }
 
@@ -144,33 +142,21 @@ const Index = () => {
       setActiveSub(localActiveSub);
       setSelectedPlan(sub.Subscription.planId);
 
-      // ********************* //
-
-      const planListRes = await axios.post(
-        `${API_URL}/user/plan/subscription_plan_list`,
-        {
-          merchantId: 15621,
-          page: 0,
-          count: 100,
-        },
-        {
-          headers: {
-            Authorization: `${profileStore.token}`, // Bearer: ******
-          },
+      let planListRes;
+      try {
+        planListRes = await getPlanList();
+        console.log("planList res: ", planListRes.data);
+        const code = planListRes.data.code;
+        code == 61 && relogin();
+        if (code != 0) {
+          throw new Error(subListRes.data.message);
         }
-      );
-      console.log("planList res: ", planListRes.data);
-      const statuCode2 = planListRes.data.code;
-      if (statuCode2 != 0) {
-        if (statuCode2 == 61) {
-          console.log("invalid token");
-          navigate(`${APP_PATH}login`, {
-            state: { msg: "session expired, please re-login" },
-          });
-          return;
-        }
-        throw new Error(planListRes.data.message);
+      } catch (err) {
+        console.log("err: ", err.message);
+        toastErr(err.message);
+        return;
       }
+
       let plans: IPlan[] = planListRes.data.data.Plans.map((p: any) => {
         const p2 = p.plan;
         if (p.plan.type == 2) {
@@ -229,10 +215,7 @@ const Index = () => {
       }
     }
     if (!valid) {
-      messageApi.open({
-        type: "error",
-        content: "Addon quantity must be greater than 0.",
-      });
+      toastErr("Addon quantity must be greater than 0.");
       return;
     }
     toggleModal();
@@ -283,10 +266,7 @@ const Index = () => {
       })
       .catch((err) => {
         console.log("subscription create preview err: ", err);
-        messageApi.open({
-          type: "error",
-          content: err.message,
-        });
+        toastErr(err.message);
       });
   };
 
@@ -328,10 +308,7 @@ const Index = () => {
       })
       .catch((err) => {
         console.log("subscription create submit err: ", err);
-        messageApi.open({
-          type: "error",
-          content: err.message,
-        });
+        toastErr(err.message);
       });
   };
 
@@ -529,9 +506,10 @@ const Plan = ({
                     >
                       {a.planName}
                     </div>
-                    <div style={{ fontSize: "11px" }}>{`${
-                      CURRENCY[a.currency].symbol
-                    } ${a.amount}/${a.intervalCount}${a.intervalUnit}`}</div>
+                    <div style={{ fontSize: "11px" }}>{` ${showAmount(
+                      a.amount,
+                      a.currency
+                    )}/${a.intervalCount}${a.intervalUnit}`}</div>
                   </div>
 
                   <Input
@@ -549,14 +527,15 @@ const Plan = ({
           ))}
         </div>
       )}
-      <div style={{ fontSize: "14px" }}>{`${CURRENCY[plan.currency].symbol} ${
-        plan.amount
-      }/${plan.intervalCount}${plan.intervalUnit}`}</div>
+      <div style={{ fontSize: "14px" }}>{`${showAmount(
+        plan.amount,
+        plan.currency
+      )}/${plan.intervalCount}${plan.intervalUnit}`}</div>
       <div style={{ fontSize: "24px" }}>
-        Total:{" "}
-        {`${CURRENCY[plan.currency].symbol} ${totalAmount}/${
-          plan.intervalCount
-        }${plan.intervalUnit}`}
+        Total:
+        {`${showAmount(totalAmount, plan.currency)}/${plan.intervalCount}${
+          plan.intervalUnit
+        }`}
       </div>
     </div>
   );
