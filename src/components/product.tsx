@@ -321,6 +321,7 @@ const Index = () => {
             selectedPlan={selectedPlan}
             setSelectedPlan={setSelectedPlan}
             onAddonChange={onAddonChange}
+            isActive={false}
           />
         ))}
       </div>

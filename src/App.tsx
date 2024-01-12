@@ -18,8 +18,6 @@ import {
 } from "react-router-dom";
 import { Layout, Menu, theme } from "antd";
 
-import Dashboard from "./components/dashboard";
-import PricePlans from "./components/pricePlans";
 import NotFound from "./components/notFound";
 import Products from "./components/product";
 import ProductsUpdate from "./components/productUpdate";
