@@ -115,20 +115,15 @@ const Index = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      let subListRes, planListRes;
+      let subListRes;
       try {
-        const res = ([subListRes, planListRes] = await Promise.all([
-          // one call failure will jump to the catch block, this is what we want.
-          getActiveSub(),
-          getPlanList(),
-        ]));
-        res.forEach((r) => {
-          const code = r.data.code;
-          code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
-          if (code != 0) {
-            throw new Error(r.data.message);
-          }
-        });
+        subListRes = await getActiveSub();
+        console.log("subList res: ", subListRes.data);
+        const code = subListRes.data.code;
+        code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
+        if (code != 0) {
+          throw new Error(subListRes.data.message);
+        }
       } catch (err) {
         if (err instanceof Error) {
           console.log("err: ", err.message);
@@ -136,8 +131,6 @@ const Index = () => {
         }
         return;
       }
-
-      console.log("subList/activeSub: ", subListRes, "//", planListRes);
 
       // TODO: handle the case when user don't have any subscription yet.
       // to make one page handle update/create subscription, the activeSub can be null
@@ -150,6 +143,23 @@ const Index = () => {
       console.log("local sub: finally: ", localActiveSub);
       setActiveSub(localActiveSub);
       setSelectedPlan(sub.Subscription.planId);
+
+      let planListRes;
+      try {
+        planListRes = await getPlanList();
+        console.log("planList res: ", planListRes.data);
+        const code = planListRes.data.code;
+        code == 61 && relogin();
+        if (code != 0) {
+          throw new Error(planListRes.data.message);
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          console.log("err: ", err.message);
+          message.error(err.message);
+        }
+        return;
+      }
 
       let plans: IPlan[] = planListRes.data.data.Plans.map((p: any) => {
         const p2 = p.plan;

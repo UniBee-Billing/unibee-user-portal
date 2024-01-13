@@ -24,7 +24,7 @@ interface IPlan {
 interface IPLanProps {
   plan: IPlan;
   selectedPlan: number | null;
-  isActive: boolean;
+  isActive: boolean; // whether current plan is the one user has subscribed(Y: highlight it)
   setSelectedPlan: (p: number) => void;
   onAddonChange: (
     addonId: number,
