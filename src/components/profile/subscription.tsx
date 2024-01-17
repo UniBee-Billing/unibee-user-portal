@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Space, Table, message, Tag, Tooltip } from "antd";
 import { useProfileStore } from "../../stores";
+import { ISubscription } from "../../shared.types";
+import { showAmount } from "../../helpers";
 import type { ColumnsType } from "antd/es/table";
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
@@ -17,7 +19,8 @@ interface SubscriptionType {
   currency: string;
   channelId: number;
   firstPayTime: string;
-  nextPayDate: string;
+  currentPeriodStart: number;
+  currentPeriodEnd: number;
 }
 
 const columns: ColumnsType<SubscriptionType> = [
@@ -33,18 +36,13 @@ const columns: ColumnsType<SubscriptionType> = [
     key: "addons",
   },
   {
-    title: "Amount",
+    title: "Total Amount",
     dataIndex: "amount",
     key: "amount",
-    /*
-    render: (_, p) => {
-      return (
-        <span>{`${CURRENCY[p.currency].symbol} ${p.amount}/${p.intervalCount}${
-          p.intervalUnit
-        } `}</span>
-      );
+
+    render: (_, sub) => {
+      return <span>{showAmount(sub.amount, sub.currency)}</span>;
     },
-    */
   },
   {
     title: "Payment method",
@@ -55,19 +53,25 @@ const columns: ColumnsType<SubscriptionType> = [
     },
   },
   {
-    title: "First Pay Date",
-    dataIndex: "firstPayTime",
-    key: "firstPayTime",
-    /*
-    render: (_, plan) => {
-      return <span>{PLAN_STATUS[plan.status]}</span>;
+    title: "Start Date",
+    dataIndex: "currentPeriodStart",
+    key: "currentPeriodStart",
+    render: (_, sub) => {
+      console.log("sub: ", sub.currentPeriodStart);
+      return (
+        <span>{new Date(sub.currentPeriodStart * 1000).toLocaleString()}</span>
+      );
     },
-    */
   },
   {
     title: "Next Pay Date",
-    dataIndex: "nirstPayTime",
-    key: "nirstPayTime",
+    dataIndex: "currentPeriodEnd",
+    key: "currentPeriodEnd",
+    render: (_, sub) => {
+      return (
+        <span>{new Date(sub.currentPeriodEnd * 1000).toLocaleString()}</span>
+      );
+    },
   },
 ];
 
@@ -115,14 +119,15 @@ const Index = () => {
         const sub: SubscriptionType[] = res.data.data.Subscriptions.map(
           (s: any) => {
             return {
-              id: s.Subscription.id,
-              subscriptionId: s.Subscription.subscriptionId,
+              id: s.subscription.id,
+              subscriptionId: s.subscription.subscriptionId,
               addons: "",
-              amount: s.Subscription.amount,
-              currency: s.Subscription.currency,
-              channelId: s.Subscription.channelId,
-              firstPayTime: s.Subscription.firstPayTime,
-              nextPayDate: s.Subscription.nextPayDate,
+              amount: s.subscription.amount,
+              currency: s.subscription.currency,
+              channelId: s.subscription.channelId,
+              firstPayTime: s.subscription.firstPayTime,
+              currentPeriodEnd: s.subscription.currentPeriodEnd,
+              currentPeriodStart: s.subscription.currentPeriodStart,
             };
           }
         );

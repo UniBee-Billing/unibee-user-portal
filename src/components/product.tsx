@@ -1,19 +1,6 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  Tabs,
-  Radio,
-  message,
-  Spin,
-  Modal,
-  Col,
-  Row,
-} from "antd";
+import { Button, message, Spin, Modal, Col, Row } from "antd";
 import update from "immutability-helper";
 import Plan from "./plan";
 import { getPlanList, createPreviewReq, createSubscription } from "../requests";
@@ -22,7 +9,6 @@ import { useProfileStore } from "../stores";
 import { showAmount } from "../helpers";
 
 const APP_PATH = import.meta.env.BASE_URL;
-const API_URL = import.meta.env.VITE_API_URL;
 
 interface IAddon extends IPlan {
   quantity: number | null;
@@ -72,7 +58,6 @@ interface IPreview {
 }
 
 const Index = () => {
-  const profileStore = useProfileStore();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
@@ -134,6 +119,8 @@ const Index = () => {
         if (err instanceof Error) {
           console.log("err: ", err.message);
           toastErr(err.message);
+        } else {
+          message.error("Unknown error");
         }
         return;
       }
@@ -225,10 +212,12 @@ const Index = () => {
         throw new Error(previewRes.data.message);
       }
     } catch (err) {
+      setModalOpen(false);
       if (err instanceof Error) {
         console.log("err creating preview: ", err.message);
         toastErr(err.message);
-        setModalOpen(false);
+      } else {
+        message.error("Unknown error");
       }
       return;
     }
@@ -266,10 +255,12 @@ const Index = () => {
         throw new Error(createSubRes.data.message);
       }
     } catch (err) {
+      setModalOpen(false);
       if (err instanceof Error) {
         console.log("err creating subscripion: ", err.message);
         toastErr(err.message);
-        setModalOpen(false);
+      } else {
+        message.error("Unknown error");
       }
       return;
     }

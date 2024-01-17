@@ -1,9 +1,7 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, message, Modal, Col, Row, Spin } from "antd";
 import update from "immutability-helper";
-// import { useProfileStore } from "../stores";
 import {
   getActiveSub,
   getPlanList,
@@ -16,9 +14,10 @@ import Plan from "./plan";
 import { showAmount } from "../helpers";
 
 const APP_PATH = import.meta.env.BASE_URL;
-const API_URL = import.meta.env.VITE_API_URL;
 
 interface IAddon extends IPlan {
+  // when create/update plan, user need to see how many addons this plan has,
+  // check/uncheck, edit quantity for addons
   quantity: number | null;
   checked: boolean;
 }
@@ -33,13 +32,13 @@ interface IPlan {
   intervalUnit: string;
   intervalCount: number;
   status: number;
-  // isPublished: boolean;
-  addons?: IAddon[];
+  addons?: IAddon[]; // if planA has 10 addons, this array has 10 item.
 }
 
 interface ISubAddon {
-  Quantity: number;
-  AddonPlanId: number;
+  // when update subscription plan, I need to know which addons users have selected
+  quantity: number;
+  addonPlanId: number;
 }
 interface ISubscription {
   id: number; // not used, but keep it here
@@ -50,7 +49,7 @@ interface ISubscription {
   merchantId: number;
   quantity: number;
   status: number;
-  addons: ISubAddon[];
+  addons: ISubAddon[]; // if user has subscribed planA, and selected 2 addons out of 10, this array has 2 items.
 }
 
 interface IPreview {
@@ -118,7 +117,7 @@ const Index = () => {
       let subListRes, planListRes;
       try {
         const res = ([subListRes, planListRes] = await Promise.all([
-          // one call failure will jump to the catch block, this is what we want.
+          // any rejected promise will jump to the catch block, this is what we want.
           getActiveSub(),
           getPlanList(),
         ]));
@@ -126,6 +125,7 @@ const Index = () => {
           const code = r.data.code;
           code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
           if (code != 0) {
+            // TODO: save all the code as ENUM in constant,
             throw new Error(r.data.message);
           }
         });
@@ -133,6 +133,8 @@ const Index = () => {
         if (err instanceof Error) {
           console.log("err: ", err.message);
           message.error(err.message);
+        } else {
+          message.error("Unknown error");
         }
         return;
       }
@@ -142,14 +144,14 @@ const Index = () => {
       // TODO: handle the case when user don't have any subscription yet.
       // to make one page handle update/create subscription, the activeSub can be null
       const sub = subListRes.data.data.Subscriptions.find(
-        (s: any) => s.Subscription.id == 38
+        (s: any) => s.subscription.id == 38
       );
       console.log("active sub choosen: ", sub);
-      const localActiveSub: ISubscription = { ...sub.Subscription };
-      localActiveSub.addons = sub.AddonParams;
+      const localActiveSub: ISubscription = { ...sub.subscription };
+      localActiveSub.addons = sub.addonParams;
       console.log("local sub: finally: ", localActiveSub);
       setActiveSub(localActiveSub);
-      setSelectedPlan(sub.Subscription.planId);
+      setSelectedPlan(sub.subscription.planId);
 
       let plans: IPlan[] = planListRes.data.data.Plans.map((p: any) => {
         const p2 = p.plan;
@@ -181,15 +183,18 @@ const Index = () => {
       });
       plans = plans.filter((p) => p != null);
       const planIdx = plans.findIndex((p) => p.id == localActiveSub.planId);
+      // let's say we have planA(which has addonA1, addonA2, addonA3), planB, planC, user has subscribed to planA, and selected addonA1, addonA3
+      // I need to find the index of addonA1,3 in planA.addons array,
+      // then set their {quantity, checked: true} props on planA.addons, these props value are from subscription.addons array.
       if (planIdx != -1 && plans[planIdx].addons != null) {
         for (let i = 0; i < plans[planIdx].addons!.length; i++) {
           const addonIdx = localActiveSub.addons.findIndex(
-            (subAddon) => subAddon.AddonPlanId == plans[planIdx].addons![i].id
+            (subAddon) => subAddon.addonPlanId == plans[planIdx].addons![i].id
           );
           if (addonIdx != -1) {
             plans[planIdx].addons![i].checked = true;
             plans[planIdx].addons![i].quantity =
-              localActiveSub.addons[addonIdx].Quantity;
+              localActiveSub.addons[addonIdx].quantity;
           }
         }
       }
@@ -249,10 +254,12 @@ const Index = () => {
         throw new Error(previewRes.data.message);
       }
     } catch (err) {
+      setModalOpen(false);
       if (err instanceof Error) {
         console.log("err creating preview: ", err.message);
         message.error(err.message);
-        setModalOpen(false);
+      } else {
+        message.error("Unknown error");
       }
       return;
     }
@@ -292,10 +299,12 @@ const Index = () => {
         throw new Error(updateSubRes.data.message);
       }
     } catch (err) {
+      setModalOpen(false);
       if (err instanceof Error) {
         console.log("err creating preview: ", err.message);
         message.error(err.message);
-        setModalOpen(false);
+      } else {
+        message.error("Unknown error");
       }
       return;
     }
@@ -322,10 +331,12 @@ const Index = () => {
         throw new Error(terminateRes.data.message);
       }
     } catch (err) {
+      setTerminateModal(false);
       if (err instanceof Error) {
         console.log("err creating preview: ", err.message);
         message.error(err.message);
-        setTerminateModal(false);
+      } else {
+        message.error("Unknown error");
       }
       return;
     }
