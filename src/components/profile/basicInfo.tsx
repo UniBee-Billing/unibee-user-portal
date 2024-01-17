@@ -2,8 +2,8 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfileStore } from "../../stores";
-
-import { PlusOutlined } from "@ant-design/icons";
+import { getProfile, saveProfile } from "../../requests";
+import { Country } from "../../shared.types";
 import {
   Button,
   Cascader,
@@ -21,6 +21,7 @@ import {
   Upload,
   message,
 } from "antd";
+import { getCountryList } from "../../requests";
 
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
@@ -44,78 +45,100 @@ const Index = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+  const [countryList, setCountryList] = useState<Country[]>([]);
 
-  const onSave = () => {
+  const relogin = () =>
+    navigate(`${APP_PATH}login`, {
+      state: { msg: "session expired, please re-login" },
+    });
+
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string }
+  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+
+  const onSave = async () => {
     console.log("form: ", form.getFieldsValue());
     setUpdating(true);
-    axios
-      .post(`${API_URL}/user/profile`, form.getFieldsValue(), {
-        headers: {
-          Authorization: `${profileStore.token}`, // Bearer: ******
-        },
-      })
-      .then((res) => {
-        console.log("profile update res: ", res);
-        setUpdating(false);
-        if (res.data.code != 0) {
-          if (res.data.code == 61) {
-            // TODO: save all statu code in a constant
-            navigate(`${APP_PATH}login`, {
-              state: { msg: "Session expired, please re-login" },
-            });
-            return;
-          }
-          throw new Error(res.data.message);
-        }
-        messageApi.open({
-          type: "success",
-          content: "saved",
-        });
-        // setProfile(res.data.data.User);
-        // console.log("profile: ", res.data.data.User);
-      })
-      .catch((err) => {
-        setUpdating(false);
+    let saveProfileRes;
+    try {
+      saveProfileRes = await saveProfile(form.getFieldsValue());
+      console.log("save profile res: ", saveProfileRes);
+      const code = saveProfileRes.data.code;
+      if (code != 0) {
+        code == 61 && relogin();
+        // TODO: save all statu code in a constant
+        throw new Error(saveProfileRes.data.message);
+      }
+      message.success("saved");
+      setProfile(saveProfileRes.data.data.User);
+      setUpdating(false);
+    } catch (err) {
+      setUpdating(false);
+      if (err instanceof Error) {
         console.log("profile update err: ", err.message);
         setErrMsg(err.message);
-        messageApi.open({
-          type: "error",
-          content: err.message,
-        });
-      });
+        message.error(err.message);
+      } else {
+        message.error("Unknown error");
+      }
+      return;
+    }
   };
 
   useEffect(() => {
     setFirstLoading(true);
-    axios
-      .get(`${API_URL}/user/profile`, {
-        headers: {
-          Authorization: `${profileStore.token}`, // Bearer: ******
-        },
-      })
-      .then((res) => {
-        console.log("profile res: ", res);
-        setFirstLoading(false);
-        if (res.data.code != 0) {
-          if (res.data.code == 61) {
-            // TODO: save all statu code in a constant
-            navigate(`${APP_PATH}login`, {
-              state: { msg: "Session expired, please re-login" },
-            });
-            return;
+    const fetchData = async () => {
+      let profileRes, countryListRes;
+      try {
+        const res = ([profileRes, countryListRes] = await Promise.all([
+          getProfile(),
+          getCountryList(15621),
+        ]));
+        console.log("profile/country: ", profileRes, "//", countryListRes);
+        res.forEach((r) => {
+          const code = r.data.code;
+          code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
+          if (code != 0) {
+            // TODO: save all the code as ENUM in constant,
+            throw new Error(r.data.message);
           }
-          throw new Error(res.data.message);
-        }
-        setProfile(res.data.data.User);
-        console.log("profile: ", res.data.data.User);
-        // populate profile data in table
-      })
-      .catch((err) => {
+        });
+        setUpdating(false);
         setFirstLoading(false);
-        console.log("profile err: ", err.message);
-        setErrMsg(err.message);
-      });
+      } catch (err) {
+        setUpdating(false);
+        setFirstLoading(false);
+        if (err instanceof Error) {
+          console.log("profile update err: ", err.message);
+          setErrMsg(err.message);
+          message.error(err.message);
+        } else {
+          message.error("Unknown error");
+        }
+        return;
+      }
+      setProfile(profileRes.data.data.User);
+      setCountryList(
+        countryListRes.data.data.vatCountryList.map((c: any) => ({
+          code: c.countryCode,
+          name: c.countryName,
+        }))
+      );
+    };
+
+    fetchData();
   }, []);
+
+  const countryCode = Form.useWatch("countryCode", form);
+  console.log("country code watch: ", countryCode);
+  useEffect(() => {
+    countryCode &&
+      form.setFieldValue(
+        "countryName",
+        countryList.find((c) => c.code == countryCode)!.name
+      );
+  }, [countryCode]);
 
   return (
     <div>
@@ -147,6 +170,26 @@ const Index = () => {
           </Form.Item>
 
           <Form.Item label="Billing address" name="address">
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="Country" name="countryCode">
+            <Select
+              showSearch
+              placeholder="Type to search"
+              optionFilterProp="children"
+              // value={country}
+              // onChange={onCountryChange}
+              // onSearch={onSearch}
+              filterOption={filterOption}
+              options={countryList.map((c) => ({
+                label: c.name,
+                value: c.code,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item label="Country Name" name="countryName" hidden>
             <Input />
           </Form.Item>
 

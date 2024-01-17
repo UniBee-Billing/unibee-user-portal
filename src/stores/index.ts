@@ -7,12 +7,13 @@ import { IProfile } from "../shared.types";
 
 const INITIAL_PROFILE: IProfile = {
   adress: "",
-  country: "", // use ISO code to represent country
   companyName: "",
   email: "",
   facebook: "",
   firstName: "",
   lastName: "",
+  countryCode: "",
+  countryName: "",
   id: 0,
   phone: "",
   paymentMethod: "",

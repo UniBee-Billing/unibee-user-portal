@@ -5,23 +5,27 @@ import update from "immutability-helper";
 import {
   getActiveSub,
   getPlanList,
-  createPreviewReq,
+  createUpdatePreviewReq,
   updateSubscription,
   terminateSub,
 } from "../requests";
 import Plan from "./plan";
 // import { CURRENCY } from "../constants";
 import { showAmount } from "../helpers";
+import { ISubscription, IPlan, IPreview } from "../shared.types";
 
 const APP_PATH = import.meta.env.BASE_URL;
 
+/*
 interface IAddon extends IPlan {
   // when create/update plan, user need to see how many addons this plan has,
   // check/uncheck, edit quantity for addons
   quantity: number | null;
   checked: boolean;
 }
+*/
 
+/*
 interface IPlan {
   id: number;
   planName: string; // plan name
@@ -34,12 +38,15 @@ interface IPlan {
   status: number;
   addons?: IAddon[]; // if planA has 10 addons, this array has 10 item.
 }
-
+*/
+/*
 interface ISubAddon {
   // when update subscription plan, I need to know which addons users have selected
   quantity: number;
   addonPlanId: number;
 }
+*/
+/*
 interface ISubscription {
   id: number; // not used, but keep it here
   subscriptionId: string;
@@ -51,7 +58,8 @@ interface ISubscription {
   status: number;
   addons: ISubAddon[]; // if user has subscribed planA, and selected 2 addons out of 10, this array has 2 items.
 }
-
+*/
+/*
 interface IPreview {
   totalAmount: number;
   prorationDate: number;
@@ -63,6 +71,7 @@ interface IPreview {
     probation: boolean;
   }[];
 }
+*/
 
 const Index = () => {
   // const profileStore = useProfileStore();
@@ -238,8 +247,7 @@ const Index = () => {
     // console.log("active sub: ", activeSub?.subscriptionId, "///", activeSub);
     let previewRes;
     try {
-      previewRes = await createPreviewReq(
-        false,
+      previewRes = await createUpdatePreviewReq(
         selectedPlan as number,
         addons.map((a) => ({
           quantity: a.quantity as number,
@@ -361,6 +369,7 @@ const Index = () => {
       {selectedPlan != null && (
         <Modal
           title="Subscription Update Preview"
+          maskClosable={false}
           open={modalOpen}
           onOk={onConfirm}
           onCancel={toggleModal}

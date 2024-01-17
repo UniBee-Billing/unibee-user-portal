@@ -2,12 +2,15 @@ import React, { useEffect, useState } from "react";
 import { Checkbox, Input } from "antd";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { showAmount } from "../helpers";
+import { IPlan } from "../shared.types";
 
+/*
 interface IAddon extends IPlan {
   quantity: number | null;
   checked: boolean;
 }
-
+*/
+/*
 interface IPlan {
   id: number;
   planName: string;
@@ -20,6 +23,7 @@ interface IPlan {
   status: number;
   addons?: IAddon[];
 }
+*/
 
 interface IPLanProps {
   plan: IPlan;

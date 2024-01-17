@@ -1,6 +1,8 @@
 interface IProfile {
   adress: string;
-  country: string; // use ISO code to represent country
+  // country: string; // use ISO code to represent country
+  countryName: string;
+  countryCode: string;
   companyName: string;
   email: string;
   facebook: string;
@@ -18,6 +20,11 @@ interface IProfile {
   otherSocialInfo: string;
   token: string;
 }
+
+type Country = {
+  code: string;
+  name: string;
+};
 
 interface IAddon extends IPlan {
   quantity: number | null;
@@ -58,4 +65,30 @@ interface ISubscription {
   addons: ISubAddon[];
 }
 
-export type { IProfile, IPlan, ISubscription };
+interface IPreview {
+  totalAmount: number;
+  prorationDate: number;
+  currency: string;
+  vatCountryCode: string;
+  vatCountryName: string;
+  vatNumber: string;
+  vatNumberValidate?: {
+    valid: boolean;
+    vatNumber: string;
+    countryCode: string;
+    companyName: string;
+    companyAddress: string;
+    validateMessage: string;
+  };
+  invoices: {
+    amount: number;
+    amountExcludingTax: number;
+    currency: string;
+    description: string;
+    probation: boolean;
+    tax: number;
+    unitAmountExcludingTax: number;
+  }[];
+}
+
+export type { IProfile, IPlan, ISubscription, IPreview, Country };

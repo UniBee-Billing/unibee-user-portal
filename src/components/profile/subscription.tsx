@@ -57,7 +57,6 @@ const columns: ColumnsType<SubscriptionType> = [
     dataIndex: "currentPeriodStart",
     key: "currentPeriodStart",
     render: (_, sub) => {
-      console.log("sub: ", sub.currentPeriodStart);
       return (
         <span>{new Date(sub.currentPeriodStart * 1000).toLocaleString()}</span>
       );
@@ -116,21 +115,22 @@ const Index = () => {
           }
           throw new Error(res.data.message);
         }
-        const sub: SubscriptionType[] = res.data.data.Subscriptions.map(
-          (s: any) => {
-            return {
-              id: s.subscription.id,
-              subscriptionId: s.subscription.subscriptionId,
-              addons: "",
-              amount: s.subscription.amount,
-              currency: s.subscription.currency,
-              channelId: s.subscription.channelId,
-              firstPayTime: s.subscription.firstPayTime,
-              currentPeriodEnd: s.subscription.currentPeriodEnd,
-              currentPeriodStart: s.subscription.currentPeriodStart,
-            };
-          }
-        );
+        const sub: SubscriptionType[] =
+          res.data.data.Subscriptions == null
+            ? []
+            : res.data.data.Subscriptions.map((s: any) => {
+                return {
+                  id: s.subscription.id,
+                  subscriptionId: s.subscription.subscriptionId,
+                  addons: "",
+                  amount: s.subscription.amount,
+                  currency: s.subscription.currency,
+                  channelId: s.subscription.channelId,
+                  firstPayTime: s.subscription.firstPayTime,
+                  currentPeriodEnd: s.subscription.currentPeriodEnd,
+                  currentPeriodStart: s.subscription.currentPeriodStart,
+                };
+              });
         setSubscriptions(sub);
       })
       .catch((err) => {

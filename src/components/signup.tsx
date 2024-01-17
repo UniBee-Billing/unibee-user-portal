@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, Form, Input } from "antd";
+import { Button, Checkbox, message, Form, Input, Select } from "antd";
 // import { request } from "../api/axios2";
 // import { login } from "../api/auth";
 import OtpInput from "react-otp-input";
+import { getCountryList } from "../requests";
+import { Country } from "../shared.types";
 
 import axios from "axios";
 const APP_PATH = import.meta.env.BASE_URL;
@@ -21,10 +23,12 @@ const Index = () => {
   const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
+  const [country, setCountry] = useState("");
   // const [verificationCode, setVerificationCode] = useState("");
   const [currentStep, setCurrentStep] = useState(0); // [0, 1]
   const [errMsg, setErrMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [countryList, setCountryList] = useState<Country[]>([]);
 
   // const onEmailChange = (evt: ChangeEvent<HTMLInputElement>) =>
   //     setEmail(evt.target.value);
@@ -48,11 +52,22 @@ const Index = () => {
     setOtp(value.toUpperCase());
   };
 
+  const onCountryChange = (value: string) => {
+    console.log(`selected ${value}`);
+    setCountry(value);
+  };
+
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string }
+  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+
   const onSubmit = () => {
     if (
       firstName == "" ||
       lastName == "" ||
       email == "" ||
+      country == "" ||
       password == "" ||
       password2 == ""
     ) {
@@ -67,9 +82,12 @@ const Index = () => {
         firstName,
         lastName,
         password,
+        countryCode: country,
+        countryName: countryList.find((c) => c.code == country)?.name,
         phone,
         address,
         user_name,
+        // country,
       })
       .then((res) => {
         setErrMsg(res.data.message);
@@ -111,6 +129,34 @@ const Index = () => {
         setErrMsg(err.message);
       });
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      let countryListRes;
+      try {
+        countryListRes = await getCountryList(15621); // merchantId
+        console.log("vat list res: ", countryListRes);
+        if (countryListRes.data.code != 0) {
+          throw new Error(countryListRes.data.message);
+        }
+        setCountryList(
+          countryListRes.data.data.vatCountryList.map((c: any) => ({
+            code: c.countryCode,
+            name: c.countryName,
+          }))
+        );
+      } catch (err) {
+        if (err instanceof Error) {
+          console.log("err: ", err.message);
+          message.error(err.message);
+        } else {
+          message.error("Unknown error");
+        }
+        return;
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div
@@ -216,6 +262,31 @@ const Index = () => {
                 ]}
               >
                 <Input value={phone} onChange={onPhoneChange} />
+              </Form.Item>
+
+              <Form.Item
+                label="Country"
+                name="countryCode"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select your country!",
+                  },
+                ]}
+              >
+                <Select
+                  showSearch
+                  placeholder="Type to search"
+                  optionFilterProp="children"
+                  value={country}
+                  onChange={onCountryChange}
+                  // onSearch={onSearch}
+                  filterOption={filterOption}
+                  options={countryList.map((c) => ({
+                    label: c.name,
+                    value: c.code,
+                  }))}
+                />
               </Form.Item>
 
               <Form.Item

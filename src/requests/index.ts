@@ -2,9 +2,28 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useProfileStore } from "../stores";
+import { IProfile } from "../shared.types";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
+
+export const getProfile = async () => {
+  const profile = useProfileStore.getState();
+  return await axios.get(`${API_URL}/user/profile`, {
+    headers: {
+      Authorization: `${profile.token}`, // Bearer: ******
+    },
+  });
+};
+
+export const saveProfile = async (newProfile: IProfile) => {
+  const profile = useProfileStore.getState();
+  return await axios.post(`${API_URL}/user/profile`, newProfile, {
+    headers: {
+      Authorization: `${profile.token}`, // Bearer: ******
+    },
+  });
+};
 
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
@@ -44,26 +63,47 @@ export const getPlanList = async () => {
   );
 };
 
-export const createPreviewReq = async (
-  isNew: boolean,
+// for update preview
+export const createUpdatePreviewReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
   subscriptionId: string | null
 ) => {
-  // isNew: true: create new subscription, false: update existing sub
   const profile = useProfileStore.getState();
-  const urlPath = isNew
-    ? "subscription_create_preview"
-    : "subscription_update_preview";
+  const urlPath = "subscription_update_preview";
 
   const body = {
     subscriptionId,
-    UserId: profile.id,
+    // userId: profile.id,
+    channelId: 25,
+    // planId,
+    newPlanId: planId,
+    quantity: 1,
+    addonParams: addons,
+  };
+  return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
+    headers: {
+      Authorization: `${profile.token}`, // Bearer: ******
+    },
+  });
+};
+
+// for create new prview
+export const createPreviewReq = async (
+  planId: number,
+  addons: { quantity: number; addonPlanId: number }[],
+  vatNumber: string | null
+) => {
+  const profile = useProfileStore.getState();
+  const urlPath = "subscription_create_preview";
+  const body = {
+    userId: profile.id,
     channelId: 25,
     planId,
     newPlanId: planId,
     quantity: 1,
     addonParams: addons,
+    vatNumber,
   };
   return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
     headers: {
@@ -144,4 +184,16 @@ export const terminateSub = async (SubscriptionId: string) => {
       },
     }
   );
+};
+
+export const getCountryList = async (merchantId: number) => {
+  const profile = useProfileStore.getState();
+  const body = {
+    merchantId,
+  };
+  return await axios.post(`${API_URL}/user/vat/vat_country_list`, body, {
+    headers: {
+      Authorization: `${profile.token}`, // Bearer: ******
+    },
+  });
 };
