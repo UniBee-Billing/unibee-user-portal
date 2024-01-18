@@ -86,9 +86,8 @@ const App: React.FC = () => {
     setActiveMenuItem([key]);
     const pathItem = key.split("/").filter((k) => !!k); // remove the empty leading item
     if (pathItem.length == 2) {
-      console.log("pathItem: ", pathItem);
-      setOpenKeys(["/" + pathItem[0]]);
       // submenu item clicked
+      setOpenKeys(["/" + pathItem[0]]);
     }
   };
 
@@ -109,8 +108,9 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    const path = window.location.pathname;
-    onItemClick({ key: path, needNavigate: false });
+    // when user refresh or enter URL then ENTER, call this fn to highlight the active menu
+    // since we are already in the current path, there is no need to navigate
+    onItemClick({ key: window.location.pathname, needNavigate: false });
   }, []);
 
   return (
@@ -151,7 +151,7 @@ const App: React.FC = () => {
               mode="inline"
               items={items}
               onClick={onItemClick}
-              onOpenChange={(keys) => console.log("on open change: ", keys)}
+              // onOpenChange={(keys) => console.log("on open change: ", keys)}
             />
             <div
               onClick={logout}
