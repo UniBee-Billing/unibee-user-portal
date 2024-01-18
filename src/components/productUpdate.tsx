@@ -277,6 +277,9 @@ const Index = () => {
       currency: previewRes.data.data.currency,
       prorationDate: previewRes.data.data.prorationDate,
       invoices: previewRes.data.data.invoice.lines,
+      // vatCountryCode: ,
+      // vatCountryName: "",
+      // vatNumber: ""
     };
     setPreview(p);
   };

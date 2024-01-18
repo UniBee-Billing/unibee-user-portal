@@ -69,9 +69,9 @@ interface IPreview {
   totalAmount: number;
   prorationDate: number;
   currency: string;
-  vatCountryCode: string;
-  vatCountryName: string;
-  vatNumber: string;
+  vatCountryCode?: string;
+  vatCountryName?: string;
+  vatNumber?: string;
   vatNumberValidate?: {
     valid: boolean;
     vatNumber: string;
