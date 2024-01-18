@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DesktopOutlined,
   // FileOutlined,
@@ -12,9 +12,9 @@ import {
   // BrowserRouter as Router,
   Routes,
   Route,
-  // Outlet,
   // Link,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 import { Layout, Menu, theme } from "antd";
 
@@ -33,7 +33,6 @@ import axios from "axios";
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 const { Header, Content, Footer, Sider } = Layout;
-
 type MenuItem = Required<MenuProps>["items"][number];
 
 function getItem(
@@ -49,28 +48,14 @@ function getItem(
     label,
   } as MenuItem;
 }
-/*
-// old design, obsolete
+
 const items: MenuItem[] = [
-  getItem("product list", "2", <DesktopOutlined />),
-  getItem("My Subscription", "1", <PieChartOutlined />),
-  getItem("Profile", "3", <PieChartOutlined />),
-];
-*/
-const items: MenuItem[] = [
-  getItem("Products", "products", <PieChartOutlined />),
-  getItem("Profile", "profile", <DesktopOutlined />, [
-    getItem("My Subscription", "profile/subscription"),
-    getItem("Basic Info", "profile/basic-info"),
+  getItem("Products", "/products", <PieChartOutlined />),
+  getItem("Profile", "/profile", <DesktopOutlined />, [
+    getItem("My Subscription", "/profile/subscription"),
+    getItem("Basic Info", "/profile/basic-info"),
   ]),
-  getItem("Invoices", "invoices", <DesktopOutlined />),
-  /*
-  getItem('Navigation Two', 'sub2', <DesktopOutlined />, [
-    getItem('Option 9', '9'),
-    getItem('Option 10', '10'),
-    getItem('Submenu', 'sub3', null, [getItem('Option 11', '11'), getItem('Option 12', '12')]),
-  ]),
-  */
+  getItem("Invoices", "/invoices", <DesktopOutlined />),
 ];
 
 const noSiderRoutes = [
@@ -81,39 +66,29 @@ const noSiderRoutes = [
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [activeMenuItem, setActiveMenuItem] = useState<string[]>(["/profile"]);
+  // this is the default open keys after successful login.
+  const [openKeys, setOpenKeys] = useState<string[]>(["/profile"]);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
   const navigate = useNavigate();
 
-  /*
-getItem('Products', 'products', <PieChartOutlined />),
-  getItem('Profile', 'profile', <DesktopOutlined />, [
-    getItem('My Subscription', 'profile/subscription'),
-    getItem('Basic Info', 'profile/basic-info'),
-  ]),
-  getItem('Invoices', 'invoices', <DesktopOutlined />),
-  */
   const onItemClick = ({
-    // item,
     key,
-  }: // keyPath,
-  // domEvent,
-  {
-    // item: any;
+    needNavigate = true,
+  }: {
     key: string;
-    // keyPath: any;
-    // domEvent: any;
+    needNavigate?: boolean;
   }) => {
-    if (key == "products") {
-      navigate(`${APP_PATH}products`);
-    } else if (key == "profile/subscription") {
-      navigate(`${APP_PATH}profile/subscription`);
-    } else if (key == "profile/basic-info") {
-      navigate(`${APP_PATH}profile/basic-info`);
-    } else if (key == "invoices") {
-      navigate(`${APP_PATH}invoices`);
+    needNavigate && navigate(`${APP_PATH}${key.substring(1)}`); // remove the leading '/' character, coz APP_PATH already has it
+    setActiveMenuItem([key]);
+    const pathItem = key.split("/").filter((k) => !!k); // remove the empty leading item
+    if (pathItem.length == 2) {
+      console.log("pathItem: ", pathItem);
+      setOpenKeys(["/" + pathItem[0]]);
+      // submenu item clicked
     }
   };
 
@@ -132,6 +107,11 @@ getItem('Products', 'products', <PieChartOutlined />),
         navigate(`${APP_PATH}login`);
       });
   };
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    onItemClick({ key: path, needNavigate: false });
+  }, []);
 
   return (
     <>
@@ -166,10 +146,12 @@ getItem('Products', 'products', <PieChartOutlined />),
             </div>
             <Menu
               theme="dark"
-              defaultSelectedKeys={["2"]}
+              selectedKeys={activeMenuItem}
+              openKeys={openKeys}
               mode="inline"
               items={items}
               onClick={onItemClick}
+              onOpenChange={(keys) => console.log("on open change: ", keys)}
             />
             <div
               onClick={logout}
@@ -185,7 +167,7 @@ getItem('Products', 'products', <PieChartOutlined />),
               }}
             >
               <LogoutOutlined />
-              &nbsp;Logout
+              &nbsp;&nbsp;Logout
             </div>
           </Sider>
           <Layout>
@@ -210,13 +192,15 @@ getItem('Products', 'products', <PieChartOutlined />),
                 <Routes>
                   <Route path="*" Component={NotFound} />
                   <Route
+                    path={APP_PATH}
+                    element={
+                      <Navigate to={`${APP_PATH}profile/subscription`} />
+                    }
+                  />
+                  <Route
                     path={`${APP_PATH}payment-result`}
                     Component={PaymentResult}
                   />
-                  {/* <Route
-                    path={`${APP_PATH}checkout`}
-                    Component={CheckoutForm}
-              /> */}
                   <Route
                     path={`${APP_PATH}profile/basic-info`}
                     Component={ProfileBasic}
