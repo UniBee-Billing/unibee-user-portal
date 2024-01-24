@@ -11,19 +11,9 @@ const APP_PATH = import.meta.env.BASE_URL;
 interface Props {
   isOpen: boolean;
   closeModal: () => void;
-  // loading: boolean;
-  // subInfo: ISubscriptionType | null;
-  // onCancel: () => void;
-  // onConfirm: () => void;
+  openPreviewModal: () => void;
 }
-const Index = ({
-  isOpen,
-  closeModal,
-}: // loading,
-//subInfo,
-// onCancel,
-// onConfirm,
-Props) => {
+const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
   const navigate = useNavigate();
   const profile = useProfileStore.getState();
   const [form] = Form.useForm();
@@ -50,15 +40,10 @@ Props) => {
   ];
 
   const onConfirm = async () => {
-    console.log("form: ", form.getFieldsValue());
     const user: IProfile = form.getFieldsValue();
-    // user.companyName = countryList.find(
-    // (c) => c.code == user.countryCode
-    // )!.name;
     setLoading(true);
-    let saveProfileRes;
     try {
-      saveProfileRes = await saveProfile(user);
+      const saveProfileRes = await saveProfile(user);
       setLoading(false);
       console.log("save profile res: ", saveProfileRes);
       const code = saveProfileRes.data.code;
@@ -69,6 +54,8 @@ Props) => {
       }
       message.success("saved");
       profile.setProfile(user);
+      closeModal();
+      openPreviewModal();
     } catch (err) {
       setLoading(false);
       if (err instanceof Error) {
@@ -114,7 +101,6 @@ Props) => {
   }, []);
 
   const countryCode = Form.useWatch("countryCode", form);
-  console.log("country code watch: ", countryCode);
   useEffect(() => {
     countryCode &&
       form.setFieldValue(

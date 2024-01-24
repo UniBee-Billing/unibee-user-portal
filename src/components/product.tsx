@@ -186,7 +186,7 @@ const Index = () => {
     fetchData();
   }, []);
 
-  const toggleModal = () => setModalOpen(!modalOpen);
+  const toggleModal = () => setModalOpen(!modalOpen); // this is the preview modal
   const openModal = () => {
     const profile = useProfileStore.getState();
     console.log("user profile: ", profile.countryCode, "//", profile);
@@ -360,6 +360,7 @@ interface IPreview {
       <BillingAddressModal
         isOpen={billingAddressModalOpen}
         closeModal={toggleBillingModal}
+        openPreviewModal={toggleModal}
       />
       {selectedPlan != null && (
         <Modal
