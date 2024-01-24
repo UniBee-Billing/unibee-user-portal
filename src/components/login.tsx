@@ -1,10 +1,11 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import type { RadioChangeEvent } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Checkbox, Form, Input, Tabs, Radio, message } from "antd";
 import OtpInput from "react-otp-input";
 import axios from "axios";
 import { useProfileStore } from "../stores";
+import { timerBySec } from "../helpers";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -18,7 +19,7 @@ const Index = () => {
     setEmail(evt.target.value);
   const onPasswordChange = (evt: ChangeEvent<HTMLInputElement>) =>
     setPassword(evt.target.value);
-  const [loginType, setLoginType] = useState("password"); // [password, OTP]
+  const [loginType, setLoginType] = useState("password"); // password | OTP
 
   const onLoginTypeChange = (e: RadioChangeEvent) => {
     // console.log("radio checked", e.target.value);
@@ -67,17 +68,15 @@ const Index = () => {
           background: "#FFF",
         }}
       >
-        {/* <div style={{ height: "36px" }}></div> */}
-        {/* <div style={{ height: "48px" }}></div> */}
         {loginType == "password" ? (
-          <Login1
+          <LoginWithPassword
             email={email}
             onEmailChange={onEmailChange}
             password={password}
             onPasswordChange={onPasswordChange}
           />
         ) : (
-          <Login2 email={email} onEmailChange={onEmailChange} />
+          <LoginWithOTP email={email} onEmailChange={onEmailChange} />
         )}
       </div>
     </div>
@@ -87,7 +86,7 @@ const Index = () => {
 export default Index;
 
 // email + Pasword
-const Login1 = ({
+const LoginWithPassword = ({
   email,
   onEmailChange,
   password,
@@ -101,18 +100,22 @@ const Login1 = ({
   const profileStore = useProfileStore();
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+
   // const [email, setEmail] = useState("");
   // const [password, setPassword] = useState("");
   // const onEmailChange = (evt) => setEmail(evt.target.value);
   // const onPasswordChange = (evt) => setPassword(evt.target.value);
   const onSubmit = () => {
     setErrMsg("");
+    setSubmitting(true);
     axios
       .post(`${API_URL}/user/auth/sso/login`, {
         email,
         password,
       })
       .then((res) => {
+        setSubmitting(false);
         console.log("login res: ", res);
         if (res.data.code != 0) {
           throw new Error(res.data.message);
@@ -123,6 +126,7 @@ const Login1 = ({
         navigate(`${APP_PATH}profile/subscription`);
       })
       .catch((err) => {
+        setSubmitting(false);
         console.log("login err: ", err.message);
         setErrMsg(err.message);
       });
@@ -130,18 +134,10 @@ const Login1 = ({
   return (
     <Form
       name="basic"
-      labelCol={{
-        span: 10,
-      }}
-      wrapperCol={{
-        span: 14,
-      }}
-      style={{
-        maxWidth: 640,
-      }}
-      initialValues={{
-        remember: true,
-      }}
+      labelCol={{ span: 10 }}
+      wrapperCol={{ span: 14 }}
+      style={{ maxWidth: 640 }}
+      // initialValues={{ remember: true}}
       autoComplete="off"
     >
       <Form.Item
@@ -197,7 +193,13 @@ const Login1 = ({
           span: 16,
         }}
       >
-        <Button type="primary" htmlType="submit" onClick={onSubmit}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          onClick={onSubmit}
+          loading={submitting}
+          disabled={submitting}
+        >
           Submit
         </Button>
       </Form.Item>
@@ -205,27 +207,61 @@ const Login1 = ({
   );
 };
 
-// email + OTP
-const Login2 = ({
+const LoginWithOTP = ({
   email,
   onEmailChange,
 }: {
   email: string;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
-  const [currentStep, setCurrentStep] = useState(0); // 0: email, 1: code
+  const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
   const [otp, setOtp] = useState("");
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+  const [countdownVal, setCountdownVal] = useState(10); // countdown value in second
+  const [counting, setCounting] = useState(false);
+  const countdownReqId = useRef<number>(0);
 
+  const countdown = (val: number) => {
+    const valBK = val;
+    setCounting(true);
+    let lastTime = new Date().getTime();
+    (function timer() {
+      countdownReqId.current = requestAnimationFrame(timer);
+      const currentTime = new Date().getTime();
+      if (currentTime - lastTime >= 1000) {
+        lastTime = currentTime;
+        val--;
+        console.log("num sec: ", val);
+        if (val >= 0) {
+          setCountdownVal(val);
+          if (val == 0) {
+            setCounting(false);
+          }
+        } else {
+          setCountdownVal(valBK); // reset to original value, prepare for next countdown
+          cancelAnimationFrame(countdownReqId.current);
+        }
+      }
+    })();
+  };
+
+  useEffect(() => {
+    // timerBySec(10, setCountdownVal);
+  }, []);
+
+  // console.log("cd val: ", countdownVal);
   const onOTPchange = (value: string) => {
     setOtp(value.toUpperCase());
   };
 
+  // duplicate code, refactor it
   const resend = () => {
+    countdown(countdownVal);
     setOtp("");
     axios
-      .post(`${API_URL}/auth/v1/sso/loginOTP`, {
+      .post(`${API_URL}/user/auth/sso/loginOTP`, {
         email,
       })
       .then((res) => {
@@ -235,6 +271,7 @@ const Login2 = ({
           throw new Error(res.data.message);
         }
         setCurrentStep(1);
+        message.success("Code sent, please check your email");
       })
       .catch((err) => {
         console.log("login err: ", err.message);
@@ -245,12 +282,14 @@ const Login2 = ({
   const submit = () => {
     setErrMsg("");
     console.log("submitting..");
+    setSubmitting(true);
     if (currentStep == 0) {
       axios
         .post(`${API_URL}/user/auth/sso/loginOTP`, {
           email,
         })
         .then((res) => {
+          setSubmitting(false);
           console.log("login res: ", res);
           if (res.data.code != 0) {
             setErrMsg(res.data.message);
@@ -259,6 +298,7 @@ const Login2 = ({
           setCurrentStep(1);
         })
         .catch((err) => {
+          setSubmitting(false);
           console.log("login err: ", err.message);
           setErrMsg(err.message);
         });
@@ -269,6 +309,7 @@ const Login2 = ({
           verificationCode: otp,
         })
         .then((res) => {
+          setSubmitting(false);
           console.log("otp loginVerify res: ", res);
           if (res.data.code != 0) {
             setErrMsg(res.data.message);
@@ -278,6 +319,7 @@ const Login2 = ({
           navigate(`${APP_PATH}profile/subscription`);
         })
         .catch((err) => {
+          setSubmitting(false);
           console.log("login err: ", err.message);
           setErrMsg(err.message);
         });
@@ -322,7 +364,13 @@ const Login2 = ({
               span: 16,
             }}
           >
-            <Button type="primary" htmlType="submit" onClick={submit}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              onClick={submit}
+              loading={submitting}
+              disabled={submitting}
+            >
               Submit
             </Button>
           </Form.Item>
@@ -366,12 +414,33 @@ const Login2 = ({
             }}
           >
             <span style={{ marginBottom: "18px", color: "red" }}>{errMsg}</span>
-            <Button type="primary" block onClick={submit}>
+            <Button
+              type="primary"
+              block
+              onClick={submit}
+              loading={submitting}
+              disabled={submitting}
+            >
               OK
             </Button>
-            <Button type="link" block onClick={resend}>
-              Resend
-            </Button>
+            <div>
+              <Button type="link" block onClick={() => setCurrentStep(0)}>
+                Go back
+              </Button>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Button type="link" onClick={resend} disabled={counting}>
+                  Resend
+                </Button>
+                {counting && <span> in {countdownVal} seconds</span>}
+              </div>
+            </div>
           </div>
         </>
       )}

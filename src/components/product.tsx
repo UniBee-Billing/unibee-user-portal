@@ -94,8 +94,6 @@ const Index = () => {
   const toggleBillingModal = () =>
     setBillingAddressModalOpen(!billingAddressModalOpen);
 
-  const toastErr = (msg: string) => message.error(msg);
-
   const onAddonChange = (
     addonId: number,
     quantity: number | null, // null means: don't update this field, keep its original value
@@ -144,7 +142,7 @@ const Index = () => {
         setLoading(false);
         if (err instanceof Error) {
           console.log("err: ", err.message);
-          toastErr(err.message);
+          message.error(err.message);
         } else {
           message.error("Unknown error");
         }
@@ -156,17 +154,6 @@ const Index = () => {
         if (p.plan.type == 2) {
           return null;
         }
-        /*
-        if (
-          p.plan.id != 31 &&
-          p.plan.id != 37 &&
-          p.plan.id != 38 &&
-          p.plan.id != 32 &&
-          p.plan.id != 41
-        ) {
-          return null;
-        }
-        */
         return {
           id: p2.id,
           planName: p2.planName,
@@ -261,7 +248,7 @@ const Index = () => {
       setModalOpen(false);
       if (err instanceof Error) {
         console.log("err creating preview: ", err.message);
-        toastErr(err.message);
+        message.error(err.message);
       } else {
         message.error("Unknown error");
       }
@@ -338,7 +325,7 @@ interface IPreview {
       setModalOpen(false);
       if (err instanceof Error) {
         console.log("err creating subscripion: ", err.message);
-        toastErr(err.message);
+        message.error(err.message);
       } else {
         message.error("Unknown error");
       }

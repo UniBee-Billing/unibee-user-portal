@@ -16,7 +16,7 @@ import {
   useNavigate,
   Navigate,
 } from "react-router-dom";
-import { Layout, Menu, theme } from "antd";
+import { Layout, Menu, theme, message } from "antd";
 
 import NotFound from "./components/notFound";
 import Products from "./components/product";
@@ -28,6 +28,7 @@ import ProfileSubscription from "./components/profile/subscription";
 import Invoices from "./components/invoices";
 import Login from "./components/login";
 import Signup from "./components/signup";
+import { logoutReq } from "./requests";
 import axios from "axios";
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -91,20 +92,20 @@ const App: React.FC = () => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     localStorage.removeItem("token");
-    axios
-      .post(`${API_URL}/user/auth/sso/logout`, {})
-      .then((res) => {
-        console.log("logout res: ", res);
-        if (res.data.code != 0) {
-          throw new Error(res.data.message);
-        }
-        navigate(`${APP_PATH}login`);
-      })
-      .catch((err) => {
-        navigate(`${APP_PATH}login`);
-      });
+    try {
+      const logoutRes = await logoutReq();
+      console.log("logout res: ", logoutRes);
+      navigate(`${APP_PATH}login`);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log("profile update err: ", err.message);
+        message.error(err.message);
+      } else {
+        message.error("Unknown error");
+      }
+    }
   };
 
   useEffect(() => {

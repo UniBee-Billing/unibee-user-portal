@@ -7,6 +7,17 @@ import { IProfile } from "../shared.types";
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
+export const loginWithPasswordReq = async () => {};
+
+export const logoutReq = async () => {
+  const profile = useProfileStore.getState();
+  return await axios.post(`${API_URL}/user/auth/sso/logout`, {
+    headers: {
+      Authorization: `${profile.token}`, // Bearer: ******
+    },
+  });
+};
+
 export const getProfile = async () => {
   const profile = useProfileStore.getState();
   return await axios.get(`${API_URL}/user/profile`, {

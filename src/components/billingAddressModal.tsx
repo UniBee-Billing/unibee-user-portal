@@ -1,7 +1,5 @@
 import { Button, Form, Modal, Input, Select, message } from "antd";
 import { useProfileStore } from "../stores";
-// import { ISubscriptionType } from "../../../shared.types";
-// import { showAmount } from "../../../helpers";
 import { getCountryList, saveProfile } from "../requests";
 import { useEffect, useState } from "react";
 import { Country, IProfile } from "../shared.types";
