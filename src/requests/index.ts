@@ -74,6 +74,7 @@ export const getPlanList = async () => {
       merchantId: 15621,
       page: 0,
       count: 100,
+      // type: 1,
     },
     {
       headers: {

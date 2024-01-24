@@ -67,7 +67,7 @@ const Index = () => {
       firstName == "" ||
       lastName == "" ||
       email == "" ||
-      country == "" ||
+      // country == "" ||
       password == "" ||
       password2 == ""
     ) {
@@ -82,10 +82,10 @@ const Index = () => {
         firstName,
         lastName,
         password,
-        countryCode: country,
-        countryName: countryList.find((c) => c.code == country)?.name,
-        phone,
-        address,
+        // countryCode: country,
+        // countryName: countryList.find((c) => c.code == country)?.name,
+        // phone,
+        // address,
         user_name,
         // country,
       })
@@ -135,7 +135,7 @@ const Index = () => {
       let countryListRes;
       try {
         countryListRes = await getCountryList(15621); // merchantId
-        console.log("vat list res: ", countryListRes);
+        console.log("country list res: ", countryListRes);
         if (countryListRes.data.code != 0) {
           throw new Error(countryListRes.data.message);
         }
@@ -251,6 +251,7 @@ const Index = () => {
                 <Input value={email} onChange={onEmailChange} />
               </Form.Item>
 
+              {/*
               <Form.Item
                 label="Phone"
                 name="phone"
@@ -263,7 +264,9 @@ const Index = () => {
               >
                 <Input value={phone} onChange={onPhoneChange} />
               </Form.Item>
+              */}
 
+              {/*
               <Form.Item
                 label="Country"
                 name="countryCode"
@@ -288,7 +291,9 @@ const Index = () => {
                   }))}
                 />
               </Form.Item>
+            */}
 
+              {/*
               <Form.Item
                 label="Physical address"
                 name="address"
@@ -301,6 +306,7 @@ const Index = () => {
               >
                 <Input value={address} onChange={onAdderssChange} />
               </Form.Item>
+              */}
 
               <Form.Item
                 label="Password"

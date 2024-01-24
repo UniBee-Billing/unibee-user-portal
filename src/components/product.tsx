@@ -8,6 +8,8 @@ import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useProfileStore } from "../stores";
 import { showAmount } from "../helpers";
 import { ISubscription, IPlan, IPreview } from "../shared.types";
+import { LoadingOutlined } from "@ant-design/icons";
+import BillingAddressModal from "./billingAddressModal";
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -74,9 +76,9 @@ const Index = () => {
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
   const [modalOpen, setModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
-  const [messageApi, contextHolder] = message.useMessage();
   const countryRef = useRef<CountryCode[]>([]);
   const [vatNumber, setVatNumber] = useState("");
 
@@ -88,6 +90,9 @@ const Index = () => {
     navigate(`${APP_PATH}login`, {
       state: { msg: "session expired, please re-login" },
     });
+
+  const toggleBillingModal = () =>
+    setBillingAddressModalOpen(!billingAddressModalOpen);
 
   const toastErr = (msg: string) => message.error(msg);
 
@@ -123,18 +128,20 @@ const Index = () => {
   };
 
   useEffect(() => {
-    // getCountryList(15621),
     const fetchData = async () => {
       let planListRes;
       try {
+        setLoading(true);
         planListRes = await getPlanList();
-        console.log("planList res: ", planListRes.data);
+        setLoading(false);
+        console.log("planList res...: ", planListRes.data);
         const code = planListRes.data.code;
         code == 61 && relogin();
         if (code != 0) {
           throw new Error(planListRes.data.message);
         }
       } catch (err) {
+        setLoading(false);
         if (err instanceof Error) {
           console.log("err: ", err.message);
           toastErr(err.message);
@@ -149,6 +156,7 @@ const Index = () => {
         if (p.plan.type == 2) {
           return null;
         }
+        /*
         if (
           p.plan.id != 31 &&
           p.plan.id != 37 &&
@@ -158,6 +166,7 @@ const Index = () => {
         ) {
           return null;
         }
+        */
         return {
           id: p2.id,
           planName: p2.planName,
@@ -173,13 +182,19 @@ const Index = () => {
       });
       plans = plans.filter((p) => p != null);
       setPlans(plans);
-      setLoading(false);
     };
     fetchData();
   }, []);
 
   const toggleModal = () => setModalOpen(!modalOpen);
   const openModal = () => {
+    const profile = useProfileStore.getState();
+    console.log("user profile: ", profile.countryCode, "//", profile);
+    if (profile.countryCode == "") {
+      toggleBillingModal();
+      return;
+    }
+
     const plan = plans.find((p) => p.id == selectedPlan);
     let valid = true,
       content = "";
@@ -195,17 +210,16 @@ const Index = () => {
           }
         }
       }
+      /*
       if (vatNumber.trim() == "") {
         valid = false;
         content = "Please input the VAT number";
       }
+      */
     }
 
     if (!valid) {
-      messageApi.open({
-        type: "error",
-        content,
-      });
+      message.error(content);
       return;
     }
     toggleModal();
@@ -336,8 +350,17 @@ interface IPreview {
 
   return (
     <>
-      <Spin spinning={loading} fullscreen />
-      {contextHolder}
+      <Spin
+        spinning={loading}
+        indicator={
+          <LoadingOutlined style={{ fontSize: 32, color: "#FFF" }} spin />
+        }
+        fullscreen
+      />
+      <BillingAddressModal
+        isOpen={billingAddressModalOpen}
+        closeModal={toggleBillingModal}
+      />
       {selectedPlan != null && (
         <Modal
           title="Subscription Creation Preview"

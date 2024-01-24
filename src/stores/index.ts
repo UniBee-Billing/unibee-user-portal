@@ -6,7 +6,7 @@ import { IProfile } from "../shared.types";
 // import { createStore } from "zustand";
 
 const INITIAL_PROFILE: IProfile = {
-  adress: "",
+  address: "",
   companyName: "",
   email: "",
   facebook: "",

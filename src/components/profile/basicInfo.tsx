@@ -38,13 +38,11 @@ const normFile = (e: any) => {
 
 const Index = () => {
   const profileStore = useProfileStore();
-  const [errMsg, setErrMsg] = useState("");
   const [firstLoading, setFirstLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [profile, setProfile] = useState({});
+  const [profile, setProfile] = useState({}); // ?????????? why do I need this??????
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [messageApi, contextHolder] = message.useMessage();
   const [countryList, setCountryList] = useState<Country[]>([]);
 
   const relogin = () =>
@@ -77,7 +75,6 @@ const Index = () => {
       setUpdating(false);
       if (err instanceof Error) {
         console.log("profile update err: ", err.message);
-        setErrMsg(err.message);
         message.error(err.message);
       } else {
         message.error("Unknown error");
@@ -111,7 +108,6 @@ const Index = () => {
         setFirstLoading(false);
         if (err instanceof Error) {
           console.log("profile update err: ", err.message);
-          setErrMsg(err.message);
           message.error(err.message);
         } else {
           message.error("Unknown error");
@@ -142,7 +138,6 @@ const Index = () => {
 
   return (
     <div>
-      {contextHolder}
       {firstLoading ? null : (
         <Form
           form={form}
@@ -201,7 +196,7 @@ const Index = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item label="Phone number" name="mobile">
+          <Form.Item label="Phone number" name="phone">
             <Input />
           </Form.Item>
 
