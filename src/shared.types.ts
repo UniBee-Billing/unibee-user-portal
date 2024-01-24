@@ -56,13 +56,18 @@ interface ISubscription {
   subscriptionId: string;
   planId: number;
   userId: number;
-  plan: IPlan;
   status: number;
+  // channelId: number;
   firstPayTime: Date;
   currentPeriodStart: number;
   currentPeriodEnd: number;
   trailEnd: number;
+  cancelAtPeriodEnd: number; // whether this sub will end at the end of billing cycle, 0: false, 1: true
+  amount: number;
+  currency: string;
+  plan: IPlan;
   addons: ISubAddon[];
+  user: IProfile | null;
 }
 
 interface IPreview {

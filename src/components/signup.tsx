@@ -428,16 +428,24 @@ const Index = () => {
           >
             {errMsg}
           </div>
-          <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+          >
             <Button
               type="primary"
-              block
               onClick={onSubmit2}
               loading={submitting}
+              disabled={submitting}
+              size="large"
             >
               submit
             </Button>
-            <Button type="link" block onClick={onSubmit} loading={submitting}>
+            <Button type="link" block onClick={onSubmit} disabled={submitting}>
               Resend
             </Button>
             {/* <Button

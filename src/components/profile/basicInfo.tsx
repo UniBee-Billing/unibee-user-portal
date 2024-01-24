@@ -235,10 +235,10 @@ const Index = () => {
 
           <Form.Item label="Payment methods" name="paymentMethod">
             <Radio.Group>
-              <Radio value="creditCard">Credit Card</Radio>
-              <Radio value="crypto">Crypto</Radio>
-              <Radio value="paypal">Paypal</Radio>
-              <Radio value="wireTransfer">Wire Transfer</Radio>
+              <Radio value="CreditCard">Credit Card</Radio>
+              <Radio value="Crypto">Crypto</Radio>
+              <Radio value="PayPal">PayPal</Radio>
+              <Radio value="WireTransfer">Wire Transfer</Radio>
             </Radio.Group>
           </Form.Item>
 

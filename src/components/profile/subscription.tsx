@@ -3,13 +3,16 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Space, Table, message, Tag, Tooltip } from "antd";
 import { useProfileStore } from "../../stores";
+import { getSublist } from "../../requests";
 import { ISubscription } from "../../shared.types";
 import { showAmount } from "../../helpers";
 import type { ColumnsType } from "antd/es/table";
+import { LoadingOutlined } from "@ant-design/icons";
+import PageLoading from "../pageLoading";
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 const API_URL = import.meta.env.VITE_API_URL;
-
+/*
 interface SubscriptionType {
   id: number;
   subscriptionId: string;
@@ -22,18 +25,15 @@ interface SubscriptionType {
   currentPeriodStart: number;
   currentPeriodEnd: number;
 }
+*/
 
-const columns: ColumnsType<SubscriptionType> = [
+const columns: ColumnsType<ISubscription> = [
   {
     title: "Name",
     dataIndex: "planName",
     key: "planName",
     // render: (text) => <a>{text}</a>,
-  },
-  {
-    title: "Addons",
-    dataIndex: "addons",
-    key: "addons",
+    render: (_, sub) => <a>{sub.plan?.planName}</a>,
   },
   {
     title: "Total Amount",
@@ -44,6 +44,13 @@ const columns: ColumnsType<SubscriptionType> = [
       return <span>{showAmount(sub.amount, sub.currency)}</span>;
     },
   },
+  /*
+  {
+    title: "Addons",
+    dataIndex: "addons",
+    key: "addons",
+  },
+
   {
     title: "Payment method",
     dataIndex: "channelId",
@@ -52,6 +59,7 @@ const columns: ColumnsType<SubscriptionType> = [
       return <span>Stripe</span>;
     },
   },
+*/
   {
     title: "Start Date",
     dataIndex: "currentPeriodStart",
@@ -63,7 +71,7 @@ const columns: ColumnsType<SubscriptionType> = [
     },
   },
   {
-    title: "Next Pay Date",
+    title: "End Date",
     dataIndex: "currentPeriodEnd",
     key: "currentPeriodEnd",
     render: (_, sub) => {
@@ -81,79 +89,86 @@ const Index = () => {
   const [firstLoading, setFirstLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [profile, setProfile] = useState({});
-  const [subscriptions, setSubscriptions] = useState<SubscriptionType[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [subscriptions, setSubscriptions] = useState<ISubscription[]>([]);
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
+
+  const relogin = () =>
+    navigate(`${APP_PATH}login`, {
+      state: { msg: "session expired, please re-login" },
+    });
 
   useEffect(() => {
-    axios
-      .post(
-        `${API_URL}/user/subscription/subscription_list`,
-        {
-          merchantId: 15621,
-          userId: profileStore.id,
-          // status: 0,
-          page: 0,
-          count: 100,
-        },
-        {
-          headers: {
-            Authorization: `${profileStore.token}`, // Bearer: ******
-          },
+    const fetchData = async () => {
+      let subListRes;
+      setLoading(true);
+      try {
+        subListRes = await getSublist({ page: 0 });
+        console.log("user sub list: ", subListRes);
+        const code = subListRes.data.code;
+        code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
+        if (code != 0) {
+          // TODO: save all the code as ENUM in constant,
+          throw new Error(subListRes.data.message);
         }
-      )
-      .then((res) => {
-        console.log("user subscription list res: ", res);
-        const statuCode = res.data.code;
-        if (statuCode != 0) {
-          if (statuCode == 61) {
-            console.log("invalid token");
-            navigate(`${APP_PATH}login`, {
-              state: { msg: "session expired, please re-login" },
+      } catch (err) {
+        setLoading(false);
+        if (err instanceof Error) {
+          console.log("err getting user sub list: ", err.message);
+          message.error(err.message);
+        } else {
+          message.error("Unknown error");
+        }
+        return;
+      }
+
+      setLoading(false);
+      const sub: ISubscription[] =
+        subListRes.data.data.Subscriptions == null
+          ? []
+          : subListRes.data.data.Subscriptions.map((s: any) => {
+              return {
+                ...s.subscription,
+                plan: s.plan,
+                addons:
+                  s.addons == null
+                    ? []
+                    : s.addons.map((a: any) => ({
+                        ...a.addonPlan,
+                        quantity: a.quantity,
+                      })),
+                user: s.user,
+                /*
+                id: s.subscription.id,
+                subscriptionId: s.subscription.subscriptionId,
+                addons: "",
+                amount: s.subscription.amount,
+                currency: s.subscription.currency,
+                channelId: s.subscription.channelId,
+                firstPayTime: s.subscription.firstPayTime,
+                currentPeriodEnd: s.subscription.currentPeriodEnd,
+                currentPeriodStart: s.subscription.currentPeriodStart,
+                */
+              };
             });
-            return;
-          }
-          throw new Error(res.data.message);
-        }
-        const sub: SubscriptionType[] =
-          res.data.data.Subscriptions == null
-            ? []
-            : res.data.data.Subscriptions.map((s: any) => {
-                return {
-                  id: s.subscription.id,
-                  subscriptionId: s.subscription.subscriptionId,
-                  addons: "",
-                  amount: s.subscription.amount,
-                  currency: s.subscription.currency,
-                  channelId: s.subscription.channelId,
-                  firstPayTime: s.subscription.firstPayTime,
-                  currentPeriodEnd: s.subscription.currentPeriodEnd,
-                  currentPeriodStart: s.subscription.currentPeriodStart,
-                };
-              });
+      console.log("final sub: ", sub);
+      if (sub.length > 0) {
         setSubscriptions(sub);
-      })
-      .catch((err) => {
-        console.log("user subscription list err: ", err);
-        messageApi.open({
-          type: "error",
-          content: err.message,
-        });
-      });
+        return;
+      }
+      navigate(`${APP_PATH}products`); // new users, no subscriptions
+    };
+    fetchData();
   }, []);
 
   useEffect(() => {
     if (location.state && location.state.msg) {
-      messageApi.open({
-        type: "info",
-        content: location.state.msg,
-      });
+      message.info(location.state.msg);
     }
   }, []);
 
   return (
     <div>
-      {contextHolder}
       <div>
         <h2>Current subscription</h2>
         <div style={{ height: "80px" }}></div>
@@ -163,6 +178,10 @@ const Index = () => {
           dataSource={subscriptions}
           rowKey={"id"}
           pagination={false}
+          loading={{
+            spinning: loading,
+            indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />,
+          }}
         />
       </div>
     </div>

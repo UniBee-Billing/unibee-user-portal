@@ -25,6 +25,26 @@ export const saveProfile = async (newProfile: IProfile) => {
   });
 };
 
+export const getSublist = async ({ page = 0 }: { page: number }) => {
+  const profile = useProfileStore.getState();
+  const body = {
+    merchantId: 15621,
+    userId: profile.id,
+    // status: 0,
+    page,
+    count: 100,
+  };
+  return await axios.post(
+    `${API_URL}/user/subscription/subscription_list`,
+    body,
+    {
+      headers: {
+        Authorization: `${profile.token}`, // Bearer: ******
+      },
+    }
+  );
+};
+
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
   console.log("profile from store: ", profile);

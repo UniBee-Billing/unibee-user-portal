@@ -110,6 +110,7 @@ const App: React.FC = () => {
   useEffect(() => {
     // when user refresh or enter URL then ENTER, call this fn to highlight the active menu
     // since we are already in the current path, there is no need to navigate
+    console.log("app mounted, pathname: ", window.location.pathname);
     onItemClick({ key: window.location.pathname, needNavigate: false });
   }, []);
 
