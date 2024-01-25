@@ -1,11 +1,26 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import type { RadioChangeEvent } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Button, Checkbox, Form, Input, Tabs, Radio, message } from "antd";
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  Tabs,
+  Radio,
+  message,
+  Divider,
+} from "antd";
 import OtpInput from "react-otp-input";
 import axios from "axios";
 import { useProfileStore } from "../stores";
 import { timerBySec } from "../helpers";
+import {
+  FacebookOutlined,
+  GithubOutlined,
+  LinkedinOutlined,
+  TwitterOutlined,
+} from "@ant-design/icons";
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -39,64 +54,101 @@ const Index = () => {
   }, []);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: "200px",
-      }}
-    >
-      {contextHolder}
-      <Radio.Group
-        options={[
-          { label: "Password", value: "password" },
-          { label: "OTP", value: "OTP" },
-        ]}
-        onChange={onLoginTypeChange}
-        value={loginType}
-      />
+    <>
       <div
         style={{
-          width: "640px",
-          height: "320px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          border: "1px solid #e0e0e0",
-          borderRadius: "8px",
-          marginTop: "36px",
-          background: "#FFF",
+          marginTop: "200px",
         }}
       >
-        {loginType == "password" ? (
-          <LoginWithPassword
-            email={email}
-            onEmailChange={onEmailChange}
-            password={password}
-            onPasswordChange={onPasswordChange}
-          />
-        ) : (
-          <LoginWithOTP email={email} onEmailChange={onEmailChange} />
-        )}
+        {contextHolder}
+        <Radio.Group
+          options={[
+            { label: "Password", value: "password" },
+            { label: "OTP", value: "OTP" },
+          ]}
+          onChange={onLoginTypeChange}
+          value={loginType}
+        />
+        <div
+          style={{
+            width: "640px",
+            height: "320px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            border: "1px solid #e0e0e0",
+            borderRadius: "8px",
+            marginTop: "36px",
+            background: "#FFF",
+          }}
+        >
+          {loginType == "password" ? (
+            <LoginWithPassword
+              email={email}
+              onEmailChange={onEmailChange}
+              password={password}
+              onPasswordChange={onPasswordChange}
+            />
+          ) : (
+            <LoginWithOTP email={email} onEmailChange={onEmailChange} />
+          )}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            color: "#757575",
+            justifyContent: "center",
+            alignItems: "center",
+            // margin: "-48px 0 18px 0",
+          }}
+        >
+          Don't have an account?
+          <Button type="link" onClick={goSignup}>
+            Free signup
+          </Button>
+        </div>
       </div>
       <div
         style={{
+          position: "absolute",
+          bottom: "0",
+          height: "128px",
           display: "flex",
-          color: "#757575",
+          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          // margin: "-48px 0 18px 0",
+          width: "100%",
+          background: "#192733",
+          color: "#FFF",
         }}
       >
-        Don't have an account?
-        <Button type="link" onClick={goSignup}>
-          Free signup
-        </Button>
+        <div style={{ width: "80%" }}>
+          <Divider style={{ border: "#FFF", width: "80%" }}>
+            <div style={{ display: "flex", gap: "24px", color: "#FFF" }}>
+              <GithubOutlined style={{ fontSize: "24px" }} />
+              <TwitterOutlined style={{ fontSize: "24px" }} />
+              <LinkedinOutlined style={{ fontSize: "24px" }} />
+              <FacebookOutlined style={{ fontSize: "24px" }} />
+            </div>
+          </Divider>
+          <div
+            style={{
+              color: "#FFF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            Copyright © 2024 UniBee, Inc.
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
