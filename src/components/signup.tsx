@@ -4,14 +4,10 @@ import { Button, Checkbox, message, Form, Input, Select, Divider } from "antd";
 import OtpInput from "react-otp-input";
 import { getCountryList } from "../requests";
 import { Country } from "../shared.types";
-
+import AppHeader from "./appHeader";
+import AppFooter from "./appFooter";
 import axios from "axios";
-import {
-  FacebookOutlined,
-  GithubOutlined,
-  LinkedinOutlined,
-  TwitterOutlined,
-} from "@ant-design/icons";
+
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -146,6 +142,7 @@ const Index = () => {
 
   return (
     <>
+      <AppHeader />
       <div
         style={{
           display: "flex",
@@ -157,7 +154,9 @@ const Index = () => {
       >
         {currentStep == 0 ? (
           <>
-            <h1 style={{ marginBottom: "36px" }}>Sign-up</h1>
+            <h1 style={{ marginBottom: "36px", marginTop: "64px" }}>
+              Customer Sign-up
+            </h1>
             <div
               style={{
                 width: "640px",
@@ -401,41 +400,7 @@ const Index = () => {
           </div>
         )}
       </div>
-      <div
-        style={{
-          position: "absolute",
-          bottom: "0",
-          height: "128px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          background: "#192733",
-          color: "#FFF",
-        }}
-      >
-        <div style={{ width: "80%" }}>
-          <Divider style={{ border: "#FFF", width: "80%" }}>
-            <div style={{ display: "flex", gap: "24px", color: "#FFF" }}>
-              <GithubOutlined style={{ fontSize: "24px" }} />
-              <TwitterOutlined style={{ fontSize: "24px" }} />
-              <LinkedinOutlined style={{ fontSize: "24px" }} />
-              <FacebookOutlined style={{ fontSize: "24px" }} />
-            </div>
-          </Divider>
-          <div
-            style={{
-              color: "#FFF",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            Copyright © 2024 UniBee, Inc.
-          </div>
-        </div>
-      </div>
+      <AppFooter />
     </>
   );
 };
