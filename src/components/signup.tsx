@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Checkbox, message, Form, Input, Select } from "antd";
-// import { request } from "../api/axios2";
-// import { login } from "../api/auth";
 import OtpInput from "react-otp-input";
 import { getCountryList } from "../requests";
 import { Country } from "../shared.types";
@@ -38,29 +36,16 @@ const Index = () => {
     setLastName(evt.target.value);
   const onEmailChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
     setEmail(evt.target.value);
-  const onPhoneChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
-    setPhone(evt.target.value);
-  const onAdderssChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
-    setAddress(evt.target.value);
   const onPasswordChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
     setPassword(evt.target.value);
   const onPassword2Change = (evt: React.ChangeEvent<HTMLInputElement>) =>
     setPassword2(evt.target.value);
-  // const onCodeChange = (evt) => setVerificationCode(evt.target.value);
   const [otp, setOtp] = useState("");
   const onOTPchange = (value: string) => {
     setOtp(value.toUpperCase());
   };
 
-  const onCountryChange = (value: string) => {
-    console.log(`selected ${value}`);
-    setCountry(value);
-  };
-
-  const filterOption = (
-    input: string,
-    option?: { label: string; value: string }
-  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+  const goLogin = () => navigate(`${APP_PATH}login`);
 
   const onSubmit = () => {
     if (
@@ -82,12 +67,7 @@ const Index = () => {
         firstName,
         lastName,
         password,
-        // countryCode: country,
-        // countryName: countryList.find((c) => c.code == country)?.name,
-        // phone,
-        // address,
         user_name,
-        // country,
       })
       .then((res) => {
         setErrMsg(res.data.message);
@@ -120,7 +100,7 @@ const Index = () => {
           throw new Error(res.data.message);
         }
         navigate(`${APP_PATH}login`, {
-          state: { msg: "Thanks for your sign-up on Unibee" },
+          state: { msg: "Thanks for your sign-up on UniBee" },
         });
       })
       .catch((err) => {
@@ -155,7 +135,7 @@ const Index = () => {
         return;
       }
     };
-    fetchData();
+    // fetchData(); // not used anymore
   }, []);
 
   return (
@@ -178,6 +158,7 @@ const Index = () => {
               borderRadius: "8px",
               background: "#FFF",
               display: "flex",
+              flexDirection: "column",
               justifyContent: "center",
               paddingTop: "24px",
             }}
@@ -250,64 +231,6 @@ const Index = () => {
               >
                 <Input value={email} onChange={onEmailChange} />
               </Form.Item>
-
-              {/*
-              <Form.Item
-                label="Phone"
-                name="phone"
-                rules={[
-                  {
-                    required: false,
-                    // message: "Please input your Email!",
-                  },
-                ]}
-              >
-                <Input value={phone} onChange={onPhoneChange} />
-              </Form.Item>
-              */}
-
-              {/*
-              <Form.Item
-                label="Country"
-                name="countryCode"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select your country!",
-                  },
-                ]}
-              >
-                <Select
-                  showSearch
-                  placeholder="Type to search"
-                  optionFilterProp="children"
-                  value={country}
-                  onChange={onCountryChange}
-                  // onSearch={onSearch}
-                  filterOption={filterOption}
-                  options={countryList.map((c) => ({
-                    label: c.name,
-                    value: c.code,
-                  }))}
-                />
-              </Form.Item>
-            */}
-
-              {/*
-              <Form.Item
-                label="Physical address"
-                name="address"
-                rules={[
-                  {
-                    required: false,
-                    // message: "Please input your Email!",
-                  },
-                ]}
-              >
-                <Input value={address} onChange={onAdderssChange} />
-              </Form.Item>
-              */}
-
               <Form.Item
                 label="Password"
                 name="password"
@@ -365,21 +288,10 @@ const Index = () => {
                 <span style={{ color: "red" }}>{errMsg}</span>
               </Form.Item>
 
-              {/* <Form.Item
-                name="remember"
-                valuePropName="checked"
-                wrapperCol={{
-                  offset: 8,
-                  span: 16,
-                }}
-              >
-                <Checkbox>Remember me</Checkbox>
-              </Form.Item> */}
-
               <Form.Item
                 wrapperCol={{
-                  offset: 8,
-                  span: 16,
+                  offset: 11,
+                  span: 8,
                 }}
               >
                 <Button
@@ -392,6 +304,20 @@ const Index = () => {
                 </Button>
               </Form.Item>
             </Form>
+            <div
+              style={{
+                display: "flex",
+                color: "#757575",
+                justifyContent: "center",
+                alignItems: "center",
+                margin: "-12px 0 18px 0",
+              }}
+            >
+              Already have an account?
+              <Button type="link" onClick={goLogin}>
+                Login
+              </Button>
+            </div>
           </div>
         </>
       ) : (
@@ -454,17 +380,6 @@ const Index = () => {
             <Button type="link" block onClick={onSubmit} disabled={submitting}>
               Resend
             </Button>
-            {/* <Button
-              type="link"
-              block
-              onClick={() => {
-                setCurrentStep(0);
-                setOtp("");
-                setErrMsg("");
-              }}
-            >
-              Go back
-            </Button>*/}
           </div>
         </div>
       )}

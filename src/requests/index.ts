@@ -13,7 +13,7 @@ export const logoutReq = async () => {
   const profile = useProfileStore.getState();
   console.log("logou ", profile);
   return await axios.post(
-    `${API_URL}/user/auth/sso/logout`,
+    `${API_URL}/user/user_logout`,
     {},
     {
       headers: {

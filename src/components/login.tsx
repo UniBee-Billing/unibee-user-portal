@@ -11,6 +11,7 @@ const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [messageApi, contextHolder] = message.useMessage();
   const [email, setEmail] = useState("");
@@ -25,6 +26,8 @@ const Index = () => {
     // console.log("radio checked", e.target.value);
     setLoginType(e.target.value);
   };
+
+  const goSignup = () => navigate(`${APP_PATH}signup`);
 
   useEffect(() => {
     if (location.state && location.state.msg) {
@@ -78,6 +81,20 @@ const Index = () => {
         ) : (
           <LoginWithOTP email={email} onEmailChange={onEmailChange} />
         )}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          color: "#757575",
+          justifyContent: "center",
+          alignItems: "center",
+          // margin: "-48px 0 18px 0",
+        }}
+      >
+        Don't have an account?
+        <Button type="link" onClick={goSignup}>
+          Free signup
+        </Button>
       </div>
     </div>
   );
@@ -215,6 +232,7 @@ const LoginWithOTP = ({
   email: string;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
+  const NUM_INPUTS = 6;
   const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
   const profileStore = useProfileStore();
   const [otp, setOtp] = useState("");
@@ -240,24 +258,26 @@ const LoginWithOTP = ({
         val < 0 &&
           (setCountdownVal(valBK),
           cancelAnimationFrame(countdownReqId.current));
-
-        /*
-        if (val >= 0) {
-          setCountdownVal(val);
-          if (val == 0) {
-            setCounting(false);
-          }
-        } else {
-          setCountdownVal(valBK); // reset to original value, prepare for next countdown
-          cancelAnimationFrame(countdownReqId.current);
-        }
-        */
       }
     })();
   };
 
   useEffect(() => {
     // timerBySec(10, setCountdownVal);
+    const keyDownHandler = (event: KeyboardEvent) => {
+      console.log("User pressed: ", event.key, "//", otp);
+      if (event.key === "Enter") {
+        event.preventDefault();
+        if (otp.trim().length < NUM_INPUTS) {
+          return;
+        }
+        submit();
+      }
+    };
+    document.addEventListener("keydown", keyDownHandler);
+    return () => {
+      document.removeEventListener("keydown", keyDownHandler);
+    };
   }, []);
 
   // console.log("cd val: ", countdownVal);
@@ -402,7 +422,7 @@ const LoginWithOTP = ({
           <OtpInput
             value={otp}
             onChange={onOTPchange}
-            numInputs={6}
+            numInputs={NUM_INPUTS}
             shouldAutoFocus={true}
             skipDefaultStyles={true}
             inputStyle={{
