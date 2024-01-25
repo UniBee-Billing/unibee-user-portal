@@ -11,11 +11,16 @@ export const loginWithPasswordReq = async () => {};
 
 export const logoutReq = async () => {
   const profile = useProfileStore.getState();
-  return await axios.post(`${API_URL}/user/auth/sso/logout`, {
-    headers: {
-      Authorization: `${profile.token}`, // Bearer: ******
-    },
-  });
+  console.log("logou ", profile);
+  return await axios.post(
+    `${API_URL}/user/auth/sso/logout`,
+    {},
+    {
+      headers: {
+        Authorization: `${profile.token}`, // Bearer: ******
+      },
+    }
+  );
 };
 
 export const getProfile = async () => {

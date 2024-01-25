@@ -1,6 +1,5 @@
 interface IProfile {
   address: string;
-  // country: string; // use ISO code to represent country
   countryName: string;
   countryCode: string;
   companyName: string;

@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   DesktopOutlined,
-  // FileOutlined,
   PieChartOutlined,
-  // TeamOutlined,
-  // UserOutlined
   LogoutOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -15,6 +12,7 @@ import {
   // Link,
   useNavigate,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { Layout, Menu, theme, message } from "antd";
 
@@ -29,10 +27,8 @@ import Invoices from "./components/invoices";
 import Login from "./components/login";
 import Signup from "./components/signup";
 import { logoutReq } from "./requests";
-import axios from "axios";
 
 const APP_PATH = import.meta.env.BASE_URL;
-const API_URL = import.meta.env.VITE_API_URL;
 const { Header, Content, Footer, Sider } = Layout;
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -67,6 +63,7 @@ const noSiderRoutes = [
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
   const [activeMenuItem, setActiveMenuItem] = useState<string[]>(["/profile"]);
   // this is the default open keys after successful login.
   const [openKeys, setOpenKeys] = useState<string[]>(["/profile"]);
@@ -114,6 +111,19 @@ const App: React.FC = () => {
     console.log("app mounted, pathname: ", window.location.pathname);
     onItemClick({ key: window.location.pathname, needNavigate: false });
   }, []);
+
+  // similar to onItemClick, try to refactor into one fn.
+  useEffect(() => {
+    if (location) {
+      console.log("locatoin.pathname: ", location.pathname);
+      const pathItems = location.pathname.split("/").filter((p) => p != "");
+      const keys = ["/" + pathItems[0]];
+      if (pathItems.length > 1) {
+        keys.push("/" + pathItems.join("/"));
+      }
+      setOpenKeys(["/profile", location.pathname]);
+    }
+  }, [location]);
 
   return (
     <>

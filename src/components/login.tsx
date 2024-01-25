@@ -123,6 +123,7 @@ const LoginWithPassword = ({
         localStorage.setItem("token", res.data.data.Token);
         res.data.data.User.token = res.data.data.Token;
         profileStore.setProfile(res.data.data.User);
+        console.log("res.data.data.User: ", res.data.data.User);
         navigate(`${APP_PATH}profile/subscription`);
       })
       .catch((err) => {
@@ -215,6 +216,7 @@ const LoginWithOTP = ({
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
   const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
+  const profileStore = useProfileStore();
   const [otp, setOtp] = useState("");
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
@@ -233,7 +235,13 @@ const LoginWithOTP = ({
       if (currentTime - lastTime >= 1000) {
         lastTime = currentTime;
         val--;
-        console.log("num sec: ", val);
+        val >= 0 && setCountdownVal(val);
+        val == 0 && setCounting(false);
+        val < 0 &&
+          (setCountdownVal(valBK),
+          cancelAnimationFrame(countdownReqId.current));
+
+        /*
         if (val >= 0) {
           setCountdownVal(val);
           if (val == 0) {
@@ -243,6 +251,7 @@ const LoginWithOTP = ({
           setCountdownVal(valBK); // reset to original value, prepare for next countdown
           cancelAnimationFrame(countdownReqId.current);
         }
+        */
       }
     })();
   };
@@ -316,6 +325,9 @@ const LoginWithOTP = ({
             throw new Error(res.data.message);
           }
           localStorage.setItem("token", res.data.data.Token);
+          res.data.data.User.token = res.data.data.Token;
+          profileStore.setProfile(res.data.data.User);
+          console.log("res.data.data.User: ", res.data.data.User);
           navigate(`${APP_PATH}profile/subscription`);
         })
         .catch((err) => {
