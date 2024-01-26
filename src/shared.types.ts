@@ -85,7 +85,7 @@ type InvoiceItem = {
 
 interface IPreview {
   totalAmount: number;
-  // prorationDate: number;
+  prorationDate?: number;
   currency: string;
   vatCountryCode?: string;
   vatCountryName?: string;

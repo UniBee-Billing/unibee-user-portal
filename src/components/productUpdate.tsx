@@ -272,6 +272,7 @@ const Index = () => {
       return;
     }
 
+    /*
     const p: IPreview = {
       totalAmount: previewRes.data.data.totalAmount,
       currency: previewRes.data.data.currency,
@@ -281,7 +282,8 @@ const Index = () => {
       // vatCountryName: "",
       // vatNumber: ""
     };
-    setPreview(p);
+    */
+    setPreview(previewRes.data.data);
   };
 
   const onConfirm = async () => {
@@ -380,7 +382,7 @@ const Index = () => {
         >
           {preview && (
             <>
-              {preview.invoices.map((i, idx) => (
+              {preview.invoice.lines.map((i, idx) => (
                 <Row key={idx} gutter={[16, 16]}>
                   <Col span={6}>{`${showAmount(i.amount, i.currency)}`}</Col>
                   <Col span={18}>{i.description}</Col>

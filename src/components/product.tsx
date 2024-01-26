@@ -52,7 +52,7 @@ const Index = () => {
     setVatNumber(e.target.value);
   //    console.log("vat change: ", e);
 
-  const onCountryChange = (value) => setSelectedCountry(value);
+  const onCountryChange = (value: string) => setSelectedCountry(value);
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
