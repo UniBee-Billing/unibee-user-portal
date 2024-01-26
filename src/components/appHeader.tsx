@@ -11,6 +11,7 @@ const Index = () => (
       height: "64px",
       padding: "0 24px",
       display: "flex",
+      zIndex: "100",
       justifyContent: "space-between",
       alignItems: "center",
       width: "100%",
