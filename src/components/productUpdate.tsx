@@ -107,11 +107,12 @@ const Index = () => {
         subListRes.data.data.Subscriptions[0] != null
       ) {
         // there is only one active sub at most or null.
+        // null: new user(no purchase record), non-null: user has bought one plan, and want to change/upgrade/downgrade
         sub = subListRes.data.data.Subscriptions[0];
         console.log("active sub found: ", sub);
       }
 
-      // addons and other props are separated in different area, I want to combine them into one subscription obj
+      // addons and other props are separated in different area in the response subscription obj, I want to combine them into one subscription obj
       let localActiveSub: ISubscription | null = null;
       if (sub != null) {
         localActiveSub = { ...sub.subscription };
@@ -144,7 +145,7 @@ const Index = () => {
       plans = plans.filter((p) => p != null);
 
       if (localActiveSub != null) {
-        const planIdx = plans.findIndex((p) => p.id == localActiveSub.planId);
+        const planIdx = plans.findIndex((p) => p.id == localActiveSub!.planId);
         // let's say we have planA(which has addonA1, addonA2, addonA3), planB, planC, user has subscribed to planA, and selected addonA1, addonA3
         // I need to find the index of addonA1,3 in planA.addons array,
         // then set their {quantity, checked: true} props on planA.addons, these props value are from subscription.addons array.
