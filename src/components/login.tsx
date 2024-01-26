@@ -15,12 +15,6 @@ import OtpInput from "react-otp-input";
 import axios from "axios";
 import { useProfileStore } from "../stores";
 import { timerBySec } from "../helpers";
-import {
-  FacebookOutlined,
-  GithubOutlined,
-  LinkedinOutlined,
-  TwitterOutlined,
-} from "@ant-design/icons";
 import AppHeader from "./appHeader";
 import AppFooter from "./appFooter";
 const APP_PATH = import.meta.env.BASE_URL;

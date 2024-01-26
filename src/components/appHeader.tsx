@@ -21,20 +21,20 @@ const Index = () => (
     <div>
       <img src={`${APP_PATH}UniBeeLogo.png`} height={"32px"} />
       <span style={{ marginLeft: "8px", fontSize: "12px" }}>
-        Your one-top solution for billing and invoicing
+        Your one-stop solution for billing and invoicing
       </span>
     </div>
     <ul style={{ marginBottom: "0", display: "flex", alignItems: "center" }}>
-      <li style={{ display: "inline", marginRight: "8px" }}>
+      <li style={{ display: "inline", marginRight: "16px" }}>
         <span>Home</span>
       </li>
-      <li style={{ display: "inline", marginRight: "8px" }}>
+      <li style={{ display: "inline", marginRight: "16px" }}>
         <span>About</span>
       </li>
-      <li style={{ display: "inline", marginRight: "8px" }}>
+      <li style={{ display: "inline", marginRight: "16px" }}>
         <span>Contact</span>
       </li>
-      <li style={{ display: "inline", marginRight: "8px" }}>
+      <li style={{ display: "inline", marginRight: "0px" }}>
         <Search style={{ width: 120 }} />
       </li>
     </ul>
