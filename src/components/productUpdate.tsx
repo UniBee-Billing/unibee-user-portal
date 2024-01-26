@@ -13,65 +13,9 @@ import Plan from "./plan";
 // import { CURRENCY } from "../constants";
 import { showAmount } from "../helpers";
 import { ISubscription, IPlan, IPreview } from "../shared.types";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const APP_PATH = import.meta.env.BASE_URL;
-
-/*
-interface IAddon extends IPlan {
-  // when create/update plan, user need to see how many addons this plan has,
-  // check/uncheck, edit quantity for addons
-  quantity: number | null;
-  checked: boolean;
-}
-*/
-
-/*
-interface IPlan {
-  id: number;
-  planName: string; // plan name
-  description: string;
-  type: number; // 1: main plan, 2: add-on
-  amount: number;
-  currency: string;
-  intervalUnit: string;
-  intervalCount: number;
-  status: number;
-  addons?: IAddon[]; // if planA has 10 addons, this array has 10 item.
-}
-*/
-/*
-interface ISubAddon {
-  // when update subscription plan, I need to know which addons users have selected
-  quantity: number;
-  addonPlanId: number;
-}
-*/
-/*
-interface ISubscription {
-  id: number; // not used, but keep it here
-  subscriptionId: string;
-  planId: number;
-  amount: number;
-  currency: string;
-  merchantId: number;
-  quantity: number;
-  status: number;
-  addons: ISubAddon[]; // if user has subscribed planA, and selected 2 addons out of 10, this array has 2 items.
-}
-*/
-/*
-interface IPreview {
-  totalAmount: number;
-  prorationDate: number;
-  currency: string;
-  invoices: {
-    amount: number;
-    currency: string;
-    description: string;
-    probation: boolean;
-  }[];
-}
-*/
 
 const Index = () => {
   // const profileStore = useProfileStore();
@@ -80,7 +24,6 @@ const Index = () => {
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
   const [modalOpen, setModalOpen] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
-  const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(true);
   const [terminateModal, setTerminateModal] = useState(false);
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
@@ -126,7 +69,6 @@ const Index = () => {
       let subListRes, planListRes;
       try {
         const res = ([subListRes, planListRes] = await Promise.all([
-          // any rejected promise will jump to the catch block, this is what we want.
           getActiveSub(),
           getPlanList(),
         ]));
@@ -148,33 +90,42 @@ const Index = () => {
         return;
       }
 
-      console.log("subList/activeSub: ", subListRes, "//", planListRes);
+      console.log("subList/planList: ", subListRes, "//", planListRes);
 
       // TODO: handle the case when user don't have any subscription yet.
       // to make one page handle update/create subscription, the activeSub can be null
+      // const sub = subListRes.data.data.Subscriptions[0];
+      /*
       const sub = subListRes.data.data.Subscriptions.find(
         (s: any) => s.subscription.id == 38
       );
-      console.log("active sub choosen: ", sub);
-      const localActiveSub: ISubscription = { ...sub.subscription };
-      localActiveSub.addons = sub.addonParams;
-      console.log("local sub: finally: ", localActiveSub);
-      setActiveSub(localActiveSub);
-      setSelectedPlan(sub.subscription.planId);
+      */
+
+      let sub;
+      if (
+        subListRes.data.data.Subscriptions != null &&
+        subListRes.data.data.Subscriptions[0] != null
+      ) {
+        // there is only one active sub at most or null.
+        sub = subListRes.data.data.Subscriptions[0];
+        console.log("active sub found: ", sub);
+      }
+
+      // addons and other props are separated in different area, I want to combine them into one subscription obj
+      let localActiveSub: ISubscription | null = null;
+      if (sub != null) {
+        localActiveSub = { ...sub.subscription };
+        (localActiveSub as ISubscription).addons = sub.addonParams;
+        console.log("local sub: finally: ", localActiveSub);
+        setActiveSub(localActiveSub);
+        setSelectedPlan(sub.subscription.planId);
+      }
+      // localActiveSub: ISubscription = { ...sub.subscription };
 
       let plans: IPlan[] = planListRes.data.data.Plans.map((p: any) => {
         const p2 = p.plan;
         if (p.plan.type == 2) {
           // addon plan
-          return null;
-        }
-        if (
-          p.plan.id != 31 &&
-          p.plan.id != 37 &&
-          p.plan.id != 38 &&
-          p.plan.id != 32 &&
-          p.plan.id != 41
-        ) {
           return null;
         }
         return {
@@ -191,19 +142,22 @@ const Index = () => {
         };
       });
       plans = plans.filter((p) => p != null);
-      const planIdx = plans.findIndex((p) => p.id == localActiveSub.planId);
-      // let's say we have planA(which has addonA1, addonA2, addonA3), planB, planC, user has subscribed to planA, and selected addonA1, addonA3
-      // I need to find the index of addonA1,3 in planA.addons array,
-      // then set their {quantity, checked: true} props on planA.addons, these props value are from subscription.addons array.
-      if (planIdx != -1 && plans[planIdx].addons != null) {
-        for (let i = 0; i < plans[planIdx].addons!.length; i++) {
-          const addonIdx = localActiveSub.addons.findIndex(
-            (subAddon) => subAddon.addonPlanId == plans[planIdx].addons![i].id
-          );
-          if (addonIdx != -1) {
-            plans[planIdx].addons![i].checked = true;
-            plans[planIdx].addons![i].quantity =
-              localActiveSub.addons[addonIdx].quantity;
+
+      if (localActiveSub != null) {
+        const planIdx = plans.findIndex((p) => p.id == localActiveSub.planId);
+        // let's say we have planA(which has addonA1, addonA2, addonA3), planB, planC, user has subscribed to planA, and selected addonA1, addonA3
+        // I need to find the index of addonA1,3 in planA.addons array,
+        // then set their {quantity, checked: true} props on planA.addons, these props value are from subscription.addons array.
+        if (planIdx != -1 && plans[planIdx].addons != null) {
+          for (let i = 0; i < plans[planIdx].addons!.length; i++) {
+            const addonIdx = localActiveSub.addons.findIndex(
+              (subAddon) => subAddon.addonPlanId == plans[planIdx].addons![i].id
+            );
+            if (addonIdx != -1) {
+              plans[planIdx].addons![i].checked = true;
+              plans[planIdx].addons![i].quantity =
+                localActiveSub.addons[addonIdx].quantity;
+            }
           }
         }
       }
@@ -361,8 +315,15 @@ const Index = () => {
 
   return (
     <>
-      <Spin spinning={loading} fullscreen />
-      {contextHolder}
+      {/* <Spin spinning={loading} fullscreen /> */}
+      <Spin
+        spinning={loading}
+        indicator={
+          <LoadingOutlined style={{ fontSize: 32, color: "#FFF" }} spin />
+        }
+        fullscreen
+      />
+
       <Modal
         title="Terminate Subscription"
         open={terminateModal}

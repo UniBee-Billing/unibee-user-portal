@@ -128,7 +128,7 @@ const App: React.FC = () => {
   return (
     <>
       {noSiderRoutes.findIndex((r) => r == location.pathname) != -1 ? (
-        <Layout style={{ minHeight: "100vh" }}>
+        <Layout>
           <Routes>
             <Route path={`${APP_PATH}login`} Component={Login} />
             <Route path={`${APP_PATH}signup`} Component={Signup} />

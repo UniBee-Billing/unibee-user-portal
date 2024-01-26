@@ -130,7 +130,7 @@ export const createPreviewReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
   vatNumber: string | null,
-  VatCountryCode: string | null
+  vatCountryCode: string | null
 ) => {
   const profile = useProfileStore.getState();
   const urlPath = "subscription_create_preview";
@@ -142,7 +142,7 @@ export const createPreviewReq = async (
     quantity: 1,
     addonParams: addons,
     vatNumber,
-    VatCountryCode,
+    vatCountryCode,
   };
   console.log("preview req body: ", body);
   return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
@@ -199,6 +199,7 @@ export const createSubscription = async (
     confirmCurrency,
     returnUrl: `${window.location.origin}/payment-result`, // .origin doesn't work on IE
   };
+  console.log("create sub body: ", body);
   return await axios.post(
     `${API_URL}/user/subscription/subscription_create_submit`,
     body,

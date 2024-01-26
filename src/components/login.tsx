@@ -45,7 +45,13 @@ const Index = () => {
   }, []);
 
   return (
-    <>
+    <div
+      style={{
+        height: "calc(100vh - 164px)",
+        overflowY: "auto",
+      }}
+    >
+      {" "}
       <AppHeader />
       <div
         style={{
@@ -106,7 +112,7 @@ const Index = () => {
         </div>
       </div>
       <AppFooter />
-    </>
+    </div>
   );
 };
 

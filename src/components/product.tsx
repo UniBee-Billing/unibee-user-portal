@@ -44,6 +44,7 @@ const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
   const countryRef = useRef<CountryCode[]>([]);
   const [vatNumber, setVatNumber] = useState("");
@@ -52,7 +53,10 @@ const Index = () => {
     setVatNumber(e.target.value);
   //    console.log("vat change: ", e);
 
-  const onCountryChange = (value: string) => setSelectedCountry(value);
+  const onCountryChange = (value: string) => {
+    createPreview();
+    setSelectedCountry(value);
+  };
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
@@ -122,6 +126,9 @@ const Index = () => {
         return;
       }
 
+      if (planListRes.data.data.Plans == null) {
+        return;
+      }
       let plans: IPlan[] = planListRes.data.data.Plans.map((p: any) => {
         const p2 = p.plan;
         if (p.plan.type == 2) {
@@ -211,11 +218,12 @@ const Index = () => {
       return;
     }
     toggleModal();
-    createPrivew();
+    createPreview();
   };
 
-  const createPrivew = async () => {
+  const createPreview = async () => {
     setPreview(null); // clear the last preview, otherwise, users might see the old value
+    setSelectedCountry(""); // clear the last selected country
     const plan = plans.find((p) => p.id == selectedPlan);
     const addons =
       plan != null && plan.addons != null
@@ -223,13 +231,6 @@ const Index = () => {
         : [];
 
     let previewRes;
-    /*
-    export const createPreviewReq = async (
-  isNew: boolean,
-  planId: number,
-  addons: { quantity: number; addonPlanId: number }[],
-  subscriptionId: string | null
-    */
     try {
       previewRes = await createPreviewReq(
         selectedPlan as number,
@@ -320,15 +321,16 @@ const Index = () => {
           width={"720px"}
         >
           {preview == null ? (
-            <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <Spin
                 spinning={true}
-                indicator={
-                  <LoadingOutlined
-                    style={{ fontSize: 32, color: "#FFF" }}
-                    spin
-                  />
-                }
+                indicator={<LoadingOutlined style={{ fontSize: 32 }} spin />}
               />
             </div>
           ) : (
