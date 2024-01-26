@@ -83,6 +83,16 @@ type InvoiceItem = {
   unitAmountExcludingTax: number;
 };
 
+type InvoiceItemTotal = {
+  currency: string;
+  subscriptionAmount: number;
+  subscriptionAmountExcludingTax: number;
+  taxAmount: number;
+  totalAmount: number;
+  totalAmountExcludingTax: number;
+  lines: InvoiceItem[];
+};
+
 interface IPreview {
   totalAmount: number;
   prorationDate?: number;
@@ -98,15 +108,15 @@ interface IPreview {
     companyAddress: string;
     validateMessage: string;
   };
-  invoice: {
-    currency: string;
-    subscriptionAmount: number;
-    subscriptionAmountExcludingTax: number;
-    taxAmount: number;
-    totalAmount: number;
-    totalAmountExcludingTax: number;
-    lines: InvoiceItem[];
-  };
+  invoice: InvoiceItemTotal;
+  nextPeriodInvoice?: InvoiceItemTotal; // same as above invoice obj, only optional, used when downgrading.
 }
 
-export type { IProfile, IPlan, ISubscription, IPreview, Country };
+export type {
+  IProfile,
+  IPlan,
+  ISubscription,
+  InvoiceItemTotal,
+  IPreview,
+  Country,
+};

@@ -45,6 +45,7 @@ const Index = () => {
   const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewing, setPreviewing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
   const countryRef = useRef<CountryCode[]>([]);
   const [vatNumber, setVatNumber] = useState("");
