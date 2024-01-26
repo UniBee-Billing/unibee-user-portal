@@ -129,7 +129,8 @@ export const createUpdatePreviewReq = async (
 export const createPreviewReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
-  vatNumber: string | null
+  vatNumber: string | null,
+  VatCountryCode: string | null
 ) => {
   const profile = useProfileStore.getState();
   const urlPath = "subscription_create_preview";
@@ -141,7 +142,9 @@ export const createPreviewReq = async (
     quantity: 1,
     addonParams: addons,
     vatNumber,
+    VatCountryCode,
   };
+  console.log("preview req body: ", body);
   return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
     headers: {
       Authorization: `${profile.token}`, // Bearer: ******

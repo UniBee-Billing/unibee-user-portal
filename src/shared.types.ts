@@ -69,9 +69,23 @@ interface ISubscription {
   user: IProfile | null;
 }
 
+type InvoiceItem = {
+  amount: number;
+  amountExcludingTax: number;
+  currency: string;
+  description: string;
+  periodEnd?: number;
+  periodStart?: number;
+  proration?: boolean;
+  quantity: number;
+  tax: number; // tax amount
+  taxScale: number; // tax rate
+  unitAmountExcludingTax: number;
+};
+
 interface IPreview {
   totalAmount: number;
-  prorationDate: number;
+  // prorationDate: number;
   currency: string;
   vatCountryCode?: string;
   vatCountryName?: string;
@@ -84,15 +98,15 @@ interface IPreview {
     companyAddress: string;
     validateMessage: string;
   };
-  invoices: {
-    amount: number;
-    amountExcludingTax: number;
+  invoice: {
     currency: string;
-    description: string;
-    probation: boolean;
-    tax: number;
-    unitAmountExcludingTax: number;
-  }[];
+    subscriptionAmount: number;
+    subscriptionAmountExcludingTax: number;
+    taxAmount: number;
+    totalAmount: number;
+    totalAmountExcludingTax: number;
+    lines: InvoiceItem[];
+  };
 }
 
 export type { IProfile, IPlan, ISubscription, IPreview, Country };

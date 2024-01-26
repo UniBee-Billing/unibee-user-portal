@@ -1,68 +1,32 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, message, Spin, Modal, Col, Row, Input, Divider } from "antd";
+import {
+  Button,
+  message,
+  Spin,
+  Modal,
+  Col,
+  Row,
+  Input,
+  Divider,
+  Select,
+} from "antd";
 import update from "immutability-helper";
 import Plan from "./plan";
-import { getPlanList, createPreviewReq, createSubscription } from "../requests";
+import {
+  getPlanList,
+  createPreviewReq,
+  createSubscription,
+  getCountryList,
+} from "../requests";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useProfileStore } from "../stores";
 import { showAmount } from "../helpers";
-import { ISubscription, IPlan, IPreview } from "../shared.types";
+import { ISubscription, IPlan, IPreview, Country } from "../shared.types";
 import { LoadingOutlined } from "@ant-design/icons";
 import BillingAddressModal from "./billingAddressModal";
 
 const APP_PATH = import.meta.env.BASE_URL;
-
-/*
-interface IAddon extends IPlan {
-  quantity: number | null;
-  checked: boolean;
-}
-*/
-
-/*
-interface IPlan {
-  id: number;
-  planName: string; // plan name
-  description: string;
-  type: number; // 1: main plan, 2: add-on
-  amount: number;
-  currency: string;
-  intervalUnit: string;
-  intervalCount: number;
-  status: number;
-  // isPublished: boolean;
-  addons?: IAddon[];
-}
-
-interface ISubAddon {
-  Quantity: number;
-  AddonPlanId: number;
-}
-interface ISubscription {
-  id: number; // not used, but keep it here
-  subscriptionId: string;
-  planId: number;
-  amount: number;
-  currency: string;
-  merchantId: number;
-  quantity: number;
-  status: number;
-  addons: ISubAddon[];
-}
-
-interface IPreview {
-  totalAmount: number;
-  prorationDate: number;
-  currency: string;
-  invoices: {
-    amount: number;
-    currency: string;
-    description: string;
-    probation: boolean;
-  }[];
-}
-*/
 
 type CountryCode = {
   countryCode: string;
@@ -75,6 +39,8 @@ const Index = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
+  const [countryList, setCountryList] = useState<Country[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -86,6 +52,8 @@ const Index = () => {
     setVatNumber(e.target.value);
   //    console.log("vat change: ", e);
 
+  const onCountryChange = (value) => setSelectedCountry(value);
+
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
       state: { msg: "session expired, please re-login" },
@@ -93,6 +61,11 @@ const Index = () => {
 
   const toggleBillingModal = () =>
     setBillingAddressModalOpen(!billingAddressModalOpen);
+
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string }
+  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   const onAddonChange = (
     addonId: number,
@@ -173,6 +146,34 @@ const Index = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchCountry = async () => {
+      let countryListRes;
+      try {
+        countryListRes = await getCountryList(15621); // merchantId
+        console.log("country list res: ", countryListRes);
+        if (countryListRes.data.code != 0) {
+          throw new Error(countryListRes.data.message);
+        }
+        setCountryList(
+          countryListRes.data.data.vatCountryList.map((c: any) => ({
+            code: c.countryCode,
+            name: c.countryName,
+          }))
+        );
+      } catch (err) {
+        if (err instanceof Error) {
+          console.log("err getting country list: ", err.message);
+          message.error(err.message);
+        } else {
+          message.error("Unknown error");
+        }
+        return;
+      }
+    };
+    fetchCountry();
+  }, []);
+
   const toggleModal = () => setModalOpen(!modalOpen); // this is the preview modal
   const openModal = () => {
     const profile = useProfileStore.getState();
@@ -236,7 +237,8 @@ const Index = () => {
           quantity: a.quantity as number,
           addonPlanId: a.id,
         })),
-        vatNumber
+        vatNumber,
+        selectedCountry
       );
       console.log("subscription create preview res: ", previewRes);
       const code = previewRes.data.code;
@@ -254,48 +256,7 @@ const Index = () => {
       }
       return;
     }
-
-    /**
-     * 
-interface IPreview {
-  totalAmount: number;
-  prorationDate: number;
-  currency: string;
-  vatCountryCode: string;
-  vatCountryName: string;
-  vatNumber: string;
-  vatNumberValidate?: {
-    valid: boolean;
-    vatNumber: string;
-    countryCode: string;
-    companyName: string;
-    companyAddress: string;
-    validateMessage: string;
-  };
-  invoices: {
-    amount: number;
-    amountExcludingTax: number;
-    currency: string;
-    description: string;
-    probation: boolean;
-    tax: number;
-    unitAmountExcludingTax: number;
-  }[];
-}
-     */
-
-    const p: IPreview = {
-      totalAmount: previewRes.data.data.totalAmount,
-      currency: previewRes.data.data.currency,
-      prorationDate: previewRes.data.data.prorationDate,
-      vatCountryCode: previewRes.data.data.vatCountryCode,
-      vatCountryName: previewRes.data.data.vatCountryName,
-      vatNumber: previewRes.data.data.vatNumber,
-      invoices: previewRes.data.data.invoice.lines,
-      vatNumberValidate: previewRes.data.data.vatNumberValidate,
-    };
-    console.log("normalized preview: ", p);
-    setPreview(p);
+    setPreview(previewRes.data.data);
   };
 
   const onConfirm = async () => {
@@ -356,38 +317,80 @@ interface IPreview {
           open={modalOpen}
           onOk={onConfirm}
           onCancel={toggleModal}
-          width={"640px"}
+          width={"720px"}
         >
-          {preview && (
+          {preview == null ? (
+            <div>
+              <Spin
+                spinning={true}
+                indicator={
+                  <LoadingOutlined
+                    style={{ fontSize: 32, color: "#FFF" }}
+                    spin
+                  />
+                }
+              />
+            </div>
+          ) : (
             <>
-              {preview.invoices.map((i, idx) => (
+              <Row style={{ fontWeight: "bold", margin: "16px 0" }}>
+                <Col span={8}>Description</Col>
+                <Col span={4}>Quantity</Col>
+                <Col span={4}>Amt(Exc Tax)</Col>
+                <Col span={4}>Tax</Col>
+                <Col span={4}>Amt</Col>
+              </Row>
+              {preview.invoice.lines.map((i, idx) => (
                 <div key={idx}>
-                  <Row gutter={[16, 16]}>
-                    <Col span={18}>{"Amount excluding tax"}</Col>
-                    <Col span={6}>{`${showAmount(
-                      i.amountExcludingTax,
-                      i.currency
-                    )}`}</Col>
+                  <Row>
+                    <Col span={8}>{i.description}</Col>
+                    <Col span={4}>{i.quantity}</Col>
+                    <Col span={4}>
+                      {showAmount(i.amountExcludingTax, i.currency)}
+                    </Col>
+                    <Col span={4}>{showAmount(i.tax, i.currency)}</Col>
+                    <Col span={4}>{showAmount(i.amount, i.currency)}</Col>
                   </Row>
-                  <Row key={idx} gutter={[16, 16]}>
-                    <Col span={18}>{"Tax"}</Col>
-                    <Col span={6}>{`${showAmount(i.tax, i.currency)}`}</Col>
-                  </Row>
-                  <Row key={idx} gutter={[16, 16]}>
-                    <Col span={18}>{i.description}</Col>
-                    <Col span={6}>{`${showAmount(i.amount, i.currency)}`}</Col>
-                  </Row>
-                  {idx != preview.invoices.length - 1 && (
+                  {idx != preview.invoice.lines.length - 1 && (
                     <Divider style={{ margin: "8px 0" }} />
                   )}
                 </div>
               ))}
               <Divider />
-              <Row gutter={[16, 16]}>
-                <Col span={18}>
+              <Row>
+                <Col span={8}>Vat number</Col>
+                <Col span={4}>Country</Col>
+              </Row>
+              <Row style={{ marginBottom: "12px" }}>
+                <Col span={8}>
+                  <Input
+                    value={vatNumber}
+                    style={{ width: "160px" }}
+                    onChange={onVatChange}
+                    placeholder="Your VAT number"
+                  />
+                </Col>
+                <Col span={4}>
+                  <Select
+                    value={selectedCountry}
+                    style={{ width: "180px" }}
+                    onChange={onCountryChange}
+                    showSearch
+                    placeholder="Type to search"
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                    options={countryList.map((c) => ({
+                      label: c.name,
+                      value: c.code,
+                    }))}
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col span={20}>
                   <span style={{ fontSize: "18px" }}>Total</span>
                 </Col>
-                <Col span={6}>
+                <Col span={4}>
                   <span style={{ fontSize: "18px", fontWeight: "bold" }}>
                     {" "}
                     {`${showAmount(preview.totalAmount, preview.currency)}`}
@@ -430,23 +433,6 @@ interface IPreview {
               marginTop: "32px",
             }}
           >
-            <div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#616161",
-                  marginBottom: "4px",
-                }}
-              >
-                Your VAT nubmer:
-              </div>
-              <Input
-                value={vatNumber}
-                onChange={onVatChange}
-                placeholder="Your VAT number"
-              />
-            </div>
-
             <Button
               type="primary"
               onClick={openModal}
