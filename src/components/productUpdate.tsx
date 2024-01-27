@@ -344,8 +344,8 @@ const Index = () => {
       </Modal>
       {updateModalOpen && !isNewUserRef.current && (
         <UpdatePlanModal
-          plan={plans.find((p) => p.id == selectedPlan)}
-          subscriptionId={activeSub?.subscriptionId}
+          plan={plans.find((p) => p.id == selectedPlan) as IPlan}
+          subscriptionId={activeSub!.subscriptionId}
           closeModal={toggleUpdateModal}
           refresh={fetchData}
         />

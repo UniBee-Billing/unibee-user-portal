@@ -2,15 +2,15 @@ import { Button, Col, Divider, Input, Modal, Row, Spin, message } from "antd";
 import { showAmount } from "../helpers";
 import { IPlan, IPreview, InvoiceItemTotal } from "../shared.types";
 import { useEffect, useState } from "react";
-import { createUpdatePreviewReq } from "../requests";
+import { createUpdatePreviewReq, updateSubscription } from "../requests";
 import { useNavigate } from "react-router-dom";
 import { LoadingOutlined } from "@ant-design/icons";
 
 const APP_PATH = import.meta.env.BASE_URL;
 
 interface Props {
-  plan: IPlan | undefined;
-  subscriptionId: string | undefined;
+  plan: IPlan;
+  subscriptionId: string;
   closeModal: () => void;
   // onConfirm: () => void;
   refresh: () => void; // after upgrade, refresh parent component
@@ -35,8 +35,55 @@ Props) => {
 
   const onConfirm = async () => {
     setSubmitting(true);
-    closeModal();
-    // refresh()
+    const addons =
+      plan != null && plan.addons != null
+        ? plan.addons.filter((a) => a.checked)
+        : [];
+    let updateSubRes;
+    try {
+      updateSubRes = await updateSubscription(
+        plan?.id,
+        subscriptionId,
+        addons.map((a) => ({
+          quantity: a.quantity as number,
+          addonPlanId: a.id,
+        })),
+        preview?.totalAmount as number,
+        preview?.currency as string,
+        preview?.prorationDate as number
+      );
+      setSubmitting(false);
+      console.log("update subscription submit res: ", updateSubRes);
+      const code = updateSubRes.data.code;
+      code == 61 && relogin();
+      if (code != 0) {
+        throw new Error(updateSubRes.data.message);
+      }
+    } catch (err) {
+      setSubmitting(false);
+      if (err instanceof Error) {
+        console.log("err updating preview: ", err.message);
+        message.error(err.message);
+      } else {
+        message.error("Unknown error");
+      }
+      return;
+    }
+
+    // if you're upgrading your plan, Stripe will use your card info from your last time purchase record.
+    // so it won't redirect you to chckout form, only if your card is expired or has insufficient fund.
+    // the payment will be done immediaetly(most of time).
+    if (updateSubRes.data.data.paid) {
+      refresh();
+      message.success("Plan updated");
+      closeModal();
+      return;
+    }
+    navigate(`${APP_PATH}profile/subscription`, {
+      // receiving route hasn't read this msg yet.
+      state: { msg: "Subscription updated" },
+    });
+    window.open(updateSubRes.data.data.link, "_blank");
   };
 
   useEffect(() => {
@@ -75,6 +122,7 @@ Props) => {
     };
     fetchPreview();
   }, []);
+
   return (
     <Modal
       title="Subscription Update Preview"
@@ -107,7 +155,6 @@ Props) => {
           />
         </>
       )}
-
       <div
         style={{
           display: "flex",
@@ -146,7 +193,6 @@ const InvoiceLines = ({
     <Divider orientation="left" style={{ margin: "32px 0", color: "#757575" }}>
       {label}
     </Divider>
-
     {invoice == null || invoice.lines.length == 0 ? (
       <div
         style={{

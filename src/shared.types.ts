@@ -94,9 +94,9 @@ type InvoiceItemTotal = {
 };
 
 interface IPreview {
-  totalAmount: number;
-  prorationDate?: number;
-  currency: string;
+  totalAmount: number; // these 3 fields need to be resent to backend when submitting createSub/updateSub
+  prorationDate?: number; // ditto
+  currency: string; // ditto
   vatCountryCode?: string;
   vatCountryName?: string;
   vatNumber?: string;
