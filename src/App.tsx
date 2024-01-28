@@ -17,7 +17,7 @@ import {
 import { Layout, Menu, theme, message } from "antd";
 
 import NotFound from "./components/notFound";
-import Products from "./components/product";
+// import Products from "./components/product";
 import ProductsUpdate from "./components/productUpdate";
 // import CheckoutForm from "./components/checkoutForm";
 import PaymentResult from "./components/paymentResult";
@@ -114,8 +114,15 @@ const App: React.FC = () => {
 
   // similar to onItemClick, try to refactor into one fn.
   useEffect(() => {
+    const p = location.pathname;
+    console.log("location changed: ", p);
+    if (p == "/products/update") {
+      setActiveMenuItem(["/products"]);
+    } else if (p == "/profile/subscription") {
+      setActiveMenuItem([p]);
+    }
+
     if (location) {
-      console.log("locatoin.pathname: ", location.pathname);
       const pathItems = location.pathname.split("/").filter((p) => p != "");
       const keys = ["/" + pathItems[0]];
       if (pathItems.length > 1) {

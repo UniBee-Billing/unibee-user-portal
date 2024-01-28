@@ -144,7 +144,7 @@ const Index = ({
                       onChange={addonQuantityChange}
                       disabled={!a.checked}
                       size="small"
-                      style={{ width: "64px", height: "24px" }}
+                      style={{ width: "48px", height: "24px" }}
                       placeholder="count"
                     />
                   </div>

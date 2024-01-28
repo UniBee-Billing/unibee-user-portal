@@ -340,6 +340,7 @@ const Index = () => {
       if (code != 0) {
         throw new Error(terminateRes.data.message);
       }
+      message.success("Subscription will terminate on next billing cycle");
     } catch (err) {
       setTerminateModal(false);
       if (err instanceof Error) {
@@ -355,6 +356,8 @@ const Index = () => {
       state: { msg: "Subscription ended on next billing cycle." },
     });
   };
+
+  console.log("active sub: ", activeSub);
 
   return (
     <>
@@ -372,14 +375,25 @@ const Index = () => {
           isNewUserRef.current ? toggleCreateModal : toggleUpdateModal
         }
       />
-      <Modal
-        title="Terminate Subscription"
-        open={terminateModal}
-        onOk={onTerminateSub}
-        onCancel={() => setTerminateModal(false)}
-      >
-        <div>subscription detail here</div>
-      </Modal>
+      {activeSub && (
+        <Modal
+          title="Terminate Subscription"
+          open={terminateModal}
+          onOk={onTerminateSub}
+          onCancel={() => setTerminateModal(false)}
+        >
+          <div>subscription detail here</div>
+          <div>
+            Your subscription will terminate at the end of this billing cycle
+            <span style={{ color: "red" }}>
+              (
+              {new Date(activeSub.currentPeriodEnd * 1000).toLocaleDateString()}
+              )
+            </span>
+            , are you sure you want to terminate?
+          </div>
+        </Modal>
+      )}
       {
         // update subscription
         updateModalOpen && !isNewUserRef.current && (
