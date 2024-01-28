@@ -6,22 +6,16 @@ import { getProfile, saveProfile } from "../../requests";
 import { Country } from "../../shared.types";
 import {
   Button,
-  Cascader,
-  Checkbox,
-  ColorPicker,
   DatePicker,
   Form,
   Input,
-  InputNumber,
   Radio,
   Select,
-  Slider,
-  Switch,
-  TreeSelect,
-  Upload,
+  Spin,
   message,
 } from "antd";
 import { getCountryList } from "../../requests";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
@@ -38,8 +32,7 @@ const normFile = (e: any) => {
 
 const Index = () => {
   const profileStore = useProfileStore();
-  const [firstLoading, setFirstLoading] = useState(false);
-  const [updating, setUpdating] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState({}); // ?????????? why do I need this??????
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -57,22 +50,21 @@ const Index = () => {
 
   const onSave = async () => {
     console.log("form: ", form.getFieldsValue());
-    setUpdating(true);
+    setLoading(true);
     let saveProfileRes;
     try {
       saveProfileRes = await saveProfile(form.getFieldsValue());
+      setLoading(false);
       console.log("save profile res: ", saveProfileRes);
       const code = saveProfileRes.data.code;
       if (code != 0) {
         code == 61 && relogin();
-        // TODO: save all statu code in a constant
         throw new Error(saveProfileRes.data.message);
       }
       message.success("saved");
       setProfile(saveProfileRes.data.data.User);
-      setUpdating(false);
     } catch (err) {
-      setUpdating(false);
+      setLoading(false);
       if (err instanceof Error) {
         console.log("profile update err: ", err.message);
         message.error(err.message);
@@ -84,7 +76,7 @@ const Index = () => {
   };
 
   useEffect(() => {
-    setFirstLoading(true);
+    setLoading(true);
     const fetchData = async () => {
       let profileRes, countryListRes;
       try {
@@ -92,20 +84,17 @@ const Index = () => {
           getProfile(),
           getCountryList(15621),
         ]));
+        setLoading(false);
         console.log("profile/country: ", profileRes, "//", countryListRes);
         res.forEach((r) => {
           const code = r.data.code;
           code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
           if (code != 0) {
-            // TODO: save all the code as ENUM in constant,
             throw new Error(r.data.message);
           }
         });
-        setUpdating(false);
-        setFirstLoading(false);
       } catch (err) {
-        setUpdating(false);
-        setFirstLoading(false);
+        setLoading(false);
         if (err instanceof Error) {
           console.log("profile update err: ", err.message);
           message.error(err.message);
@@ -122,7 +111,6 @@ const Index = () => {
         }))
       );
     };
-
     fetchData();
   }, []);
 
@@ -138,7 +126,14 @@ const Index = () => {
 
   return (
     <div>
-      {firstLoading ? null : (
+      <Spin
+        spinning={loading}
+        indicator={
+          <LoadingOutlined style={{ fontSize: 32, color: "#FFF" }} spin />
+        }
+        fullscreen
+      />
+      {loading ? null : (
         <Form
           form={form}
           labelCol={{ span: 6 }}
@@ -146,7 +141,7 @@ const Index = () => {
           layout="horizontal"
           // disabled={componentDisabled}
           style={{ maxWidth: 600 }}
-          initialValues={profile}
+          initialValues={profile ?? {}}
         >
           <Form.Item label="ID" name="id" hidden>
             <Input disabled />
@@ -164,11 +159,29 @@ const Index = () => {
             <Input disabled />
           </Form.Item>
 
-          <Form.Item label="Billing address" name="address">
+          <Form.Item
+            label="Billing address"
+            name="address"
+            rules={[
+              {
+                required: true,
+                message: "Please input your billing address!",
+              },
+            ]}
+          >
             <Input />
           </Form.Item>
 
-          <Form.Item label="Country" name="countryCode">
+          <Form.Item
+            label="Country"
+            name="countryCode"
+            rules={[
+              {
+                required: true,
+                message: "Please select your country!",
+              },
+            ]}
+          >
             <Select
               showSearch
               placeholder="Type to search"
@@ -244,7 +257,12 @@ const Index = () => {
               margin: "36px",
             }}
           >
-            <Button type="primary" onClick={onSave} disabled={updating}>
+            <Button
+              type="primary"
+              onClick={onSave}
+              disabled={loading}
+              loading={loading}
+            >
               Save
             </Button>
           </div>

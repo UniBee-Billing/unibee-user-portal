@@ -1,37 +1,41 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, message, Modal, Col, Row, Spin } from "antd";
+import { Button, message, Modal, Spin } from "antd";
 import update from "immutability-helper";
 import {
   getActiveSub,
   getPlanList,
-  createUpdatePreviewReq,
-  updateSubscription,
   terminateSub,
+  getCountryList,
 } from "../requests";
 import Plan from "./plan";
 // import { CURRENCY } from "../constants";
-import { showAmount } from "../helpers";
-import { ISubscription, IPlan, IPreview } from "../shared.types";
+// import { showAmount } from "../helpers";
+import { ISubscription, IPlan, Country } from "../shared.types";
 import { LoadingOutlined } from "@ant-design/icons";
-import UpdatePlanModal from "./modalUpdatePlan";
+import UpdatePlanModal from "./modalUpdateSub";
+import CreateSubModal from "./modalCreateSub";
+import { useProfileStore } from "../stores";
+import BillingAddressModal from "./billingAddressModal";
 
 const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = () => {
-  // const profileStore = useProfileStore();
+  const profileStore = useProfileStore();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
-  const [modalOpen, setModalOpen] = useState(false);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [preview, setPreview] = useState<IPreview | null>(null);
+  // const [modalOpen, setModalOpen] = useState(false);
+  const [countryList, setCountryList] = useState<Country[]>([]);
+  const [createModalOpen, setCreateModalOpen] = useState(false); // create subscription Modal
+  const [updateModalOpen, setUpdateModalOpen] = useState(false); // update subscription Modal
+  const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
+  // const [preview, setPreview] = useState<IPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [terminateModal, setTerminateModal] = useState(false);
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
   const isNewUserRef = useRef(true); // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
-  // they have different api call, Modal window
+  // they have different api call and Modal window
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
@@ -40,6 +44,8 @@ const Index = () => {
 
   const toggleCreateModal = () => setCreateModalOpen(!createModalOpen); // Modal for first time plan choosing
   const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen); // Modal for update plan
+  const toggleBillingModal = () =>
+    setBillingAddressModalOpen(!billingAddressModalOpen);
 
   const onAddonChange = (
     addonId: number,
@@ -72,6 +78,31 @@ const Index = () => {
     setPlans(newPlans);
   };
 
+  const fetchCountry = async () => {
+    let countryListRes;
+    try {
+      countryListRes = await getCountryList(15621); // merchantId
+      console.log("country list res: ", countryListRes);
+      if (countryListRes.data.code != 0) {
+        throw new Error(countryListRes.data.message);
+      }
+      setCountryList(
+        countryListRes.data.data.vatCountryList.map((c: any) => ({
+          code: c.countryCode,
+          name: c.countryName,
+        }))
+      );
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log("err getting country list: ", err.message);
+        message.error(err.message);
+      } else {
+        message.error("Unknown error");
+      }
+      return;
+    }
+  };
+
   const fetchData = async () => {
     let subListRes, planListRes;
     try {
@@ -83,7 +114,6 @@ const Index = () => {
         const code = r.data.code;
         code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
         if (code != 0) {
-          // TODO: save all the code as ENUM in constant,
           throw new Error(r.data.message);
         }
       });
@@ -96,17 +126,7 @@ const Index = () => {
       }
       return;
     }
-
     console.log("subList/planList: ", subListRes, "//", planListRes);
-
-    // TODO: handle the case when user don't have any subscription yet.
-    // to make one page handle update/create subscription, the activeSub can be null
-    // const sub = subListRes.data.data.Subscriptions[0];
-    /*
-    const sub = subListRes.data.data.Subscriptions.find(
-      (s: any) => s.subscription.id == 38
-    );
-    */
 
     let sub;
     if (
@@ -175,10 +195,22 @@ const Index = () => {
 
   useEffect(() => {
     fetchData();
+    fetchCountry();
   }, []);
 
-  const toggleModal = () => setModalOpen(!modalOpen);
+  // const toggleModal = () => setModalOpen(!modalOpen);
+  /*
   const openModal = () => {
+    console.log("is new: ", isNewUserRef.current);
+    if (
+      isNewUserRef.current &&
+      (profileStore.countryCode == "" || profileStore.countryCode == null)
+    ) {
+      toggleBillingModal();
+      return;
+    }
+
+    return;
     const plan = plans.find((p) => p.id == selectedPlan);
     let valid = true;
     if (plan?.addons != null && plan.addons.length > 0) {
@@ -200,7 +232,18 @@ const Index = () => {
     toggleModal();
     createPreview();
   };
+  */
 
+  const onPlanConfirm = () => {
+    console.log("is new: ", isNewUserRef.current);
+    if (profileStore.countryCode == "" || profileStore.countryCode == null) {
+      toggleBillingModal();
+      return;
+    }
+    isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal();
+  };
+
+  /*
   const createPreview = async () => {
     setPreview(null); // clear the last preview, otherwise, users might see the old value before the new value return
     const plan = plans.find((p) => p.id == selectedPlan);
@@ -208,7 +251,6 @@ const Index = () => {
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : [];
-    // console.log("active sub: ", activeSub?.subscriptionId, "///", activeSub);
     let previewRes;
     try {
       previewRes = await createUpdatePreviewReq(
@@ -235,21 +277,11 @@ const Index = () => {
       }
       return;
     }
-
-    /*
-    const p: IPreview = {
-      totalAmount: previewRes.data.data.totalAmount,
-      currency: previewRes.data.data.currency,
-      prorationDate: previewRes.data.data.prorationDate,
-      invoices: previewRes.data.data.invoice.lines,
-      // vatCountryCode: ,
-      // vatCountryName: "",
-      // vatNumber: ""
-    };
-    */
     setPreview(previewRes.data.data);
   };
+  */
 
+  /*
   const onConfirm = async () => {
     const plan = plans.find((p) => p.id == selectedPlan);
     const addons =
@@ -296,6 +328,7 @@ const Index = () => {
     toggleModal();
     window.open(updateSubRes.data.data.link, "_blank");
   };
+  */
 
   const onTerminateSub = async () => {
     let terminateRes;
@@ -325,7 +358,6 @@ const Index = () => {
 
   return (
     <>
-      {/* <Spin spinning={loading} fullscreen /> */}
       <Spin
         spinning={loading}
         indicator={
@@ -333,7 +365,13 @@ const Index = () => {
         }
         fullscreen
       />
-
+      <BillingAddressModal
+        isOpen={billingAddressModalOpen}
+        closeModal={toggleBillingModal}
+        openPreviewModal={
+          isNewUserRef.current ? toggleCreateModal : toggleUpdateModal
+        }
+      />
       <Modal
         title="Terminate Subscription"
         open={terminateModal}
@@ -342,24 +380,28 @@ const Index = () => {
       >
         <div>subscription detail here</div>
       </Modal>
-      {updateModalOpen && !isNewUserRef.current && (
-        <UpdatePlanModal
-          plan={plans.find((p) => p.id == selectedPlan) as IPlan}
-          subscriptionId={activeSub!.subscriptionId}
-          closeModal={toggleUpdateModal}
-          refresh={fetchData}
-        />
-      )}
-      {/*
-      // first time purchase, 
+      {
+        // update subscription
         updateModalOpen && !isNewUserRef.current && (
           <UpdatePlanModal
-            plan={plans.find((p) => p.id == selectedPlan)}
-            subscriptionId={activeSub?.subscriptionId}
-            onCancel={toggleUpdatModal}
+            plan={plans.find((p) => p.id == selectedPlan) as IPlan}
+            subscriptionId={activeSub!.subscriptionId}
+            closeModal={toggleUpdateModal}
+            refresh={fetchData}
           />
         )
-        */}
+      }
+      {
+        // first time purchase,
+        createModalOpen && isNewUserRef.current && (
+          <CreateSubModal
+            plan={plans.find((p) => p.id == selectedPlan) as IPlan}
+            countryList={countryList}
+            closeModal={toggleCreateModal}
+            userCountryCode={profileStore.countryCode}
+          />
+        )
+      }
 
       <div style={{ display: "flex", gap: "18px" }}>
         {plans.map((p) => (
@@ -381,21 +423,21 @@ const Index = () => {
           height: "68px",
         }}
       >
-        {plans.length != 0 && (
-          <>
-            <Button
-              type="primary"
-              onClick={isNewUserRef.current ? openModal : toggleUpdateModal}
-              disabled={selectedPlan == null}
-            >
-              Confirm
-            </Button>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <Button type="primary" onClick={() => setTerminateModal(true)}>
-              Terminate Subscription
-            </Button>
-          </>
-        )}
+        <Button
+          type="primary"
+          onClick={onPlanConfirm}
+          disabled={selectedPlan == null}
+        >
+          Confirm
+        </Button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <Button
+          type="primary"
+          onClick={() => setTerminateModal(true)}
+          disabled={isNewUserRef.current}
+        >
+          Terminate Subscription
+        </Button>
       </div>
     </>
   );

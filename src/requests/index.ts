@@ -211,6 +211,20 @@ export const createSubscription = async (
   );
 };
 
+export const checkPayment = async (subscriptionId: string) => {
+  const profile = useProfileStore.getState();
+  const body = { subscriptionId };
+  return await axios.post(
+    `${API_URL}/user/subscription/subscription_pay_check`,
+    body,
+    {
+      headers: {
+        Authorization: profile.token, // Bearer: ******
+      },
+    }
+  );
+};
+
 export const terminateSub = async (SubscriptionId: string) => {
   const profile = useProfileStore.getState();
   const body = {

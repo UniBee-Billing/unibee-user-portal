@@ -1,0 +1,17 @@
+import { Modal } from "antd";
+
+interface Props {
+  isOpen: boolean;
+  closeModal: () => void;
+  openPreviewModal: () => void;
+}
+const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
+  return (
+    <Modal
+      open={isOpen}
+      // closeModal={closeModal}
+      // openPreviewModal={openPreviewModal}
+    />
+  );
+};
+export default Index;

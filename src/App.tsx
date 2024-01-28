@@ -225,7 +225,10 @@ const App: React.FC = () => {
                     path={`${APP_PATH}products/update`}
                     Component={ProductsUpdate}
                   />
-                  <Route path={`${APP_PATH}products`} Component={Products} />
+                  <Route
+                    path={`${APP_PATH}products`}
+                    Component={ProductsUpdate}
+                  />
                   <Route path={`${APP_PATH}invoices`} Component={Invoices} />
                 </Routes>
               </div>
