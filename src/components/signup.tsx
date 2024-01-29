@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, message, Form, Input, Select, Divider } from "antd";
+import { Button, message, Form, Input } from "antd";
 import OtpInput from "react-otp-input";
-import { getCountryList } from "../requests";
-import { Country } from "../shared.types";
 import AppHeader from "./appHeader";
 import AppFooter from "./appFooter";
 import axios from "axios";
@@ -58,7 +56,8 @@ const Index = () => {
       // country == "" ||
       password == "" ||
       password2 == "" ||
-      password != password2
+      password != password2 ||
+      !passwordRegx.test(password)
     ) {
       return;
     }
@@ -114,34 +113,6 @@ const Index = () => {
         setErrMsg(err.message);
       });
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      let countryListRes;
-      try {
-        countryListRes = await getCountryList(15621); // merchantId
-        console.log("country list res: ", countryListRes);
-        if (countryListRes.data.code != 0) {
-          throw new Error(countryListRes.data.message);
-        }
-        setCountryList(
-          countryListRes.data.data.vatCountryList.map((c: any) => ({
-            code: c.countryCode,
-            name: c.countryName,
-          }))
-        );
-      } catch (err) {
-        if (err instanceof Error) {
-          console.log("err: ", err.message);
-          message.error(err.message);
-        } else {
-          message.error("Unknown error");
-        }
-        return;
-      }
-    };
-    // fetchData(); // not used anymore
-  }, []);
 
   return (
     <div
@@ -257,7 +228,7 @@ const Index = () => {
                     },
                     ({ getFieldValue }) => ({
                       validator(rule, value) {
-                        if (passwordRegx.test(password)) {
+                        if (passwordRegx.test(password) && value == password2) {
                           return Promise.resolve();
                         }
                         return Promise.reject(
@@ -275,7 +246,7 @@ const Index = () => {
 
                 <Form.Item
                   label="Password confirm"
-                  name="passwordConfirm"
+                  name="password2"
                   rules={[
                     {
                       required: true,
