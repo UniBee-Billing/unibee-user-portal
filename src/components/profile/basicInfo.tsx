@@ -1,24 +1,11 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfileStore } from "../../stores";
 import { getProfile, saveProfile } from "../../requests";
 import { Country } from "../../shared.types";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Radio,
-  Select,
-  Spin,
-  message,
-} from "antd";
+import { Button, Form, Input, Radio, Select, Spin, message } from "antd";
 import { getCountryList } from "../../requests";
 import { LoadingOutlined } from "@ant-design/icons";
-
-const { RangePicker } = DatePicker;
-const { TextArea } = Input;
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 const API_URL = import.meta.env.VITE_API_URL;

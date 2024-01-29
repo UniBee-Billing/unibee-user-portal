@@ -25,12 +25,10 @@ const Index = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
-  // const [modalOpen, setModalOpen] = useState(false);
   const [countryList, setCountryList] = useState<Country[]>([]);
   const [createModalOpen, setCreateModalOpen] = useState(false); // create subscription Modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false); // update subscription Modal
   const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
-  // const [preview, setPreview] = useState<IPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [terminateModal, setTerminateModal] = useState(false);
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
@@ -137,7 +135,7 @@ const Index = () => {
       // null: new user(no purchase record), non-null: user has bought one plan, and want to change/upgrade/downgrade
       sub = subListRes.data.data.Subscriptions[0];
       isNewUserRef.current = false;
-      console.log("active sub found: ", sub);
+      // TODO: backup current user's selectedPlan and addons info
     }
 
     // addons and other props are separated in different area in the response subscription obj, I want to combine them into one subscription obj
@@ -145,7 +143,7 @@ const Index = () => {
     if (sub != null) {
       localActiveSub = { ...sub.subscription };
       (localActiveSub as ISubscription).addons = sub.addonParams;
-      console.log("local sub: finally: ", localActiveSub);
+      console.log("local sub: ", localActiveSub);
       setActiveSub(localActiveSub);
       setSelectedPlan(sub.subscription.planId);
     }
@@ -198,26 +196,18 @@ const Index = () => {
     fetchCountry();
   }, []);
 
-  // const toggleModal = () => setModalOpen(!modalOpen);
-  /*
-  const openModal = () => {
+  const onPlanConfirm = () => {
     console.log("is new: ", isNewUserRef.current);
-    if (
-      isNewUserRef.current &&
-      (profileStore.countryCode == "" || profileStore.countryCode == null)
-    ) {
+    if (profileStore.countryCode == "" || profileStore.countryCode == null) {
       toggleBillingModal();
       return;
     }
-
-    return;
     const plan = plans.find((p) => p.id == selectedPlan);
     let valid = true;
     if (plan?.addons != null && plan.addons.length > 0) {
       for (let i = 0; i < plan.addons.length; i++) {
         if (plan.addons[i].checked) {
           const q = Number(plan.addons[i].quantity);
-          console.log("q: ", q);
           if (!Number.isInteger(q) || q <= 0) {
             valid = false;
             break;
@@ -226,109 +216,12 @@ const Index = () => {
       }
     }
     if (!valid) {
-      message.error("Addon quantity must be greater than 0.");
+      message.error("Please input valid addon quantity.");
       return;
     }
-    toggleModal();
-    createPreview();
-  };
-  */
 
-  const onPlanConfirm = () => {
-    console.log("is new: ", isNewUserRef.current);
-    if (profileStore.countryCode == "" || profileStore.countryCode == null) {
-      toggleBillingModal();
-      return;
-    }
     isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal();
   };
-
-  /*
-  const createPreview = async () => {
-    setPreview(null); // clear the last preview, otherwise, users might see the old value before the new value return
-    const plan = plans.find((p) => p.id == selectedPlan);
-    const addons =
-      plan != null && plan.addons != null
-        ? plan.addons.filter((a) => a.checked)
-        : [];
-    let previewRes;
-    try {
-      previewRes = await createUpdatePreviewReq(
-        selectedPlan as number,
-        addons.map((a) => ({
-          quantity: a.quantity as number,
-          addonPlanId: a.id,
-        })),
-        activeSub?.subscriptionId as string
-      );
-      console.log("subscription create preview res: ", previewRes);
-      const code = previewRes.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(previewRes.data.message);
-      }
-    } catch (err) {
-      setModalOpen(false);
-      if (err instanceof Error) {
-        console.log("err creating preview: ", err.message);
-        message.error(err.message);
-      } else {
-        message.error("Unknown error");
-      }
-      return;
-    }
-    setPreview(previewRes.data.data);
-  };
-  */
-
-  /*
-  const onConfirm = async () => {
-    const plan = plans.find((p) => p.id == selectedPlan);
-    const addons =
-      plan != null && plan.addons != null
-        ? plan.addons.filter((a) => a.checked)
-        : [];
-    let updateSubRes;
-    try {
-      updateSubRes = await updateSubscription(
-        selectedPlan as number,
-        activeSub?.subscriptionId as string,
-        addons.map((a) => ({
-          quantity: a.quantity as number,
-          addonPlanId: a.id,
-        })),
-        preview?.totalAmount as number,
-        preview?.currency as string,
-        preview?.prorationDate as number
-      );
-      console.log("update subscription submit res: ", updateSubRes);
-      const code = updateSubRes.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(updateSubRes.data.message);
-      }
-    } catch (err) {
-      setModalOpen(false);
-      if (err instanceof Error) {
-        console.log("err creating preview: ", err.message);
-        message.error(err.message);
-      } else {
-        message.error("Unknown error");
-      }
-      return;
-    }
-
-    if (updateSubRes.data.data.paid) {
-      navigate(`${APP_PATH}profile/subscription`, {
-        // receiving route hasn't read this msg yet.
-        state: { msg: "Subscription updated" },
-      });
-      return;
-    }
-    toggleModal();
-    window.open(updateSubRes.data.data.link, "_blank");
-  };
-  */
 
   const onTerminateSub = async () => {
     let terminateRes;
@@ -356,8 +249,6 @@ const Index = () => {
       state: { msg: "Subscription ended on next billing cycle." },
     });
   };
-
-  console.log("active sub: ", activeSub);
 
   return (
     <>

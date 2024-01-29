@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Input, Modal, Row, Spin, message } from "antd";
+import { Button, Col, Divider, Modal, Row, Spin, message } from "antd";
 import { showAmount } from "../helpers";
 import { IPlan, IPreview, InvoiceItemTotal } from "../shared.types";
 import { useEffect, useState } from "react";
@@ -12,18 +12,10 @@ interface Props {
   plan: IPlan;
   subscriptionId: string;
   closeModal: () => void;
-  // onConfirm: () => void;
   refresh: () => void; // after upgrade, refresh parent component
 }
 
-const Index = ({
-  plan,
-  subscriptionId,
-  closeModal,
-  refresh,
-}: // onConfirm,
-// refresh,
-Props) => {
+const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);

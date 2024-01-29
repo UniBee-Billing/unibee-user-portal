@@ -16,19 +16,20 @@ const passwordRegx =
 
 const Index = () => {
   const navigate = useNavigate();
+  const [form] = Form.useForm();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  // const [phone, setPhone] = useState("");
+  // const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
-  const [country, setCountry] = useState("");
+  // const [country, setCountry] = useState("");
   // const [verificationCode, setVerificationCode] = useState("");
   const [currentStep, setCurrentStep] = useState(0); // [0, 1]
   const [errMsg, setErrMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [countryList, setCountryList] = useState<Country[]>([]);
+  // const [countryList, setCountryList] = useState<Country[]>([]);
 
   // const onEmailChange = (evt: ChangeEvent<HTMLInputElement>) =>
   //     setEmail(evt.target.value);
@@ -56,13 +57,15 @@ const Index = () => {
       email == "" ||
       // country == "" ||
       password == "" ||
-      password2 == ""
+      password2 == "" ||
+      password != password2
     ) {
       return;
     }
     setErrMsg("");
     setSubmitting(true);
     const user_name = "ewo" + Math.random();
+
     axios
       .post(`${API_URL}/user/auth/sso/register`, {
         email,
@@ -175,7 +178,9 @@ const Index = () => {
               }}
             >
               <Form
+                form={form}
                 name="basic"
+                onFinish={onSubmit}
                 labelCol={{
                   span: 10,
                 }}
