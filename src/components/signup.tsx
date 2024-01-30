@@ -167,7 +167,7 @@ const Index = () => {
                 autoComplete="off"
               >
                 <Form.Item
-                  label="First name"
+                  label="First Name"
                   name="firstName"
                   rules={[
                     {
@@ -180,7 +180,7 @@ const Index = () => {
                 </Form.Item>
 
                 <Form.Item
-                  label="Last name"
+                  label="Last Lame"
                   name="lastName"
                   rules={[
                     {
@@ -245,7 +245,7 @@ const Index = () => {
                 </Form.Item>
 
                 <Form.Item
-                  label="Password confirm"
+                  label="Password Confirm"
                   name="password2"
                   rules={[
                     {

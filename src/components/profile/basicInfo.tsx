@@ -134,11 +134,11 @@ const Index = () => {
             <Input disabled />
           </Form.Item>
 
-          <Form.Item label="First name" name="firstName">
+          <Form.Item label="First Name" name="firstName">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Last name" name="lastName">
+          <Form.Item label="Last Name" name="lastName">
             <Input />
           </Form.Item>
 
@@ -147,7 +147,7 @@ const Index = () => {
           </Form.Item>
 
           <Form.Item
-            label="Billing address"
+            label="Billing Address"
             name="address"
             rules={[
               {
@@ -188,15 +188,15 @@ const Index = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item label="Company name" name="companyName">
+          <Form.Item label="Company Name" name="companyName">
             <Input />
           </Form.Item>
 
-          <Form.Item label="VAT number" name="vATNumber">
+          <Form.Item label="VAT Number" name="vATNumber">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Phone number" name="phone">
+          <Form.Item label="Phone Number" name="phone">
             <Input />
           </Form.Item>
 
@@ -224,11 +224,11 @@ const Index = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item label="Other social info" name="otherSocialInfo">
+          <Form.Item label="Other Social Info" name="otherSocialInfo">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Payment methods" name="paymentMethod">
+          <Form.Item label="Payment Methods" name="paymentMethod">
             <Radio.Group>
               <Radio value="CreditCard">Credit Card</Radio>
               <Radio value="Crypto">Crypto</Radio>
