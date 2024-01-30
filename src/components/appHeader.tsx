@@ -22,7 +22,7 @@ const Index = () => (
     <div>
       <img src={`${APP_PATH}UniBeeLogo.png`} height={"32px"} />
       <span style={{ marginLeft: "8px", fontSize: "12px" }}>
-        Your one-stop solution for billing and invoicing
+        One-stop Billing for SaaS
       </span>
     </div>
     <ul style={{ marginBottom: "0", display: "flex", alignItems: "center" }}>

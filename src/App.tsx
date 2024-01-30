@@ -17,7 +17,6 @@ import {
 import { Layout, Menu, theme, message } from "antd";
 
 import NotFound from "./components/notFound";
-// import Products from "./components/product";
 import ProductsUpdate from "./components/productUpdate";
 // import CheckoutForm from "./components/checkoutForm";
 import PaymentResult from "./components/paymentResult";

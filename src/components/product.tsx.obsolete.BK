@@ -314,7 +314,7 @@ const Index = () => {
       />
       {selectedPlan != null && (
         <Modal
-          title="Subscription Creation Preview"
+          title="Order Preview"
           maskClosable={false}
           open={modalOpen}
           onOk={onConfirm}
@@ -339,7 +339,7 @@ const Index = () => {
               <Row style={{ fontWeight: "bold", margin: "16px 0" }}>
                 <Col span={8}>Description</Col>
                 <Col span={4}>Quantity</Col>
-                <Col span={4}>Amt(Exc Tax)</Col>
+                <Col span={4}>Amt(Excl Tax)</Col>
                 <Col span={4}>Tax</Col>
                 <Col span={4}>Amt</Col>
               </Row>

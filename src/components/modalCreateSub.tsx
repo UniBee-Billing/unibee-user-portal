@@ -143,7 +143,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
 
   return (
     <Modal
-      title="Subscription Creation Preview"
+      title="Order Preview"
       maskClosable={false}
       open={true}
       footer={null}
