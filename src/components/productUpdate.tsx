@@ -325,7 +325,7 @@ const Index = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "68px",
+          margin: "48px",
         }}
       >
         <Button

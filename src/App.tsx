@@ -203,6 +203,7 @@ const App: React.FC = () => {
                 style={{
                   padding: 24,
                   minHeight: 360,
+                  height: "100%",
                   background: colorBgContainer,
                   borderRadius: borderRadiusLG,
                 }}
@@ -239,9 +240,7 @@ const App: React.FC = () => {
                 </Routes>
               </div>
             </Content>
-            <Footer style={{ textAlign: "center" }}>
-              UniBee - Your one-stop solutioin for billing & invoicing ©2024
-            </Footer>
+            <Footer style={{ textAlign: "center" }}>MultiLogin ©2024</Footer>
           </Layout>
         </Layout>
       )}

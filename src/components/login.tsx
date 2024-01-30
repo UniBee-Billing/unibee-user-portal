@@ -200,17 +200,6 @@ const LoginWithPassword = ({
         <Input.Password value={password} onChange={onPasswordChange} />
       </Form.Item>
 
-      {/* <Form.Item
-        name="remember"
-        valuePropName="checked"
-        wrapperCol={{
-          offset: 8,
-          span: 16,
-        }}
-      >
-        <Checkbox>Remember me</Checkbox>
-      </Form.Item>*/}
-
       <Form.Item
         name="errMsg"
         wrapperCol={{
@@ -258,6 +247,7 @@ const LoginWithOTP = ({
   const [countdownVal, setCountdownVal] = useState(10); // countdown value in second
   const [counting, setCounting] = useState(false);
   const countdownReqId = useRef<number>(0);
+  const [form] = Form.useForm();
 
   const countdown = (val: number) => {
     const valBK = val;
@@ -281,12 +271,19 @@ const LoginWithOTP = ({
   useEffect(() => {
     // timerBySec(10, setCountdownVal);
     const keyDownHandler = (event: KeyboardEvent) => {
-      console.log("User pressed: ", event.key, "//", otp);
+      // console.log("User pressed: ", event.key, "//", otp);
       if (event.key === "Enter") {
         event.preventDefault();
+        /*
+        if (currentStep == 0) { // input email
+
+        } else if (currentStep == 1) { // input code
+
+        }
         if (otp.trim().length < NUM_INPUTS) {
           return;
         }
+        */
         submit();
       }
     };
@@ -325,6 +322,22 @@ const LoginWithOTP = ({
   };
 
   const submit = () => {
+    if (currentStep == 0) {
+      if (
+        !email
+          .toLowerCase()
+          .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+          )
+      ) {
+        console.log("invalid email");
+        return;
+      }
+    } else {
+      if (otp.trim().length != NUM_INPUTS) {
+        return;
+      }
+    }
     setErrMsg("");
     console.log("submitting..");
     setSubmitting(true);
@@ -379,6 +392,8 @@ const LoginWithOTP = ({
       {currentStep == 0 ? (
         <Form
           name="basic"
+          form={form}
+          onFinish={submit}
           labelCol={{
             span: 6,
           }}
@@ -387,9 +402,6 @@ const LoginWithOTP = ({
           }}
           style={{
             maxWidth: 600,
-          }}
-          initialValues={{
-            remember: true,
           }}
           autoComplete="off"
         >
@@ -401,6 +413,20 @@ const LoginWithOTP = ({
                 required: true,
                 message: "Please input your Email!",
               },
+              ({ getFieldValue }) => ({
+                validator(rule, value) {
+                  if (
+                    value
+                      .toLowerCase()
+                      .match(
+                        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                      )
+                  ) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject("invalid email address");
+                },
+              }),
             ]}
           >
             <Input value={email} onChange={onEmailChange} />

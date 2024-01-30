@@ -41,8 +41,8 @@ const Index = () => (
           gap: "12px",
         }}
       >
-        <img src={`${APP_PATH}UniBeeLogo.png`} height={"32px"} />
-        <span>Copyright © 2024 UniBee, Inc.</span>
+        {/* <img src={`${APP_PATH}UniBeeLogo.png`} height={"32px"} /> */}
+        <span>Copyright © 2024 MultiLogin, Inc.</span>
       </div>
     </div>
   </div>
