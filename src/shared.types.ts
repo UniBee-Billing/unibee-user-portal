@@ -56,6 +56,7 @@ interface ISubscription {
   planId: number;
   userId: number;
   status: number;
+  link: string | undefined;
   // channelId: number;
   firstPayTime: Date;
   currentPeriodStart: number;

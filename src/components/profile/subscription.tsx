@@ -157,7 +157,7 @@ const Index = () => {
           orientation="left"
           style={{ margin: "32px 0", color: "#757575" }}
         >
-          Current subscription
+          Current Subscription
         </Divider>
         {subscriptions.length > 0 && (
           <SubscriptionInfoSection
@@ -214,7 +214,7 @@ ISubSectionProps) => {
         </Col>
         <Col span={6}>{subInfo?.plan?.planName}</Col>
         <Col span={4} style={colStyle}>
-          Plan description
+          Plan Description
         </Col>
         <Col span={6}>{subInfo?.plan?.description}</Col>
       </Row>
@@ -238,14 +238,14 @@ ISubSectionProps) => {
       </Row>
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
-          Plan price
+          Plan Price
         </Col>
         <Col span={6}>
           {subInfo?.plan?.amount &&
             showAmount(subInfo?.plan?.amount, subInfo?.plan?.currency)}
         </Col>
         <Col span={4} style={colStyle}>
-          Addons price
+          Addons Price
         </Col>
         <Col span={6}>
           {subInfo &&
@@ -288,7 +288,7 @@ ISubSectionProps) => {
       </Row>
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
-          Total amount
+          Total Amount
         </Col>
         <Col span={6}>
           {subInfo?.amount && showAmount(subInfo.amount, subInfo.currency)}{" "}
@@ -303,7 +303,7 @@ ISubSectionProps) => {
         </Col>
 
         <Col span={4} style={colStyle}>
-          Bill period
+          Bill Period
         </Col>
         <Col span={6}>
           {subInfo != null && subInfo.plan != null
@@ -313,13 +313,13 @@ ISubSectionProps) => {
       </Row>
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
-          First pay
+          First Pay
         </Col>
         <Col span={6}>
           {new Date(subInfo.firstPayTime).toLocaleDateString()}
         </Col>
         <Col span={4} style={colStyle}>
-          Next due date
+          Next Due Date
         </Col>
         <Col span={6}>
           {new Date(subInfo.currentPeriodEnd * 1000).toLocaleDateString()}
@@ -337,7 +337,7 @@ ISubSectionProps) => {
           }}
         >
           <Button onClick={() => navigate(`${APP_PATH}products/update`)}>
-            Change plan
+            Change Plan
           </Button>
         </div>
       )}

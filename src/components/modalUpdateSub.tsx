@@ -17,8 +17,8 @@ interface Props {
 
 const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false); // when the Modal is loading, preview is null, Modal has no content, but a loading spinner
+  const [submitting, setSubmitting] = useState(false); // when user click submit, preview is not null, Modal has content.
   const [preview, setPreview] = useState<IPreview | null>(null);
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
@@ -125,7 +125,7 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       footer={null}
       width={"720px"}
     >
-      {preview == null ? (
+      {loading ? (
         <div
           style={{
             display: "flex",
@@ -139,13 +139,15 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
           />
         </div>
       ) : (
-        <>
-          <InvoiceLines label="Current Invoices" invoice={preview.invoice} />
-          <InvoiceLines
-            label="Next Billing Cycle Invoices"
-            invoice={preview.nextPeriodInvoice}
-          />
-        </>
+        preview != null && (
+          <>
+            <InvoiceLines label="Current Invoices" invoice={preview.invoice} />
+            <InvoiceLines
+              label="Next Billing Cycle Invoices"
+              invoice={preview.nextPeriodInvoice}
+            />
+          </>
+        )
       )}
       <div
         style={{

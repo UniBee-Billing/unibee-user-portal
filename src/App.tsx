@@ -92,7 +92,6 @@ const App: React.FC = () => {
     localStorage.removeItem("token");
     try {
       const logoutRes = await logoutReq();
-      console.log("logout res: ", logoutRes);
       navigate(`${APP_PATH}login`);
     } catch (err) {
       if (err instanceof Error) {

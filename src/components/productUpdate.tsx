@@ -17,6 +17,7 @@ import UpdatePlanModal from "./modalUpdateSub";
 import CreateSubModal from "./modalCreateSub";
 import { useProfileStore } from "../stores";
 import BillingAddressModal from "./billingAddressModal";
+import { SUBSCRIPTION_STATUS } from "../constants";
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -250,8 +251,15 @@ const Index = () => {
     });
   };
 
+  // allow user to click the confirm button
+  // when no active sub || current sub status == expired,
+
+  // allow user to click the terminate button
+  // const
+
   return (
-    <>
+    <div>
+      <SubStatus sub={activeSub} />
       <Spin
         spinning={loading}
         indicator={
@@ -331,7 +339,7 @@ const Index = () => {
         <Button
           type="primary"
           onClick={onPlanConfirm}
-          disabled={selectedPlan == null}
+          disabled={selectedPlan == null || activeSub?.status != 2}
         >
           Confirm
         </Button>
@@ -344,8 +352,65 @@ const Index = () => {
           Terminate Subscription
         </Button>
       </div>
-    </>
+    </div>
   );
 };
 
 export default Index;
+
+const SubStatus = ({ sub }: { sub: ISubscription | null }) => {
+  const getReminder = () => {
+    let n;
+    switch (sub!.status) {
+      case 0:
+        n = "Your subscription is initializing, please wait a few moment.";
+        break;
+      case 1:
+        n = (
+          <div
+            style={{
+              color: "#757575",
+              fontSize: "12px",
+              background: "#fbe9e7",
+              borderRadius: "4px",
+              padding: "6px",
+              marginBottom: "12px",
+            }}
+          >
+            Your subscription has been created, please go to{" "}
+            <a href={sub!.link} target="_blank">
+              checkout page
+            </a>{" "}
+            to finishe the payment. If you haven't finished the payment within
+            ***, your subscription will be cancelled.
+          </div>
+        );
+        break;
+      case 3:
+        n = "Your subscription is in pending status, please ....";
+        break;
+      default:
+        n = "";
+    }
+    return n;
+    // STATUS[sub?.status as keyof typeof STATUS]
+  };
+
+  if (sub == null || sub.status == 2) {
+    // 2: active, only with this status, users can upgrade/downgrad/change
+    return null; // nothing need to be shown on page.
+  }
+  return getReminder();
+  // <div>{STATUS[sub.status as keyof typeof STATUS]}</div>;
+};
+
+/*
+ 0: "Initiating", // used when creating the sub, it only exist for a very short time, user might not realize it exists
+  1: "Created", // when sub is created, but user hasn't paid yet, 
+  2: "Active", // user paid the sub fee
+  // 3: "Suspended", // suspend: not used yet. For future implementation: users might want to suspend the sub for a period of time, during which, they don't need to pay
+  3: "Pending", // when status is transitioning from 1 to 2, or 2 to 4, there is a pending status, transition is not synchronous, 
+  // coz payment is not synchronous, so we have to wait, in status 3: no action can be taken on UI.
+  4: "Cancelled", // users(or admin) cancelled the sub(immediately or automatically at the end of billing cycle). It's triggered by human.
+  5: "Expired", // sub ended.
+*/
