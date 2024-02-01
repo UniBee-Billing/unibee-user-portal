@@ -7,7 +7,27 @@ import { IProfile } from "../shared.types";
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const loginWithPasswordReq = async () => {};
+export const loginWithPasswordReq = async (email: string, password: string) => {
+  return await axios.post(`${API_URL}/user/auth/sso/login`, {
+    email,
+    password,
+  });
+};
+
+export const loginWithOTPReq = async (email: string) => {
+  return await axios.post(`${API_URL}/user/auth/sso/loginOTP`, {
+    email,
+  });
+};
+export const loginWithOTPVerifyReq = async (
+  email: string,
+  verificationCode: string
+) => {
+  return await axios.post(`${API_URL}/user/auth/sso/loginOTP`, {
+    email,
+    verificationCode,
+  });
+};
 
 export const logoutReq = async () => {
   const profile = useProfileStore.getState();
