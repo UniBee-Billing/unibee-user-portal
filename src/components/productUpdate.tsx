@@ -339,7 +339,8 @@ const Index = () => {
         <Button
           type="primary"
           onClick={onPlanConfirm}
-          disabled={selectedPlan == null || activeSub?.status != 2}
+          // disabled={selectedPlan == null || activeSub?.status != 2}
+          disabled={selectedPlan == null}
         >
           Confirm
         </Button>

@@ -159,7 +159,7 @@ const App: React.FC = () => {
                 justifyContent: "center",
               }}
             >
-              <img src={`${APP_PATH}multiLoginLogo.png`} height={"80px"} />
+              <img src={`${APP_PATH}multiloginLogo.png`} height={"80px"} />
             </div>
             <Menu
               theme="dark"
@@ -239,7 +239,7 @@ const App: React.FC = () => {
                 </Routes>
               </div>
             </Content>
-            <Footer style={{ textAlign: "center" }}>MultiLogin ©2024</Footer>
+            <Footer style={{ textAlign: "center" }}>Multilogin ©2024</Footer>
           </Layout>
         </Layout>
       )}
