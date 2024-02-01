@@ -157,7 +157,9 @@ const LoginWithPassword = ({
         res.data.data.User.token = res.data.data.Token;
         profileStore.setProfile(res.data.data.User);
         console.log("res.data.data.User: ", res.data.data.User);
-        navigate(`${APP_PATH}profile/subscription`);
+        navigate(`${APP_PATH}profile/subscription`, {
+          state: { from: "login" },
+        });
       })
       .catch((err) => {
         setSubmitting(false);
@@ -377,7 +379,9 @@ const LoginWithOTP = ({
           res.data.data.User.token = res.data.data.Token;
           profileStore.setProfile(res.data.data.User);
           console.log("res.data.data.User: ", res.data.data.User);
-          navigate(`${APP_PATH}profile/subscription`);
+          navigate(`${APP_PATH}profile/subscription`, {
+            state: { from: "login" },
+          });
         })
         .catch((err) => {
           setSubmitting(false);

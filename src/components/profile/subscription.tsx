@@ -137,7 +137,12 @@ const Index = () => {
       setSubscriptions(sub);
       return;
     }
-    navigate(`${APP_PATH}products/update`); // new users, no subscriptions
+
+    // if user enter this route from login and has no subscription(new user or current sub expired/cancelled)
+    // they'll be redirected to /product, otherwise, stay.
+    if (location.state != null && location.state.from == "login") {
+      navigate(`${APP_PATH}products/update`);
+    }
   };
 
   useEffect(() => {
