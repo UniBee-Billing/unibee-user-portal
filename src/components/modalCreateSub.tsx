@@ -93,17 +93,18 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     }
   };
 
-  const vatCheck = async () => {
+  const onVATCheck = async () => {
     try {
       setSubmitting(true);
       const res = await vatNumberCheckReq(vatNumber);
-      setSubmitting(false);
       console.log("vat check res: ", res);
       const code = res.data.code;
       code == 61 && relogin();
       if (code != 0) {
         throw new Error(res.data.message);
       }
+      await createPreview();
+      setSubmitting(false);
       return res.data.data.vatNumberValidate.valid;
     } catch (err) {
       setSubmitting(false);
@@ -119,7 +120,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
 
   const onConfirm = async () => {
     if (vatNumber.trim().length != 0) {
-      const vatValid = await vatCheck();
+      const vatValid = await onVATCheck();
       if (!vatValid) {
         message.error("Invalid VAT, please re-type or leave it blank.");
         return;
@@ -226,22 +227,31 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           ))}
           <Divider />
           <Row>
-            <Col span={8}>Vat number</Col>
-            <Col span={4}>Country</Col>
+            <Col span={5}>Vat number</Col>
+            <Col span={3} style={{ marginLeft: "-8px" }}></Col>
+            <Col span={6} style={{ marginLeft: "12px" }}>
+              Country
+            </Col>
           </Row>
           <Row style={{ marginBottom: "12px" }}>
-            <Col span={8}>
+            <Col span={5}>
               <Input
                 value={vatNumber}
-                style={{ width: "160px" }}
+                style={{ width: "100%" }}
                 onChange={onVatChange}
+                // onBlur={onVATCheck}
                 placeholder="Your VAT number"
               />
             </Col>
-            <Col span={4}>
+            <Col span={3} style={{ marginLeft: "-8px" }}>
+              <Button type="link" onClick={onVATCheck} disabled={submitting}>
+                Check
+              </Button>
+            </Col>
+            <Col span={6} style={{ marginLeft: "12px" }}>
               <Select
                 value={selectedCountry}
-                style={{ width: "180px" }}
+                style={{ width: "160px" }}
                 onChange={onCountryChange}
                 showSearch
                 placeholder="Type to search"
