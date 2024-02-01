@@ -14,7 +14,11 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { IPlan, IPreview, Country } from "../shared.types";
-import { createPreviewReq, createSubscription } from "../requests";
+import {
+  createPreviewReq,
+  createSubscription,
+  vatNumberCheckReq,
+} from "../requests";
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -58,10 +62,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
         ? plan.addons.filter((a) => a.checked)
         : [];
 
-    let previewRes;
     try {
       setLoading(true);
-      previewRes = await createPreviewReq(
+      const previewRes = await createPreviewReq(
         plan.id,
         addons.map((a) => ({
           quantity: a.quantity as number,
@@ -77,6 +80,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       if (code != 0) {
         throw new Error(previewRes.data.message);
       }
+      setPreview(previewRes.data.data);
     } catch (err) {
       setLoading(false);
       if (err instanceof Error) {
@@ -87,10 +91,41 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       }
       return;
     }
-    setPreview(previewRes.data.data);
+  };
+
+  const vatCheck = async () => {
+    try {
+      setSubmitting(true);
+      const res = await vatNumberCheckReq(vatNumber);
+      setSubmitting(false);
+      console.log("vat check res: ", res);
+      const code = res.data.code;
+      code == 61 && relogin();
+      if (code != 0) {
+        throw new Error(res.data.message);
+      }
+      return res.data.data.vatNumberValidate.valid;
+    } catch (err) {
+      setSubmitting(false);
+      if (err instanceof Error) {
+        console.log("err checking vat validity: ", err.message);
+        message.error(err.message);
+      } else {
+        message.error("Unknown error");
+      }
+      return false;
+    }
   };
 
   const onConfirm = async () => {
+    if (vatNumber.trim().length != 0) {
+      const vatValid = await vatCheck();
+      if (!vatValid) {
+        message.error("Invalid VAT, please re-type or leave it blank.");
+        return;
+      }
+    }
+
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
@@ -105,7 +140,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           addonPlanId: a.id,
         })),
         preview?.totalAmount as number,
-        preview?.currency as string
+        preview?.currency as string,
+        preview?.vatCountryCode as string,
+        preview?.vatNumber as string
       );
       setSubmitting(false);
       console.log("create subscription res: ", createSubRes);

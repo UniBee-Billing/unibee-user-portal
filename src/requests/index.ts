@@ -205,7 +205,9 @@ export const createSubscription = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
   confirmTotalAmount: number,
-  confirmCurrency: string
+  confirmCurrency: string,
+  vatCountryCode: string,
+  vatNumber: string
 ) => {
   const profile = useProfileStore.getState();
   const body = {
@@ -217,8 +219,10 @@ export const createSubscription = async (
     confirmTotalAmount,
     confirmCurrency,
     returnUrl: `${window.location.origin}/payment-result`, // .origin doesn't work on IE
+    vatCountryCode,
+    vatNumber,
   };
-  console.log("create sub body: ", body);
+  // console.log("create sub body: ", body);
   return await axios.post(
     `${API_URL}/user/subscription/subscription_create_submit`,
     body,
@@ -230,6 +234,17 @@ export const createSubscription = async (
   );
 };
 
+export const vatNumberCheckReq = async (vatNumber: string) => {
+  const profile = useProfileStore.getState();
+  const body = { merchantId: 15621, vatNumber };
+  return await axios.post(`${API_URL}/user/vat/vat_number_validate`, body, {
+    headers: {
+      Authorization: profile.token, // Bearer: ******
+    },
+  });
+};
+
+// check payment result
 export const checkPayment = async (subscriptionId: string) => {
   const profile = useProfileStore.getState();
   const body = { subscriptionId };
