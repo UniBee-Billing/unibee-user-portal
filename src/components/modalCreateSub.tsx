@@ -22,6 +22,12 @@ import {
 
 const APP_PATH = import.meta.env.BASE_URL;
 
+type TVATDetail = {
+  companyAddress: string;
+  companyName: string;
+  countryCode: string;
+};
+
 interface Props {
   plan: IPlan;
   countryList: Country[];
@@ -35,7 +41,10 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
   const [vatNumber, setVatNumber] = useState("");
+  const [vatDetail, setVatDetail] = useState<null | TVATDetail>(null);
+  const [isVatValid, setIsVatValid] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
+  const vatChechkingRef = useRef(false);
   // const countryRef = useRef<CountryCode[]>([]);
 
   const relogin = () =>
@@ -55,8 +64,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   const createPreview = async () => {
-    // setPreview(null); // clear the last preview, otherwise, users might see the old value
-    // setSelectedCountry(""); // clear the last selected country
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
@@ -93,7 +100,11 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     }
   };
 
-  const onVATCheck = async () => {
+  const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
+    if (evt.relatedTarget?.classList.contains("confirm-btn-wrapper")) {
+      vatChechkingRef.current = true;
+    }
+
     try {
       setSubmitting(true);
       const res = await vatNumberCheckReq(vatNumber);
@@ -103,11 +114,26 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       if (code != 0) {
         throw new Error(res.data.message);
       }
-      await createPreview();
+      const v = res.data.data.vatNumberValidate;
+      setIsVatValid(v.valid);
+      if (v.valid) {
+        await createPreview();
+        setVatDetail({
+          companyAddress: v.companyAddress,
+          companyName: v.companyName,
+          countryCode: v.countryCode,
+        });
+      } else {
+        setVatDetail(null);
+        message.error("Invalid VAT, please re-type or leave it blank.");
+      }
       setSubmitting(false);
-      return res.data.data.vatNumberValidate.valid;
+      vatChechkingRef.current = false;
     } catch (err) {
+      setIsVatValid(false);
       setSubmitting(false);
+      setVatDetail(null);
+      vatChechkingRef.current = false;
       if (err instanceof Error) {
         console.log("err checking vat validity: ", err.message);
         message.error(err.message);
@@ -119,12 +145,14 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   };
 
   const onConfirm = async () => {
-    if (vatNumber.trim().length != 0) {
-      const vatValid = await onVATCheck();
-      if (!vatValid) {
-        message.error("Invalid VAT, please re-type or leave it blank.");
-        return;
-      }
+    // console.log("in confirm btn, is vat checking? ", vatChechkingRef.current);
+    if (vatChechkingRef.current) {
+      return;
+    }
+
+    if (!isVatValid && vatNumber != "") {
+      message.error("Invalid VAT, please re-type or leave it blank.");
+      return;
     }
 
     const addons =
@@ -227,8 +255,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           ))}
           <Divider />
           <Row>
-            <Col span={5}>Vat number</Col>
-            <Col span={3} style={{ marginLeft: "-8px" }}></Col>
+            <Col span={5}>VAT number</Col>
             <Col span={6} style={{ marginLeft: "12px" }}>
               Country
             </Col>
@@ -239,14 +266,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                 value={vatNumber}
                 style={{ width: "100%" }}
                 onChange={onVatChange}
-                // onBlur={onVATCheck}
+                onBlur={onVATCheck}
                 placeholder="Your VAT number"
               />
-            </Col>
-            <Col span={3} style={{ marginLeft: "-8px" }}>
-              <Button type="link" onClick={onVATCheck} disabled={submitting}>
-                Check
-              </Button>
             </Col>
             <Col span={6} style={{ marginLeft: "12px" }}>
               <Select
@@ -264,6 +286,26 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
               />
             </Col>
           </Row>
+          {isVatValid && (
+            <>
+              <Row style={{ fontWeight: "bold" }}>
+                <Col span={6}>Company Address</Col>
+                <Col span={6}>Company Name</Col>
+                <Col span={6}>Country Code</Col>
+              </Row>
+              <Row style={{ marginBottom: "12px" }}>
+                <Col span={6} style={{ fontSize: "11px" }}>
+                  {vatDetail?.companyAddress}
+                </Col>
+                <Col span={6} style={{ fontSize: "11px" }}>
+                  {vatDetail?.companyName}
+                </Col>
+                <Col span={6} style={{ fontSize: "11px" }}>
+                  {vatDetail?.countryCode}
+                </Col>
+              </Row>
+            </>
+          )}
           <Row>
             <Col span={20}>
               <span style={{ fontSize: "18px" }}>Total</span>
@@ -291,6 +333,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
         </Button>
         <Button
           type="primary"
+          className="confirm-btn-wrapper"
           onClick={onConfirm}
           loading={loading || submitting}
           disabled={loading || submitting}
