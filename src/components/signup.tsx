@@ -63,7 +63,7 @@ const Index = () => {
     }
     setErrMsg("");
     setSubmitting(true);
-    const user_name = "ewo" + Math.random();
+    // const user_name = "ewo" + Math.random();
 
     axios
       .post(`${API_URL}/user/auth/sso/register`, {
@@ -71,7 +71,7 @@ const Index = () => {
         firstName,
         lastName,
         password,
-        user_name,
+        // user_name,
       })
       .then((res) => {
         setErrMsg(res.data.message);
@@ -91,7 +91,6 @@ const Index = () => {
   const onSubmit2 = () => {
     setErrMsg("");
     setSubmitting(true);
-    // const user_name = "ewo" + Math.random();
     axios
       .post(`${API_URL}/user/auth/sso/registerVerify`, {
         email,

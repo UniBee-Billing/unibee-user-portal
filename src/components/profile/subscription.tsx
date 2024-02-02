@@ -17,16 +17,18 @@ import { useProfileStore } from "../../stores";
 import { getSublist } from "../../requests";
 import { IPlan, ISubscription } from "../../shared.types";
 import { showAmount } from "../../helpers";
+import ModalResumeOrTerminateSub from "../modalTerminateOrResumeSub";
 import type { ColumnsType } from "antd/es/table";
 import {
+  CheckCircleOutlined,
   InfoCircleOutlined,
   LoadingOutlined,
+  MinusOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
 import { SUBSCRIPTION_STATUS } from "../../constants";
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
-const API_URL = import.meta.env.VITE_API_URL;
 
 const columns: ColumnsType<ISubscription> = [
   {
@@ -40,7 +42,6 @@ const columns: ColumnsType<ISubscription> = [
     title: "Total Amount",
     dataIndex: "amount",
     key: "amount",
-
     render: (_, sub) => {
       return <span>{showAmount(sub.amount, sub.currency)}</span>;
     },
@@ -170,6 +171,10 @@ const Index = () => {
             refresh={fetchData}
           />
         )}
+        {subscriptions.length > 0 &&
+          subscriptions[0].unfinishedSubscriptionPendingUpdate && (
+            <PendingUpdateSection subInfo={subscriptions[0]} />
+          )}
         <Divider
           orientation="left"
           style={{ margin: "32px 0", color: "#757575" }}
@@ -193,6 +198,127 @@ const Index = () => {
 
 export default Index;
 
+const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
+  const i = subInfo.unfinishedSubscriptionPendingUpdate;
+  console.log("i: ", i);
+  return (
+    <>
+      <Divider orientation="left" style={{ margin: "32px 0" }}>
+        Pending Update
+      </Divider>
+      <Row style={rowStyle}>
+        <Col span={4} style={colStyle}>
+          Plan
+        </Col>
+        <Col span={6}>{i!.updatePlan.planName}</Col>
+        <Col span={4} style={colStyle}>
+          Plan Description
+        </Col>
+        <Col span={6}>{i!.updatePlan.description}</Col>
+      </Row>
+
+      <Row style={rowStyle}>
+        <Col span={4} style={colStyle}>
+          Plan Price
+        </Col>
+        <Col span={6}>
+          {showAmount(i!.updatePlan.amount, i!.updatePlan.currency)}
+        </Col>
+        <Col span={4} style={colStyle}>
+          Addons Price
+        </Col>
+        <Col span={6}>
+          {i?.updateAddons &&
+            showAmount(
+              i.updateAddons!.reduce(
+                (
+                  sum,
+                  { quantity, amount }: { quantity: number; amount: number }
+                ) => sum + quantity * amount,
+                0
+              ),
+              i.updateCurrency
+            )}
+
+          {i?.updateAddons && i.updateAddons.length > 0 && (
+            <Popover
+              placement="top"
+              title="Addon breakdown"
+              content={
+                <div style={{ width: "280px" }}>
+                  {i?.updateAddons.map((a) => (
+                    <Row key={a.id}>
+                      <Col span={10}>{a.planName}</Col>
+                      <Col span={14}>
+                        {showAmount(a.amount, a.currency)} × {a.quantity} ={" "}
+                        {showAmount(a.amount * a.quantity, a.currency)}
+                      </Col>
+                    </Row>
+                  ))}
+                </div>
+              }
+            >
+              <span style={{ marginLeft: "8px", cursor: "pointer" }}>
+                <InfoCircleOutlined />
+              </span>
+            </Popover>
+          )}
+        </Col>
+      </Row>
+      <Row style={rowStyle}>
+        <Col span={4} style={colStyle}>
+          Proration Amount
+        </Col>
+        <Col span={6}>{showAmount(i!.prorationAmount, i!.updateCurrency)}</Col>
+        <Col span={4} style={colStyle}>
+          <span>Paid</span>
+        </Col>
+        <Col span={6}>
+          {i!.paid == 1 ? (
+            <CheckCircleOutlined style={{ color: "green" }} />
+          ) : (
+            <MinusOutlined style={{ color: "red" }} />
+          )}
+          {i!.link != "" && (
+            <a
+              href={i!.link}
+              target="_blank"
+              style={{ marginLeft: "8px", fontSize: "11px" }}
+            >
+              Payment Link
+            </a>
+          )}
+        </Col>
+      </Row>
+
+      <Row style={rowStyle}>
+        <Col span={4} style={colStyle}>
+          Total Amount
+        </Col>
+        <Col span={6}>
+          {" "}
+          {showAmount(i!.updateAmount, i!.updatePlan.currency)}
+        </Col>
+        <Col span={4} style={colStyle}>
+          Bill Period
+        </Col>
+        <Col span={6}>
+          {`${i!.updatePlan.intervalCount} ${i!.updatePlan.intervalUnit}`}
+        </Col>
+      </Row>
+
+      <Row style={rowStyle}>
+        <Col span={4} style={colStyle}>
+          Effective Date
+        </Col>
+        <Col span={6}>
+          {new Date(i!.effectTime * 1000).toLocaleDateString()}
+        </Col>
+      </Row>
+    </>
+  );
+};
+
 const rowStyle: CSSProperties = {
   display: "flex",
   alignItems: "center",
@@ -203,16 +329,27 @@ const colStyle: CSSProperties = { fontWeight: "bold" };
 interface ISubSectionProps {
   subInfo: ISubscription;
   refresh: () => void;
-  // plans: IPlan[];
 }
-const SubscriptionInfoSection = ({
-  subInfo,
-  refresh,
-}: // plans,
-ISubSectionProps) => {
+const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
   const navigate = useNavigate();
+  const [resumeOrTerminateModal, setResumeOrTerminateModal] = useState(false);
+  const toggleResumeOrTerminateSubModal = () =>
+    setResumeOrTerminateModal(!resumeOrTerminateModal);
+  const [action, setAction] = useState<"TERMINATE" | "RESUME">("TERMINATE");
+  const openModal = (action: "TERMINATE" | "RESUME") => {
+    setAction(action);
+    toggleResumeOrTerminateSubModal();
+  };
+
   return (
     <>
+      <ModalResumeOrTerminateSub
+        isOpen={resumeOrTerminateModal}
+        action={action}
+        subInfo={subInfo}
+        closeModal={toggleResumeOrTerminateSubModal}
+        refresh={refresh}
+      />
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
           Plan
@@ -296,15 +433,14 @@ ISubSectionProps) => {
           Total Amount
         </Col>
         <Col span={6}>
-          {subInfo?.amount && showAmount(subInfo.amount, subInfo.currency)}{" "}
-          {subInfo && subInfo.taxScale && (
+          {subInfo?.amount && showAmount(subInfo.amount, subInfo.currency)}
+          {subInfo && subInfo.taxScale && subInfo.taxScale != 0 ? (
             <span style={{ color: "#757575", fontSize: "11px" }}>
-              {" "}
               {`(${
                 subInfo && subInfo.taxScale && subInfo.taxScale / 100
-              }% tax incl)`}{" "}
+              }% tax incl)`}
             </span>
-          )}
+          ) : null}
         </Col>
 
         <Col span={4} style={colStyle}>
@@ -344,6 +480,23 @@ ISubSectionProps) => {
           <Button onClick={() => navigate(`${APP_PATH}products/update`)}>
             Change Plan
           </Button>
+          {subInfo.cancelAtPeriodEnd == 0 ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <Button onClick={() => openModal("TERMINATE")}>
+                End Subscription
+              </Button>
+            </div>
+          ) : (
+            <div>
+              <span>Subscription will end on </span>
+              <span style={{ color: "red", marginRight: "8px" }}>
+                {subInfo &&
+                  // new Date(activeSub!.trialEnd * 1000).toLocaleString()
+                  new Date(subInfo!.currentPeriodEnd * 1000).toLocaleString()}
+              </span>
+              <Button onClick={() => openModal("RESUME")}>Resume</Button>
+            </div>
+          )}
         </div>
       )}
     </>

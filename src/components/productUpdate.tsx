@@ -274,7 +274,7 @@ const Index = () => {
           isNewUserRef.current ? toggleCreateModal : toggleUpdateModal
         }
       />
-      {activeSub && (
+      {/* activeSub && (
         <Modal
           title="Terminate Subscription"
           open={terminateModal}
@@ -292,7 +292,7 @@ const Index = () => {
             , are you sure you want to terminate?
           </div>
         </Modal>
-      )}
+              )*/}
       {
         // update subscription
         updateModalOpen && !isNewUserRef.current && (
@@ -344,6 +344,7 @@ const Index = () => {
         >
           Confirm
         </Button>
+        {/* 
         &nbsp;&nbsp;&nbsp;&nbsp;
         <Button
           type="primary"
@@ -352,6 +353,7 @@ const Index = () => {
         >
           Terminate Subscription
         </Button>
+        */}
       </div>
     </div>
   );

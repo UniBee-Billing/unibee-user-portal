@@ -275,6 +275,30 @@ export const terminateSub = async (SubscriptionId: string) => {
   );
 };
 
+export const terminateOrResumeSubReq = async ({
+  subscriptionId,
+  action,
+}: {
+  subscriptionId: string;
+  action: "TERMINATE" | "RESUME";
+}) => {
+  let URL = `${API_URL}/user/subscription/`;
+  URL +=
+    action == "TERMINATE"
+      ? "subscription_cancel_at_period_end"
+      : "subscription_cancel_last_cancel_at_period_end";
+  //
+  const body = {
+    subscriptionId,
+  };
+  const profile = useProfileStore.getState();
+  return await axios.post(URL, body, {
+    headers: {
+      Authorization: `${profile.token}`, // Bearer: ******
+    },
+  });
+};
+
 export const getCountryList = async (merchantId: number) => {
   const profile = useProfileStore.getState();
   const body = {
