@@ -213,6 +213,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       maskClosable={false}
       open={true}
       footer={null}
+      closeIcon={null}
       width={"720px"}
     >
       {preview == null ? (

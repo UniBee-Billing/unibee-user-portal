@@ -120,9 +120,8 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       title="Subscription Update Preview"
       maskClosable={false}
       open={true}
-      // onOk={onConfirm}
-      // onCancel={toggleModal}
       footer={null}
+      closeIcon={null}
       width={"720px"}
     >
       {loading ? (

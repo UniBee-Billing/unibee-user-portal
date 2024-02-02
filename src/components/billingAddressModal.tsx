@@ -113,6 +113,7 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
       width={"640px"}
       open={isOpen}
       footer={null}
+      closeIcon={null}
     >
       <div style={{ height: "24px" }}></div>
       <Form

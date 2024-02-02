@@ -63,6 +63,7 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
       width={"780px"}
       open={isOpen}
       footer={null}
+      closeIcon={null}
     >
       <div style={{ margin: "16px 0" }}>
         {`Are you sure you want to ${action.toLowerCase()} this subscription?`}
