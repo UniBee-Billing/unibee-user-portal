@@ -27,6 +27,7 @@ import {
   SyncOutlined,
 } from "@ant-design/icons";
 import { SUBSCRIPTION_STATUS } from "../../constants";
+import "../../shared.css";
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 
@@ -36,7 +37,7 @@ const columns: ColumnsType<ISubscription> = [
     dataIndex: "planName",
     key: "planName",
     // render: (text) => <a>{text}</a>,
-    render: (_, sub) => <a>{sub.plan?.planName}</a>,
+    render: (_, sub) => <span>{sub.plan?.planName}</span>,
   },
   {
     title: "Total Amount",
@@ -185,6 +186,7 @@ const Index = () => {
           columns={columns}
           dataSource={subscriptions}
           rowKey={"id"}
+          rowClassName="clickable-tbl-row"
           pagination={false}
           loading={{
             spinning: loading,

@@ -23,7 +23,7 @@ export const loginWithOTPVerifyReq = async (
   email: string,
   verificationCode: string
 ) => {
-  return await axios.post(`${API_URL}/user/auth/sso/loginOTP`, {
+  return await axios.post(`${API_URL}/user/auth/sso/loginOTPVerify`, {
     email,
     verificationCode,
   });
