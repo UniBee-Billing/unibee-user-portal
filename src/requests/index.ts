@@ -160,7 +160,7 @@ export const createUpdatePreviewReq = async (
   const body = {
     subscriptionId,
     // userId: profile.id,
-    channelId: 25,
+    gatewayId: 25,
     // planId,
     newPlanId: planId,
     quantity: 1,
@@ -184,7 +184,7 @@ export const createPreviewReq = async (
   const urlPath = "subscription_create_preview";
   const body = {
     userId: profile.id,
-    channelId: 25,
+    gatewayId: 25,
     planId,
     newPlanId: planId,
     quantity: 1,
@@ -242,7 +242,7 @@ export const createSubscription = async (
   const body = {
     planId,
     quantity: 1,
-    channelId: 25,
+    gatewayId: 25,
     UserId: profile.id,
     addonParams: addons,
     confirmTotalAmount,

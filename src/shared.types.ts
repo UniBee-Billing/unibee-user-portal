@@ -57,7 +57,7 @@ interface ISubscription {
   userId: number;
   status: number;
   link: string | undefined;
-  // channelId: number;
+  // gatewayId: number;
   firstPayTime: Date;
   currentPeriodStart: number;
   currentPeriodEnd: number;

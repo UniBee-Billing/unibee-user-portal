@@ -31,9 +31,8 @@ push:
   script:
     - rm -rf dist
     - cp -r /data/artifacts/user_portal_dist dist
-    - docker build -t ${TARGET_REPO} .
-    - docker login --username=${REPO_ACCOUNT} --password=${REPO_PASSWORD} ${REPO_HOST}
-    - docker push ${TARGET_REPO}
+    - docker build -t easzlab.io.local:5000/unibee/unibee-user-portal:daily .
+    - docker push easzlab.io.local:5000/unibee/unibee-user-portal:daily
 
 deploy:
   only:

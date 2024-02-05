@@ -133,7 +133,7 @@ const Index = () => {
                 addons: "",
                 amount: s.subscription.amount,
                 currency: s.subscription.currency,
-                channelId: s.subscription.channelId,
+                gatewayId: s.subscription.gatewayId,
                 firstPayTime: s.subscription.firstPayTime,
                 currentPeriodEnd: s.subscription.currentPeriodEnd,
                 currentPeriodStart: s.subscription.currentPeriodStart,
