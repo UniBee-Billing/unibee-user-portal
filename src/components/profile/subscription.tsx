@@ -27,6 +27,7 @@ import {
   SyncOutlined,
 } from "@ant-design/icons";
 import { SUBSCRIPTION_STATUS } from "../../constants";
+import CancelSubModal from "../modalCancelPendingSub";
 import "../../shared.css";
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
@@ -138,6 +139,8 @@ const Index = () => {
     if (sub.length > 0) {
       setSubscriptions(sub);
       return;
+    } else {
+      setSubscriptions(sub);
     }
 
     // if user enter this route from login and has no subscription(new user or current sub expired/cancelled)
@@ -343,8 +346,19 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
     toggleResumeOrTerminateSubModal();
   };
 
+  const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
+  const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen);
+
   return (
     <>
+      <SubReminder sub={subInfo} toggleModal={toggleCancelSubModal} />
+      {cancelSubModalOpen && (
+        <CancelSubModal
+          subInfo={subInfo}
+          refresh={refresh}
+          closeModal={toggleCancelSubModal}
+        />
+      )}
       <ModalResumeOrTerminateSub
         isOpen={resumeOrTerminateModal}
         action={action}
@@ -459,7 +473,9 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           First Pay
         </Col>
         <Col span={6}>
-          {new Date(subInfo.firstPayTime).toLocaleDateString()}
+          {subInfo.firstPayTime == null
+            ? "N/A"
+            : new Date(subInfo.firstPayTime).toLocaleDateString()}
         </Col>
         <Col span={4} style={colStyle}>
           Next Due Date
@@ -503,4 +519,62 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
       )}
     </>
   );
+};
+
+// productUpdate.tsx has the same code, refactor it
+const SubReminder = ({
+  sub,
+  toggleModal,
+}: {
+  sub: ISubscription | null;
+  toggleModal: () => void;
+}) => {
+  const getReminder = () => {
+    let n;
+    switch (sub!.status) {
+      case 0:
+        n = "Your subscription is initializing, please wait a few moment.";
+        break;
+      case 1:
+        n = (
+          <div
+            style={{
+              color: "#757575",
+              fontSize: "12px",
+              background: "#fbe9e7",
+              borderRadius: "4px",
+              padding: "6px",
+              marginBottom: "12px",
+            }}
+          >
+            Your subscription has been created, but not activated, please go to{" "}
+            <a href={sub!.link} target="_blank">
+              checkout page
+            </a>{" "}
+            to finishe the payment within 3 days. If you haven't finished the
+            payment within 3 days, your subscription will be cancelled, or you
+            can{" "}
+            <Button type="link" style={{ padding: "0" }} onClick={toggleModal}>
+              Cancel
+            </Button>{" "}
+            this subscription immediately.
+          </div>
+        );
+        break;
+      case 3:
+        n = "Your subscription is in pending status, please ....";
+        break;
+      default:
+        n = "";
+    }
+    return n;
+    // STATUS[sub?.status as keyof typeof STATUS]
+  };
+
+  if (sub == null || sub.status == 2) {
+    // 2: active, only with this status, users can upgrade/downgrad/change
+    return null; // nothing need to be shown on page.
+  }
+  return getReminder();
+  // <div>{STATUS[sub.status as keyof typeof STATUS]}</div>;
 };

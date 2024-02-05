@@ -328,6 +328,24 @@ export const terminateOrResumeSubReq = async ({
   });
 };
 
+// new user has choosen a sub plan, but not paid yet, befoer the payment due date, user can still cancel it
+// this fn is for this purpose only, it's not the same for terminate an active sub (which is the above terminateOrResumeSubReq's job).
+export const cancelSubReq = async (subscriptionId: string) => {
+  const profile = useProfileStore.getState();
+  const body = {
+    subscriptionId,
+  };
+  return await axios.post(
+    `${API_URL}/user/subscription/subscription_cancel`,
+    body,
+    {
+      headers: {
+        Authorization: `${profile.token}`, // Bearer: ******
+      },
+    }
+  );
+};
+
 export const getCountryList = async (merchantId: number) => {
   const profile = useProfileStore.getState();
   const body = {

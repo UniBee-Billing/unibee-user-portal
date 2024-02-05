@@ -17,6 +17,7 @@ import UpdatePlanModal from "./modalUpdateSub";
 import CreateSubModal from "./modalCreateSub";
 import { useProfileStore } from "../stores";
 import BillingAddressModal from "./billingAddressModal";
+import CancelSubModal from "./modalCancelPendingSub";
 import { SUBSCRIPTION_STATUS } from "../constants";
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -36,6 +37,11 @@ const Index = () => {
   const isNewUserRef = useRef(true); // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
   // they have different api call and Modal window
 
+  // new user has choosen a sub plan, but haven't paid yet, before the payment due day, they can still cancel it
+  // this modal is for this purpose only.
+  // It's not the same as 'terminate an active sub'.
+  const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
+
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
       state: { msg: "session expired, please re-login" },
@@ -45,6 +51,8 @@ const Index = () => {
   const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen); // Modal for update plan
   const toggleBillingModal = () =>
     setBillingAddressModalOpen(!billingAddressModalOpen);
+
+  const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen);
 
   const onAddonChange = (
     addonId: number,
@@ -104,6 +112,7 @@ const Index = () => {
 
   const fetchData = async () => {
     let subListRes, planListRes;
+    setLoading(true);
     try {
       const res = ([subListRes, planListRes] = await Promise.all([
         getActiveSub(),
@@ -137,6 +146,10 @@ const Index = () => {
       sub = subListRes.data.data.Subscriptions[0];
       isNewUserRef.current = false;
       // TODO: backup current user's selectedPlan and addons info
+    } else {
+      // user has an active sub, but not paid, after cancel, active sub becomes null, I need to set its state to null
+      // otherwise, page still use the obsolete sub info.
+      setActiveSub(null);
     }
 
     // addons and other props are separated in different area in the response subscription obj, I want to combine them into one subscription obj
@@ -259,7 +272,7 @@ const Index = () => {
 
   return (
     <div>
-      <SubStatus sub={activeSub} />
+      <SubStatus sub={activeSub} toggleModal={toggleCancelSubModal} />
       <Spin
         spinning={loading}
         indicator={
@@ -274,6 +287,13 @@ const Index = () => {
           isNewUserRef.current ? toggleCreateModal : toggleUpdateModal
         }
       />
+      {cancelSubModalOpen && (
+        <CancelSubModal
+          subInfo={activeSub}
+          closeModal={toggleCancelSubModal}
+          refresh={fetchData}
+        />
+      )}
       {/* activeSub && (
         <Modal
           title="Terminate Subscription"
@@ -340,7 +360,12 @@ const Index = () => {
           type="primary"
           onClick={onPlanConfirm}
           // disabled={selectedPlan == null || activeSub?.status != 2}
-          disabled={selectedPlan == null}
+          disabled={
+            selectedPlan == null ||
+            activeSub?.status == 0 || // initiating
+            activeSub?.status == 1 || // created (not paid)
+            activeSub?.status == 3 // pending (payment in processing)
+          }
         >
           Confirm
         </Button>
@@ -353,6 +378,7 @@ const Index = () => {
         >
           Terminate Subscription
         </Button>
+        this feature has been moved to profile/subscription page.
         */}
       </div>
     </div>
@@ -361,7 +387,13 @@ const Index = () => {
 
 export default Index;
 
-const SubStatus = ({ sub }: { sub: ISubscription | null }) => {
+const SubStatus = ({
+  sub,
+  toggleModal,
+}: {
+  sub: ISubscription | null;
+  toggleModal: () => void;
+}) => {
   const getReminder = () => {
     let n;
     switch (sub!.status) {
@@ -380,12 +412,17 @@ const SubStatus = ({ sub }: { sub: ISubscription | null }) => {
               marginBottom: "12px",
             }}
           >
-            Your subscription has been created, please go to{" "}
+            Your subscription has been created, but not activated, please go to{" "}
             <a href={sub!.link} target="_blank">
               checkout page
             </a>{" "}
-            to finishe the payment. If you haven't finished the payment within
-            ***, your subscription will be cancelled.
+            to finishe the payment within 3 days. If you haven't finished the
+            payment within 3 days, your subscription will be cancelled, or you
+            can{" "}
+            <Button type="link" style={{ padding: "0" }} onClick={toggleModal}>
+              Cancel
+            </Button>{" "}
+            this subscription immediately.
           </div>
         );
         break;
