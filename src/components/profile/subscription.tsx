@@ -26,6 +26,7 @@ import {
   MinusOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import { SUBSCRIPTION_STATUS } from "../../constants";
 import CancelSubModal from "../modalCancelPendingSub";
 import "../../shared.css";
@@ -54,7 +55,9 @@ const columns: ColumnsType<ISubscription> = [
     key: "currentPeriodStart",
     render: (_, sub) => {
       return (
-        <span>{new Date(sub.currentPeriodStart * 1000).toLocaleString()}</span>
+        <span>
+          {dayjs(sub.currentPeriodStart * 1000).format("YYYY-MMM-DD HH:MM")}
+        </span>
       );
     },
   },
@@ -64,7 +67,9 @@ const columns: ColumnsType<ISubscription> = [
     key: "currentPeriodEnd",
     render: (_, sub) => {
       return (
-        <span>{new Date(sub.currentPeriodEnd * 1000).toLocaleString()}</span>
+        <span>
+          {dayjs(sub.currentPeriodEnd * 1000).format("YYYY-MMM-DD HH:MM")}
+        </span>
       );
     },
   },
@@ -475,13 +480,13 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         <Col span={6}>
           {subInfo.firstPayTime == null
             ? "N/A"
-            : new Date(subInfo.firstPayTime).toLocaleDateString()}
+            : dayjs(subInfo.firstPayTime).format("YYYY-MMM-DD")}
         </Col>
         <Col span={4} style={colStyle}>
           Next Due Date
         </Col>
         <Col span={6}>
-          {new Date(subInfo.currentPeriodEnd * 1000).toLocaleDateString()}
+          {dayjs(subInfo.currentPeriodEnd * 1000).format("YYYY-MMM-DD")}
         </Col>
       </Row>
 
@@ -562,7 +567,7 @@ const SubReminder = ({
         );
         break;
       case 3:
-        n = "Your subscription is in pending status, please ....";
+        n = "Your subscription is in pending status, please wait";
         break;
       default:
         n = "";

@@ -427,7 +427,7 @@ const SubStatus = ({
         );
         break;
       case 3:
-        n = "Your subscription is in pending status, please ....";
+        n = "Your subscription is in pending status, please wait";
         break;
       default:
         n = "";
