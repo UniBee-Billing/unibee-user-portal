@@ -1,20 +1,9 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import type { RadioChangeEvent } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  Tabs,
-  Radio,
-  message,
-  Divider,
-} from "antd";
+import { Button, Form, Input, Radio, message } from "antd";
 import OtpInput from "react-otp-input";
-import axios from "axios";
 import { useProfileStore } from "../stores";
-import { timerBySec } from "../helpers";
 import { emailValidate } from "../helpers";
 import {
   loginWithPasswordReq,
@@ -24,7 +13,6 @@ import {
 import AppHeader from "./appHeader";
 import AppFooter from "./appFooter";
 const APP_PATH = import.meta.env.BASE_URL;
-const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
   const navigate = useNavigate();
@@ -37,11 +25,8 @@ const Index = () => {
     setPassword(evt.target.value);
   const [loginType, setLoginType] = useState<"password" | "OTP">("password"); // password | OTP
 
-  const onLoginTypeChange = (e: RadioChangeEvent) => {
-    // console.log("radio checked", e.target.value);
+  const onLoginTypeChange = (e: RadioChangeEvent) =>
     setLoginType(e.target.value);
-  };
-
   const goSignup = () => navigate(`${APP_PATH}signup`);
 
   useEffect(() => {
@@ -142,10 +127,6 @@ const LoginWithPassword = ({
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
 
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-  // const onEmailChange = (evt) => setEmail(evt.target.value);
-  // const onPasswordChange = (evt) => setPassword(evt.target.value);
   const onSubmit = async () => {
     setErrMsg("");
     setSubmitting(true);
@@ -296,7 +277,7 @@ const LoginWithOTP = ({
     setOtp(value.toUpperCase());
   };
 
-  // send mail, receive code
+  // send mail, wait to receive code
   const loginStep1 = async () => {
     setOtp("");
     setSubmitting(true);

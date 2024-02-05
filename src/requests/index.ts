@@ -1,11 +1,40 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useProfileStore } from "../stores";
 import { IProfile } from "../shared.types";
 
-const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
+
+export const signUpReq = async ({
+  email,
+  firstName,
+  lastName,
+  password,
+}: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+}) => {
+  return await axios.post(`${API_URL}/user/auth/sso/register`, {
+    email,
+    firstName,
+    lastName,
+    password,
+  });
+};
+
+export const singUpVerifyReq = async ({
+  email,
+  verificationCode,
+}: {
+  email: string;
+  verificationCode: string;
+}) => {
+  return await axios.post(`${API_URL}/user/auth/sso/registerVerify`, {
+    email,
+    verificationCode,
+  });
+};
 
 export const loginWithPasswordReq = async (email: string, password: string) => {
   return await axios.post(`${API_URL}/user/auth/sso/login`, {

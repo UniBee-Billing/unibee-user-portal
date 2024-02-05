@@ -5,7 +5,6 @@ import OtpInput from "react-otp-input";
 import AppHeader from "./appHeader";
 import AppFooter from "./appFooter";
 import axios from "axios";
-import { signUpReq, singUpVerifyReq } from "../requests";
 import { emailValidate } from "../helpers";
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -50,7 +49,25 @@ const Index = () => {
 
   const goLogin = () => navigate(`${APP_PATH}login`);
 
-  const onSubmit = async () => {
+  const onSubmit = () => {
+    form.submit();
+    const isInvalid = form.getFieldsError().some((f) => f.errors.length > 0);
+    console.log(
+      "is invalid: ",
+      isInvalid,
+      "///",
+      form.getFieldsError(),
+      "//",
+      form.getFieldsValue()
+    );
+
+    if (isInvalid) {
+      return;
+    }
+
+    console.log("submitting...");
+
+    /*
     if (
       firstName == "" ||
       lastName == "" ||
@@ -66,48 +83,54 @@ const Index = () => {
     setErrMsg("");
     setSubmitting(true);
     // const user_name = "ewo" + Math.random();
-    try {
-      const res = await signUpReq({ email, firstName, lastName, password });
-      console.log("signup res: ", res);
-      setSubmitting(false);
-      if (res.data.code != 0) {
-        throw new Error(res.data.message);
-      }
-      message.success("Verification code sent.");
-      setCurrentStep(1);
-    } catch (err) {
-      setSubmitting(false);
-      if (err instanceof Error) {
-        console.log("err signup: ", err.message);
-        message.error(err.message);
-      } else {
-        message.error("Unknown error");
-      }
-    }
+
+    axios
+      .post(`${API_URL}/user/auth/sso/register`, {
+        email,
+        firstName,
+        lastName,
+        password,
+        // user_name,
+      })
+      .then((res) => {
+        setErrMsg(res.data.message);
+        setSubmitting(false);
+        if (res.data.code != 0) {
+          throw new Error(res.data.message);
+        }
+        setCurrentStep(1);
+        console.log("reg res: ", res);
+      })
+      .catch((err) => {
+        setSubmitting(false);
+        console.log("reg err: ", err);
+      });
+      */
   };
 
-  const onSubmit2 = async () => {
+  const onSubmit2 = () => {
     setErrMsg("");
     setSubmitting(true);
-    try {
-      const res = await singUpVerifyReq({ email, verificationCode: otp });
-      setSubmitting(false);
-      console.log("reg res: ", res);
-      if (res.data.code != 0) {
-        throw new Error(res.data.message);
-      }
-      navigate(`${APP_PATH}login`, {
-        state: { msg: "Thanks for your sign-up on UniBee" },
+    axios
+      .post(`${API_URL}/user/auth/sso/registerVerify`, {
+        email,
+        verificationCode: otp,
+      })
+      .then((res) => {
+        setSubmitting(false);
+        console.log("reg res: ", res);
+        if (res.data.code != 0) {
+          throw new Error(res.data.message);
+        }
+        navigate(`${APP_PATH}login`, {
+          state: { msg: "Thanks for your sign-up on UniBee" },
+        });
+      })
+      .catch((err) => {
+        setSubmitting(false);
+        console.log("reg err: ", err);
+        setErrMsg(err.message);
       });
-    } catch (err) {
-      setSubmitting(false);
-      if (err instanceof Error) {
-        console.log("err signup: ", err.message);
-        message.error(err.message);
-      } else {
-        message.error("Unknown error");
-      }
-    }
   };
 
   return (
@@ -157,9 +180,18 @@ const Index = () => {
                 style={{
                   maxWidth: 600,
                 }}
+                initialValues={undefined}
+                /*
                 initialValues={{
-                  remember: true,
+                  email: "",
+                  firstName: "",
+                  lastName: "",
+                  password: "",
+                  password2: "",
+                  errMsg: "",
                 }}
+                */
+                // initialValues={{                  remember: true, }}
                 autoComplete="off"
               >
                 <Form.Item
@@ -170,9 +202,17 @@ const Index = () => {
                       required: true,
                       message: "Please input your first name!",
                     },
+                    ({ getFieldValue }) => ({
+                      validator(rule, value) {
+                        if (value != null && value != "") {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject("Please input your first name!");
+                      },
+                    }),
                   ]}
                 >
-                  <Input value={firstName} onChange={onFirstNameChange} />
+                  <Input />
                 </Form.Item>
 
                 <Form.Item
@@ -185,7 +225,7 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input value={lastName} onChange={onLastNameChange} />
+                  <Input />
                 </Form.Item>
 
                 <Form.Item
@@ -205,12 +245,12 @@ const Index = () => {
                         ) {
                           return Promise.resolve();
                         }
-                        return Promise.reject("invalid email address");
+                        return Promise.reject("Invalid email address");
                       },
                     }),
                   ]}
                 >
-                  <Input value={email} onChange={onEmailChange} />
+                  <Input />
                 </Form.Item>
                 <Form.Item
                   label="Password"
@@ -232,10 +272,7 @@ const Index = () => {
                     }),
                   ]}
                 >
-                  <Input.Password
-                    value={password}
-                    onChange={onPasswordChange}
-                  />
+                  <Input.Password />
                 </Form.Item>
 
                 <Form.Item
@@ -258,10 +295,7 @@ const Index = () => {
                     }),
                   ]}
                 >
-                  <Input.Password
-                    value={password2}
-                    onChange={onPassword2Change}
-                  />
+                  <Input.Password />
                 </Form.Item>
 
                 <Form.Item
@@ -285,6 +319,7 @@ const Index = () => {
                     htmlType="submit"
                     onClick={onSubmit}
                     loading={submitting}
+                    disabled={submitting}
                   >
                     Submit
                   </Button>
@@ -363,18 +398,14 @@ const Index = () => {
               >
                 submit
               </Button>
-              <div>
-                <Button
-                  type="link"
-                  onClick={() => setCurrentStep(0)}
-                  disabled={submitting}
-                >
-                  Go Back
-                </Button>
-                <Button type="link" onClick={onSubmit} disabled={submitting}>
-                  Resend
-                </Button>
-              </div>
+              <Button
+                type="link"
+                block
+                onClick={onSubmit}
+                disabled={submitting}
+              >
+                Resend
+              </Button>
             </div>
           </div>
         )}
