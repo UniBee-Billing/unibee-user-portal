@@ -121,7 +121,7 @@ const LoginWithPassword = ({
   password: string;
   onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
-  console.log("email1: ", email);
+  // console.log("email1: ", email);
   const profileStore = useProfileStore();
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
@@ -226,7 +226,7 @@ const LoginWithOTP = ({
   email: string;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
-  console.log("email2: ", email);
+  // console.log("email2: ", email);
   const NUM_INPUTS = 6;
   const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
   const profileStore = useProfileStore();
@@ -468,6 +468,7 @@ const LoginWithOTP = ({
             <Button
               type="primary"
               block
+              htmlType="submit"
               onClick={submit}
               loading={submitting}
               disabled={submitting}

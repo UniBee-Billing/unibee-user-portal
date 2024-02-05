@@ -50,7 +50,9 @@ const Index = () => {
 
   const goLogin = () => navigate(`${APP_PATH}login`);
 
+  // send basic signup info
   const onSubmit = async () => {
+    /*
     if (
       firstName == "" ||
       lastName == "" ||
@@ -63,11 +65,28 @@ const Index = () => {
     ) {
       return;
     }
+*/
+    console.log(
+      "form value: ",
+      form.getFieldsError(),
+      "//",
+      form.getFieldsValue()
+    );
+
+    const isInvalid = form.getFieldsError().some((f) => f.errors.length > 0);
+    if (isInvalid) {
+      return;
+    }
+
+    const formBody = JSON.parse(JSON.stringify(form.getFieldsValue()));
+    delete formBody.errMsg;
+
+    // return;
     setErrMsg("");
     setSubmitting(true);
     // const user_name = "ewo" + Math.random();
     try {
-      const res = await signUpReq({ email, firstName, lastName, password });
+      const res = await signUpReq(formBody);
       console.log("signup res: ", res);
       setSubmitting(false);
       if (res.data.code != 0) {
@@ -86,6 +105,7 @@ const Index = () => {
     }
   };
 
+  // send verification code
   const onSubmit2 = async () => {
     setErrMsg("");
     setSubmitting(true);
@@ -158,7 +178,11 @@ const Index = () => {
                   maxWidth: 600,
                 }}
                 initialValues={{
-                  remember: true,
+                  firstName: "",
+                  lastName: "",
+                  email: "",
+                  password: "",
+                  password2: "",
                 }}
                 autoComplete="off"
               >
@@ -172,7 +196,8 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input value={firstName} onChange={onFirstNameChange} />
+                  {/* <Input value={firstName} onChange={onFirstNameChange} /> */}
+                  <Input />
                 </Form.Item>
 
                 <Form.Item
@@ -185,7 +210,8 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input value={lastName} onChange={onLastNameChange} />
+                  {/* <Input value={lastName} onChange={onLastNameChange} /> */}
+                  <Input />
                 </Form.Item>
 
                 <Form.Item
@@ -205,12 +231,13 @@ const Index = () => {
                         ) {
                           return Promise.resolve();
                         }
-                        return Promise.reject("invalid email address");
+                        return Promise.reject("Invalid email address");
                       },
                     }),
                   ]}
                 >
-                  <Input value={email} onChange={onEmailChange} />
+                  {/* <Input value={email} onChange={onEmailChange} /> */}
+                  <Input />
                 </Form.Item>
                 <Form.Item
                   label="Password"
@@ -222,7 +249,7 @@ const Index = () => {
                     },
                     ({ getFieldValue }) => ({
                       validator(rule, value) {
-                        if (passwordRegx.test(password) && value == password2) {
+                        if (passwordRegx.test(value)) {
                           return Promise.resolve();
                         }
                         return Promise.reject(
@@ -232,10 +259,11 @@ const Index = () => {
                     }),
                   ]}
                 >
-                  <Input.Password
+                  {/* <Input.Password
                     value={password}
                     onChange={onPasswordChange}
-                  />
+                /> */}
+                  <Input.Password />
                 </Form.Item>
 
                 <Form.Item
@@ -248,7 +276,7 @@ const Index = () => {
                     },
                     ({ getFieldValue }) => ({
                       validator(rule, value) {
-                        if (value == password) {
+                        if (value == getFieldValue("password")) {
                           return Promise.resolve();
                         }
                         return Promise.reject(
@@ -258,10 +286,11 @@ const Index = () => {
                     }),
                   ]}
                 >
-                  <Input.Password
+                  {/* <Input.Password
                     value={password2}
                     onChange={onPassword2Change}
-                  />
+                /> */}
+                  <Input.Password />
                 </Form.Item>
 
                 <Form.Item
@@ -283,7 +312,7 @@ const Index = () => {
                   <Button
                     type="primary"
                     htmlType="submit"
-                    onClick={onSubmit}
+                    // onClick={onSubmit}
                     loading={submitting}
                   >
                     Submit
@@ -316,7 +345,7 @@ const Index = () => {
                 height: "78px",
               }}
             >
-              <h3>Enter verification code for {email}</h3>
+              <h3>Enter verification code for {form.getFieldValue("email")}</h3>
             </div>
             <OtpInput
               value={otp}
@@ -371,9 +400,9 @@ const Index = () => {
                 >
                   Go Back
                 </Button>
-                <Button type="link" onClick={onSubmit} disabled={submitting}>
+                {/* <Button type="link" onClick={onSubmit} disabled={submitting}>
                   Resend
-                </Button>
+            </Button> */}
               </div>
             </div>
           </div>
