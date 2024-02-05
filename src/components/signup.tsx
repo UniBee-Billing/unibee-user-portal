@@ -33,6 +33,8 @@ const Index = () => {
 
   // const onEmailChange = (evt: ChangeEvent<HTMLInputElement>) =>
   //     setEmail(evt.target.value);
+
+  /*
   const onFirstNameChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
     setFirstName(evt.target.value);
   const onLastNameChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
@@ -43,6 +45,8 @@ const Index = () => {
     setPassword(evt.target.value);
   const onPassword2Change = (evt: React.ChangeEvent<HTMLInputElement>) =>
     setPassword2(evt.target.value);
+  */
+
   const [otp, setOtp] = useState("");
   const onOTPchange = (value: string) => {
     setOtp(value.toUpperCase());
@@ -110,7 +114,10 @@ const Index = () => {
     setErrMsg("");
     setSubmitting(true);
     try {
-      const res = await singUpVerifyReq({ email, verificationCode: otp });
+      const res = await singUpVerifyReq({
+        email: form.getFieldValue("email"),
+        verificationCode: otp,
+      });
       setSubmitting(false);
       console.log("reg res: ", res);
       if (res.data.code != 0) {
