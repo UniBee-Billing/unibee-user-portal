@@ -455,7 +455,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           {subInfo?.amount && showAmount(subInfo.amount, subInfo.currency)}
           {subInfo && subInfo.taxScale && subInfo.taxScale != 0 ? (
             <span style={{ color: "#757575", fontSize: "11px" }}>
-              {`(${
+              {` (${
                 subInfo && subInfo.taxScale && subInfo.taxScale / 100
               }% tax incl)`}
             </span>

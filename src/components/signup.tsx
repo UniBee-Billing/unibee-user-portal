@@ -28,7 +28,6 @@ const Index = () => {
   // const [country, setCountry] = useState("");
   // const [verificationCode, setVerificationCode] = useState("");
   const [currentStep, setCurrentStep] = useState(0); // 0: signup-basic-info  |  1: enter verfication code
-  const [errMsg, setErrMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
   // const [countryList, setCountryList] = useState<Country[]>([]);
 
@@ -85,12 +84,9 @@ const Index = () => {
       return;
     }
 
-    const formBody = JSON.parse(JSON.stringify(form.getFieldsValue()));
-    delete formBody.errMsg;
-    setErrMsg("");
     setSubmitting(true);
     try {
-      const res = await signUpReq(formBody);
+      const res = await signUpReq(form.getFieldsValue());
       console.log("signup res: ", res);
       setSubmitting(false);
       if (res.data.code != 0) {
@@ -113,7 +109,6 @@ const Index = () => {
 
   // send verification code
   const onSubmit2 = async () => {
-    setErrMsg("");
     setSubmitting(true);
     try {
       const res = await singUpVerifyReq({
@@ -287,21 +282,7 @@ const Index = () => {
                   }),
                 ]}
               >
-                {/* <Input.Password
-              value={password2}
-              onChange={onPassword2Change}
-          /> */}
                 <Input.Password />
-              </Form.Item>
-
-              <Form.Item
-                name="errMsg"
-                wrapperCol={{
-                  offset: 8,
-                  span: 16,
-                }}
-              >
-                <span style={{ color: "red" }}>{errMsg}</span>
               </Form.Item>
 
               <Form.Item
@@ -361,21 +342,11 @@ const Index = () => {
               />
               <div
                 style={{
-                  height: "64px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  color: "red",
-                }}
-              >
-                {errMsg}
-              </div>
-              <div
-                style={{
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
                   flexDirection: "column",
+                  marginTop: "36px",
                 }}
               >
                 <Button

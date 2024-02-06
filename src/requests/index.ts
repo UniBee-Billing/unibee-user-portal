@@ -36,7 +36,13 @@ export const singUpVerifyReq = async ({
   });
 };
 
-export const loginWithPasswordReq = async (email: string, password: string) => {
+export const loginWithPasswordReq = async ({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) => {
   return await axios.post(`${API_URL}/user/auth/sso/login`, {
     email,
     password,

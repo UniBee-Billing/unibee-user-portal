@@ -244,10 +244,8 @@ const LoginWithOTP = ({
         submit();
       }
     };
-    document.addEventListener("keydown", keyDownHandler);
-    return () => {
-      document.removeEventListener("keydown", keyDownHandler);
-    };
+    // document.addEventListener("keydown", keyDownHandler);
+    // return () => {document.removeEventListener("keydown", keyDownHandler);};
   }, []);
 
   const onOTPchange = (value: string) => {
@@ -312,14 +310,9 @@ const LoginWithOTP = ({
   };
 
   const resend = () => {
-    // countdown(countdownVal);
     stopCounter();
     startCount();
     loginStep1();
-  };
-
-  const validateFields = () => {
-    //
   };
 
   const submit = async () => {

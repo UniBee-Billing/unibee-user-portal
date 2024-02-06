@@ -31,6 +31,7 @@ const useCountdown = (
     cancelAnimationFrame(countdownReqId.current);
     setCurrentVal(initialVal);
     setCounting(false);
+    countdownReqId.current = 0;
   };
 
   return [currentVal, counting, start, stop];
