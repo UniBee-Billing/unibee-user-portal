@@ -134,7 +134,7 @@ const Index = () => {
                 amount: s.subscription.amount,
                 currency: s.subscription.currency,
                 gatewayId: s.subscription.gatewayId,
-                firstPayTime: s.subscription.firstPayTime,
+                firstPaidAt: s.subscription.firstPaidAt,
                 currentPeriodEnd: s.subscription.currentPeriodEnd,
                 currentPeriodStart: s.subscription.currentPeriodStart,
                 */
@@ -476,9 +476,9 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           First Pay
         </Col>
         <Col span={6}>
-          {subInfo.firstPayTime == null
+          {subInfo.firstPaidAt == null
             ? "N/A"
-            : dayjs(subInfo.firstPayTime).format("YYYY-MMM-DD")}
+            : dayjs(subInfo.firstPaidAt).format("YYYY-MMM-DD")}
         </Col>
         <Col span={4} style={colStyle}>
           Next Due Date
