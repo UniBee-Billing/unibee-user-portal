@@ -141,11 +141,9 @@ const Index = () => {
             };
           });
     console.log("final sub: ", sub);
+    setSubscriptions(sub);
     if (sub.length > 0) {
-      setSubscriptions(sub);
       return;
-    } else {
-      setSubscriptions(sub);
     }
 
     // if user enter this route from login and has no subscription(new user or current sub expired/cancelled)

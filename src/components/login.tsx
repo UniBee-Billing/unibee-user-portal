@@ -10,6 +10,7 @@ import {
   loginWithOTPReq,
   loginWithOTPVerifyReq,
 } from "../requests";
+import { useCountdown } from "./hooks";
 import AppHeader from "./appHeader";
 import AppFooter from "./appFooter";
 const APP_PATH = import.meta.env.BASE_URL;
@@ -156,10 +157,10 @@ const LoginWithPassword = ({
   };
   return (
     <Form
-      name="basic"
-      labelCol={{ span: 10 }}
-      wrapperCol={{ span: 14 }}
-      style={{ maxWidth: 640 }}
+      name="login-password"
+      labelCol={{ span: 6 }}
+      wrapperCol={{ span: 18 }}
+      style={{ maxWidth: 640, width: 360 }}
       // autoComplete="off"
     >
       <Form.Item
@@ -226,7 +227,6 @@ const LoginWithOTP = ({
   email: string;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
-  // console.log("email2: ", email);
   const NUM_INPUTS = 6;
   const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
   const profileStore = useProfileStore();
@@ -234,32 +234,10 @@ const LoginWithOTP = ({
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [countdownVal, setCountdownVal] = useState(10); // countdown value in second
-  const [counting, setCounting] = useState(false);
-  const countdownReqId = useRef<number>(0);
+  const [countVal, counting, startCount, stopCounter] = useCountdown(60);
   const [form] = Form.useForm();
 
-  const countdown = (val: number) => {
-    const valBK = val;
-    setCounting(true);
-    let lastTime = new Date().getTime();
-    (function timer() {
-      countdownReqId.current = requestAnimationFrame(timer);
-      const currentTime = new Date().getTime();
-      if (currentTime - lastTime >= 1000) {
-        lastTime = currentTime;
-        val--;
-        val >= 0 && setCountdownVal(val);
-        val == 0 && setCounting(false);
-        val < 0 &&
-          (setCountdownVal(valBK),
-          cancelAnimationFrame(countdownReqId.current));
-      }
-    })();
-  };
-
   useEffect(() => {
-    // timerBySec(10, setCountdownVal);
     const keyDownHandler = (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -272,7 +250,6 @@ const LoginWithOTP = ({
     };
   }, []);
 
-  // console.log("cd val: ", countdownVal);
   const onOTPchange = (value: string) => {
     setOtp(value.toUpperCase());
   };
@@ -281,6 +258,7 @@ const LoginWithOTP = ({
   const loginStep1 = async () => {
     setOtp("");
     setSubmitting(true);
+    setErrMsg("");
     try {
       const loginRes = await loginWithOTPReq(email);
       setSubmitting(false);
@@ -290,6 +268,8 @@ const LoginWithOTP = ({
         throw new Error(loginRes.data.message);
       }
       setCurrentStep(1);
+      stopCounter();
+      startCount();
       message.success("Code sent, please check your email");
     } catch (err) {
       setSubmitting(false);
@@ -332,7 +312,9 @@ const LoginWithOTP = ({
   };
 
   const resend = () => {
-    countdown(countdownVal);
+    // countdown(countdownVal);
+    stopCounter();
+    startCount();
     loginStep1();
   };
 
@@ -365,17 +347,10 @@ const LoginWithOTP = ({
         <Form
           form={form}
           onFinish={submit}
-          name="basic"
-          labelCol={{
-            span: 6,
-          }}
-          wrapperCol={{
-            span: 18,
-          }}
-          style={{
-            maxWidth: 600,
-          }}
-          autoComplete="off"
+          name="login_OTP_email"
+          labelCol={{ span: 6 }}
+          wrapperCol={{ span: 18 }}
+          style={{ maxWidth: 640, width: 360 }}
         >
           <Form.Item
             label="Email"
@@ -427,7 +402,21 @@ const LoginWithOTP = ({
           </Form.Item>
         </Form>
       ) : (
-        <>
+        <Form
+          // form={form}
+          // onFinish={submit}
+          name="login_OTP_code"
+          labelCol={{
+            span: 6,
+          }}
+          wrapperCol={{
+            span: 18,
+          }}
+          style={{
+            maxWidth: 600,
+          }}
+          autoComplete="off"
+        >
           <div
             style={{
               display: "flex",
@@ -461,7 +450,7 @@ const LoginWithOTP = ({
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              marginTop: "48px",
+              marginTop: "32px",
             }}
           >
             <span style={{ marginBottom: "18px", color: "red" }}>{errMsg}</span>
@@ -475,7 +464,7 @@ const LoginWithOTP = ({
             >
               OK
             </Button>
-            <div>
+            <div style={{ display: "flex", marginTop: "8px" }}>
               <Button type="link" block onClick={() => setCurrentStep(0)}>
                 Go back
               </Button>
@@ -485,16 +474,19 @@ const LoginWithOTP = ({
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
+                  maxWidth: "180px",
                 }}
               >
                 <Button type="link" onClick={resend} disabled={counting}>
                   Resend
                 </Button>
-                {counting && <span> in {countdownVal} seconds</span>}
+                {counting && (
+                  <div style={{ width: "100px" }}> in {countVal} seconds</div>
+                )}
               </div>
             </div>
           </div>
-        </>
+        </Form>
       )}
     </div>
   );
