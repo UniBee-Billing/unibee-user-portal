@@ -86,7 +86,7 @@ const Index = ({
           }),
         ]}
       >
-        <Input />
+        <Input onPressEnter={onSubmit} />
       </Form.Item>
 
       <Form.Item
@@ -99,7 +99,7 @@ const Index = ({
           },
         ]}
       >
-        <Input.Password />
+        <Input.Password onPressEnter={onSubmit} />
       </Form.Item>
 
       <div

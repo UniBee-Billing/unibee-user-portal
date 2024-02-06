@@ -1,4 +1,4 @@
-import { Button, Form, FormInstance, Input, message } from "antd";
+import { Button, Form, Input, message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfileStore } from "../../stores";
@@ -143,7 +143,7 @@ const MailForm = ({
           },
         ]}
       >
-        <Input value={email} onChange={onEmailChange} />
+        <Input value={email} onChange={onEmailChange} onPressEnter={submit} />
       </Form.Item>
       <div
         style={{
