@@ -1,21 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useProfileStore } from "../../stores";
-import { getProfile, saveProfile } from "../../requests";
-import { Country } from "../../shared.types";
-import { Button, Form, Input, Radio, Select, Spin, message } from "antd";
-import { getCountryList } from "../../requests";
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Radio, Select, Spin, message } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  getAppConfigReq,
+  getCountryList,
+  getProfile,
+  saveProfile,
+} from '../../requests';
+import { Country } from '../../shared.types';
+import { useProfileStore } from '../../stores';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 const API_URL = import.meta.env.VITE_API_URL;
-
-const normFile = (e: any) => {
-  if (Array.isArray(e)) {
-    return e;
-  }
-  return e?.fileList;
-};
 
 const Index = () => {
   const profileStore = useProfileStore();
@@ -27,36 +24,36 @@ const Index = () => {
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
-      state: { msg: "session expired, please re-login" },
+      state: { msg: 'session expired, please re-login' },
     });
 
   const filterOption = (
     input: string,
-    option?: { label: string; value: string }
-  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+    option?: { label: string; value: string },
+  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
   const onSave = async () => {
-    console.log("form: ", form.getFieldsValue());
+    console.log('form: ', form.getFieldsValue());
     setLoading(true);
     let saveProfileRes;
     try {
       saveProfileRes = await saveProfile(form.getFieldsValue());
       setLoading(false);
-      console.log("save profile res: ", saveProfileRes);
+      console.log('save profile res: ', saveProfileRes);
       const code = saveProfileRes.data.code;
       if (code != 0) {
         code == 61 && relogin();
         throw new Error(saveProfileRes.data.message);
       }
-      message.success("saved");
+      message.success('saved');
       setProfile(saveProfileRes.data.data.User);
     } catch (err) {
       setLoading(false);
       if (err instanceof Error) {
-        console.log("profile update err: ", err.message);
+        console.log('profile update err: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
       return;
     }
@@ -65,14 +62,16 @@ const Index = () => {
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      let profileRes, countryListRes;
+      let profileRes, countryListRes, appConfigRes;
       try {
-        const res = ([profileRes, countryListRes] = await Promise.all([
-          getProfile(),
-          getCountryList(15621),
-        ]));
+        const res = ([profileRes, countryListRes, appConfigRes] =
+          await Promise.all([
+            getProfile(),
+            getCountryList(15621),
+            getAppConfigReq(),
+          ]));
         setLoading(false);
-        console.log("profile/country: ", profileRes, "//", countryListRes);
+        console.log('res: ', res);
         res.forEach((r) => {
           const code = r.data.code;
           code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
@@ -83,10 +82,10 @@ const Index = () => {
       } catch (err) {
         setLoading(false);
         if (err instanceof Error) {
-          console.log("profile update err: ", err.message);
+          console.log('profile update err: ', err.message);
           message.error(err.message);
         } else {
-          message.error("Unknown error");
+          message.error('Unknown error');
         }
         return;
       }
@@ -95,19 +94,19 @@ const Index = () => {
         countryListRes.data.data.vatCountryList.map((c: any) => ({
           code: c.countryCode,
           name: c.countryName,
-        }))
+        })),
       );
     };
     fetchData();
   }, []);
 
-  const countryCode = Form.useWatch("countryCode", form);
-  console.log("country code watch: ", countryCode);
+  const countryCode = Form.useWatch('countryCode', form);
+  console.log('country code watch: ', countryCode);
   useEffect(() => {
     countryCode &&
       form.setFieldValue(
-        "countryName",
-        countryList.find((c) => c.code == countryCode)!.name
+        'countryName',
+        countryList.find((c) => c.code == countryCode)!.name,
       );
   }, [countryCode]);
 
@@ -116,7 +115,7 @@ const Index = () => {
       <Spin
         spinning={loading}
         indicator={
-          <LoadingOutlined style={{ fontSize: 32, color: "#FFF" }} spin />
+          <LoadingOutlined style={{ fontSize: 32, color: '#FFF' }} spin />
         }
         fullscreen
       />
@@ -152,7 +151,7 @@ const Index = () => {
             rules={[
               {
                 required: true,
-                message: "Please input your billing address!",
+                message: 'Please input your billing address!',
               },
             ]}
           >
@@ -165,7 +164,7 @@ const Index = () => {
             rules={[
               {
                 required: true,
-                message: "Please select your country!",
+                message: 'Please select your country!',
               },
             ]}
           >
@@ -239,9 +238,9 @@ const Index = () => {
 
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              margin: "36px",
+              display: 'flex',
+              justifyContent: 'center',
+              margin: '36px',
             }}
           >
             <Button

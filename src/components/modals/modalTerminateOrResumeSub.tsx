@@ -1,16 +1,16 @@
-import { Button, Col, Modal, Row, message } from "antd";
-import { showAmount } from "../helpers";
-import { ISubscription } from "../shared.types";
-import { terminateOrResumeSubReq } from "../requests";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Button, Col, Modal, Row, message } from 'antd';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { showAmount } from '../../helpers';
+import { terminateOrResumeSubReq } from '../../requests';
+import { ISubscription } from '../../shared.types';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
 interface Props {
   isOpen: boolean;
   subInfo: ISubscription | null;
-  action: "TERMINATE" | "RESUME";
+  action: 'TERMINATE' | 'RESUME';
   closeModal: () => void;
   refresh: () => void;
 }
@@ -20,7 +20,7 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
-      state: { msg: "session expired, please re-login" },
+      state: { msg: 'session expired, please re-login' },
     });
 
   const onConfirm = async () => {
@@ -38,10 +38,10 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
       }
       message.success(
         `Subscription ${
-          action == "RESUME"
-            ? "resumed"
-            : "terminated at the next billing cycle"
-        }`
+          action == 'RESUME'
+            ? 'resumed'
+            : 'terminated at the next billing cycle'
+        }`,
       );
       setLoading(false);
       closeModal();
@@ -52,45 +52,45 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
         console.log(`err ${action} sub: `, err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
     }
   };
 
   return (
     <Modal
-      title={`${action == "RESUME" ? "Resume" : "Terminate"} Subscription`}
-      width={"780px"}
+      title={`${action == 'RESUME' ? 'Resume' : 'Terminate'} Subscription`}
+      width={'780px'}
       open={isOpen}
       footer={null}
       closeIcon={null}
     >
-      <div style={{ margin: "16px 0" }}>
+      <div style={{ margin: '16px 0' }}>
         {`Are you sure you want to ${action.toLowerCase()} this subscription?`}
-        {action == "TERMINATE" && (
+        {action == 'TERMINATE' && (
           <span>
-            {" "}
+            {' '}
             at the end of this billing cycle current period end*****`
           </span>
         )}
       </div>
       <Row>
         <Col span={6}>
-          <span style={{ fontWeight: "bold" }}>First name</span>
+          <span style={{ fontWeight: 'bold' }}>First name</span>
         </Col>
         <Col span={6}>{subInfo?.user?.firstName}</Col>
         <Col span={5}>
-          <span style={{ fontWeight: "bold" }}> Lastname</span>
+          <span style={{ fontWeight: 'bold' }}> Lastname</span>
         </Col>
         <Col span={6}>{subInfo?.user?.lastName}</Col>
       </Row>
       <Row>
         <Col span={6}>
-          <span style={{ fontWeight: "bold" }}>Plan</span>
+          <span style={{ fontWeight: 'bold' }}>Plan</span>
         </Col>
         <Col span={6}>{subInfo?.plan?.planName}</Col>
         <Col span={5}>
-          <span style={{ fontWeight: "bold" }}>Amount</span>
+          <span style={{ fontWeight: 'bold' }}>Amount</span>
         </Col>
         <Col span={6}>
           {subInfo?.plan?.amount &&
@@ -99,21 +99,21 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
       </Row>
       <Row>
         <Col span={6}>
-          <span style={{ fontWeight: "bold" }}>Current due date</span>
+          <span style={{ fontWeight: 'bold' }}>Current due date</span>
         </Col>
         <Col span={6}>
           {new Date(
-            (subInfo?.currentPeriodEnd as number) * 1000
+            (subInfo?.currentPeriodEnd as number) * 1000,
           ).toDateString()}
         </Col>
       </Row>
       <div
         style={{
-          display: "flex",
-          justifyContent: "end",
-          alignItems: "center",
-          gap: "18px",
-          marginTop: "24px",
+          display: 'flex',
+          justifyContent: 'end',
+          alignItems: 'center',
+          gap: '18px',
+          marginTop: '24px',
         }}
       >
         <Button onClick={closeModal} disabled={loading}>

@@ -61,7 +61,7 @@ interface ISubscription {
   firstPaidTime: number;
   currentPeriodStart: number;
   currentPeriodEnd: number;
-  trailEnd: number;
+  trialEnd: number;
   cancelAtPeriodEnd: number; // whether this sub will end at the end of billing cycle, 0: false, 1: true
   amount: number;
   currency: string;
@@ -129,10 +129,10 @@ interface IPreview {
 }
 
 export type {
-  IProfile,
+  Country,
   IPlan,
+  IPreview,
+  IProfile,
   ISubscription,
   InvoiceItemTotal,
-  IPreview,
-  Country,
 };

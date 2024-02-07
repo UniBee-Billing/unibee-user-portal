@@ -1,24 +1,24 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button, message, Modal, Spin } from "antd";
-import update from "immutability-helper";
+import { Button, Modal, Spin, message } from 'antd';
+import update from 'immutability-helper';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   getActiveSub,
+  getCountryList,
   getPlanList,
   terminateSub,
-  getCountryList,
-} from "../requests";
-import Plan from "./plan";
+} from '../requests';
+import Plan from './plan';
 // import { CURRENCY } from "../constants";
 // import { showAmount } from "../helpers";
-import { ISubscription, IPlan, Country } from "../shared.types";
-import { LoadingOutlined } from "@ant-design/icons";
-import UpdatePlanModal from "./modalUpdateSub";
-import CreateSubModal from "./modalCreateSub";
-import { useProfileStore } from "../stores";
-import BillingAddressModal from "./billingAddressModal";
-import CancelSubModal from "./modalCancelPendingSub";
-import { SUBSCRIPTION_STATUS } from "../constants";
+import { LoadingOutlined } from '@ant-design/icons';
+import { SUBSCRIPTION_STATUS } from '../constants';
+import { Country, IPlan, ISubscription } from '../shared.types';
+import { useProfileStore } from '../stores';
+import BillingAddressModal from './modals/billingAddressModal';
+import CancelSubModal from './modals/modalCancelPendingSub';
+import CreateSubModal from './modals/modalCreateSub';
+import UpdatePlanModal from './modals/modalUpdateSub';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -44,7 +44,7 @@ const Index = () => {
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
-      state: { msg: "session expired, please re-login" },
+      state: { msg: 'session expired, please re-login' },
     });
 
   const toggleCreateModal = () => setCreateModalOpen(!createModalOpen); // Modal for first time plan choosing
@@ -89,7 +89,7 @@ const Index = () => {
     let countryListRes;
     try {
       countryListRes = await getCountryList(15621); // merchantId
-      console.log("country list res: ", countryListRes);
+      console.log('country list res: ', countryListRes);
       if (countryListRes.data.code != 0) {
         throw new Error(countryListRes.data.message);
       }
@@ -101,10 +101,10 @@ const Index = () => {
       );
     } catch (err) {
       if (err instanceof Error) {
-        console.log("err getting country list: ", err.message);
+        console.log('err getting country list: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
       return;
     }
@@ -127,14 +127,14 @@ const Index = () => {
       });
     } catch (err) {
       if (err instanceof Error) {
-        console.log("err: ", err.message);
+        console.log('err: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
       return;
     }
-    console.log("subList/planList: ", subListRes, "//", planListRes);
+    console.log('subList/planList: ', subListRes, '//', planListRes);
 
     let sub;
     if (
@@ -157,7 +157,7 @@ const Index = () => {
     if (sub != null) {
       localActiveSub = { ...sub.subscription };
       (localActiveSub as ISubscription).addons = sub.addonParams;
-      console.log("local sub: ", localActiveSub);
+      console.log('local sub: ', localActiveSub);
       setActiveSub(localActiveSub);
       setSelectedPlan(sub.subscription.planId);
     }
@@ -211,8 +211,8 @@ const Index = () => {
   }, []);
 
   const onPlanConfirm = () => {
-    console.log("is new: ", isNewUserRef.current);
-    if (profileStore.countryCode == "" || profileStore.countryCode == null) {
+    console.log('is new: ', isNewUserRef.current);
+    if (profileStore.countryCode == '' || profileStore.countryCode == null) {
       toggleBillingModal();
       return;
     }
@@ -230,7 +230,7 @@ const Index = () => {
       }
     }
     if (!valid) {
-      message.error("Please input valid addon quantity.");
+      message.error('Please input valid addon quantity.');
       return;
     }
 
@@ -241,26 +241,26 @@ const Index = () => {
     let terminateRes;
     try {
       terminateRes = await terminateSub(activeSub?.subscriptionId as string);
-      console.log("update subscription submit res: ", terminateRes);
+      console.log('update subscription submit res: ', terminateRes);
       const code = terminateRes.data.code;
       code == 61 && relogin();
       if (code != 0) {
         throw new Error(terminateRes.data.message);
       }
-      message.success("Subscription will terminate on next billing cycle");
+      message.success('Subscription will terminate on next billing cycle');
     } catch (err) {
       setTerminateModal(false);
       if (err instanceof Error) {
-        console.log("err creating preview: ", err.message);
+        console.log('err creating preview: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
       return;
     }
     navigate(`${APP_PATH}profile/subscription`, {
       // receiving route hasn't read this msg yet.
-      state: { msg: "Subscription ended on next billing cycle." },
+      state: { msg: 'Subscription ended on next billing cycle.' },
     });
   };
 
@@ -276,7 +276,7 @@ const Index = () => {
       <Spin
         spinning={loading}
         indicator={
-          <LoadingOutlined style={{ fontSize: 32, color: "#FFF" }} spin />
+          <LoadingOutlined style={{ fontSize: 32, color: '#FFF' }} spin />
         }
         fullscreen
       />
@@ -336,7 +336,7 @@ const Index = () => {
         )
       }
 
-      <div style={{ display: "flex", gap: "18px", flexWrap: "wrap" }}>
+      <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
         {plans.map((p) => (
           <Plan
             key={p.id}
@@ -350,10 +350,10 @@ const Index = () => {
       </div>
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          margin: "48px",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          margin: '48px',
         }}
       >
         <Button
@@ -398,39 +398,39 @@ const SubStatus = ({
     let n;
     switch (sub!.status) {
       case 0:
-        n = "Your subscription is initializing, please wait a few moment.";
+        n = 'Your subscription is initializing, please wait a few moment.';
         break;
       case 1:
         n = (
           <div
             style={{
-              color: "#757575",
-              fontSize: "12px",
-              background: "#fbe9e7",
-              borderRadius: "4px",
-              padding: "6px",
-              marginBottom: "12px",
+              color: '#757575',
+              fontSize: '12px',
+              background: '#fbe9e7',
+              borderRadius: '4px',
+              padding: '6px',
+              marginBottom: '12px',
             }}
           >
-            Your subscription has been created, but not activated, please go to{" "}
+            Your subscription has been created, but not activated, please go to{' '}
             <a href={sub!.link} target="_blank">
               checkout page
-            </a>{" "}
+            </a>{' '}
             to finishe the payment within 3 days. If you haven't finished the
             payment within 3 days, your subscription will be cancelled, or you
-            can{" "}
-            <Button type="link" style={{ padding: "0" }} onClick={toggleModal}>
+            can{' '}
+            <Button type="link" style={{ padding: '0' }} onClick={toggleModal}>
               Cancel
-            </Button>{" "}
+            </Button>{' '}
             this subscription immediately.
           </div>
         );
         break;
       case 3:
-        n = "Your subscription is in pending status, please wait";
+        n = 'Your subscription is in pending status, please wait';
         break;
       default:
-        n = "";
+        n = '';
     }
     return n;
     // STATUS[sub?.status as keyof typeof STATUS]

@@ -4,27 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { showAmount } from '../helpers';
 import { IPlan } from '../shared.types';
 
-/*
-interface IAddon extends IPlan {
-  quantity: number | null;
-  checked: boolean;
-}
-*/
-/*
-interface IPlan {
-  id: number;
-  planName: string;
-  description: string;
-  type: number; // 1: main plan, 2: add-on
-  amount: number;
-  currency: string;
-  intervalUnit: string;
-  intervalCount: number;
-  status: number;
-  addons?: IAddon[];
-}
-*/
-
 interface IPLanProps {
   plan: IPlan;
   selectedPlan: number | null;

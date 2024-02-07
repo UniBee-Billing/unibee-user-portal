@@ -1,9 +1,9 @@
-import { Button, Col, Modal, Row, message } from "antd";
-import { showAmount } from "../helpers";
-import { ISubscription } from "../shared.types";
-import { terminateOrResumeSubReq, cancelSubReq } from "../requests";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Button, Col, Modal, Row, message } from 'antd';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { showAmount } from '../../helpers';
+import { cancelSubReq, terminateOrResumeSubReq } from '../../requests';
+import { ISubscription } from '../../shared.types';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -18,12 +18,12 @@ const Index = ({ subInfo, closeModal, refresh }: Props) => {
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
-      state: { msg: "session expired, please re-login" },
+      state: { msg: 'session expired, please re-login' },
     });
 
   const onConfirm = async () => {
     try {
-      console.log("cancelling ....", subInfo?.subscriptionId);
+      console.log('cancelling ....', subInfo?.subscriptionId);
       setLoading(true);
       const res = await cancelSubReq(subInfo?.subscriptionId as string);
       const code = res.data.code;
@@ -42,20 +42,20 @@ const Index = ({ subInfo, closeModal, refresh }: Props) => {
         console.log(`err cancelling sub: `, err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
     }
   };
 
   return (
     <Modal
-      title={"Cancel Subscription"}
-      width={"640px"}
+      title={'Cancel Subscription'}
+      width={'640px'}
       open={true}
       footer={null}
       closeIcon={null}
     >
-      <div style={{ margin: "16px 0" }}>
+      <div style={{ margin: '16px 0' }}>
         {`Are you sure you want to cancel this subscription?`}
       </div>
       {/* <Row>
@@ -93,11 +93,11 @@ const Index = ({ subInfo, closeModal, refresh }: Props) => {
           </Row> */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "end",
-          alignItems: "center",
-          gap: "18px",
-          marginTop: "24px",
+          display: 'flex',
+          justifyContent: 'end',
+          alignItems: 'center',
+          gap: '18px',
+          marginTop: '24px',
         }}
       >
         <Button onClick={closeModal} disabled={loading}>

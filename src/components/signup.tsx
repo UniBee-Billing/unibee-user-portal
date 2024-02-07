@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button, message, Form, Input } from "antd";
-import OtpInput from "react-otp-input";
-import AppHeader from "./appHeader";
-import AppFooter from "./appFooter";
-import axios from "axios";
-import { signUpReq, singUpVerifyReq } from "../requests";
-import { emailValidate } from "../helpers";
-import { useCountdown } from "./hooks";
+import { Button, Form, Input, message } from 'antd';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import OtpInput from 'react-otp-input';
+import { useNavigate } from 'react-router-dom';
+import { emailValidate } from '../helpers';
+import { signUpReq, singUpVerifyReq } from '../requests';
+import AppFooter from './appFooter';
+import AppHeader from './appHeader';
+import { useCountdown } from './hooks';
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -18,13 +18,13 @@ const passwordRegx =
 const Index = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   // const [phone, setPhone] = useState("");
   // const [address, setAddress] = useState("");
-  const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState("");
+  const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
   // const [country, setCountry] = useState("");
   // const [verificationCode, setVerificationCode] = useState("");
   const [currentStep, setCurrentStep] = useState(0); // 0: signup-basic-info  |  1: enter verfication code
@@ -49,7 +49,7 @@ const Index = () => {
 
   const [countVal, isCounting, startCountdown, stopCounter] = useCountdown(60);
 
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState('');
   const onOTPchange = (value: string) => {
     setOtp(value.toUpperCase());
   };
@@ -73,10 +73,10 @@ const Index = () => {
     }
 */
     console.log(
-      "form value: ",
+      'form value: ',
       form.getFieldsError(),
-      "//",
-      form.getFieldsValue()
+      '//',
+      form.getFieldsValue(),
     );
 
     const isInvalid = form.getFieldsError().some((f) => f.errors.length > 0);
@@ -87,22 +87,22 @@ const Index = () => {
     setSubmitting(true);
     try {
       const res = await signUpReq(form.getFieldsValue());
-      console.log("signup res: ", res);
+      console.log('signup res: ', res);
       setSubmitting(false);
       if (res.data.code != 0) {
         throw new Error(res.data.message);
       }
-      message.success("Verification code sent.");
+      message.success('Verification code sent.');
       setCurrentStep(1);
       stopCounter();
       startCountdown();
     } catch (err) {
       setSubmitting(false);
       if (err instanceof Error) {
-        console.log("err signup: ", err.message);
+        console.log('err signup: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
     }
   };
@@ -112,24 +112,24 @@ const Index = () => {
     setSubmitting(true);
     try {
       const res = await singUpVerifyReq({
-        email: form.getFieldValue("email"),
+        email: form.getFieldValue('email'),
         verificationCode: otp,
       });
       setSubmitting(false);
-      console.log("reg res: ", res);
+      console.log('reg res: ', res);
       if (res.data.code != 0) {
         throw new Error(res.data.message);
       }
       navigate(`${APP_PATH}login`, {
-        state: { msg: "Thanks for your sign-up on UniBee" },
+        state: { msg: 'Thanks for your sign-up on UniBee' },
       });
     } catch (err) {
       setSubmitting(false);
       if (err instanceof Error) {
-        console.log("err signup: ", err.message);
+        console.log('err signup: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
     }
   };
@@ -137,34 +137,34 @@ const Index = () => {
   return (
     <div
       style={{
-        height: "calc(100vh - 164px)",
-        overflowY: "auto",
+        height: 'calc(100vh - 142px)',
+        overflowY: 'auto',
       }}
     >
       <AppHeader />
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: "100px",
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: '100px',
         }}
       >
-        <h1 style={{ marginBottom: "36px", marginTop: "64px" }}>
+        <h1 style={{ marginBottom: '36px', marginTop: '64px' }}>
           Customer Sign-up
         </h1>
         <div
           style={{
-            width: "640px",
-            border: "1px solid #e0e0e0",
-            borderRadius: "8px",
-            background: "#FFF",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            paddingTop: "24px",
+            width: '640px',
+            border: '1px solid #e0e0e0',
+            borderRadius: '8px',
+            background: '#FFF',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingTop: '24px',
           }}
         >
           {currentStep == 0 ? (
@@ -176,11 +176,11 @@ const Index = () => {
               wrapperCol={{ span: 17 }}
               style={{ maxWidth: 640, width: 480 }}
               initialValues={{
-                firstName: "",
-                lastName: "",
-                email: "",
-                password: "",
-                password2: "",
+                firstName: '',
+                lastName: '',
+                email: '',
+                password: '',
+                password2: '',
               }}
               autoComplete="off"
             >
@@ -190,7 +190,7 @@ const Index = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please input your first name!",
+                    message: 'Please input your first name!',
                   },
                 ]}
               >
@@ -204,7 +204,7 @@ const Index = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please input yourn last name!",
+                    message: 'Please input yourn last name!',
                   },
                 ]}
               >
@@ -218,18 +218,18 @@ const Index = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please input your Email!",
+                    message: 'Please input your Email!',
                   },
                   ({ getFieldValue }) => ({
                     validator(rule, value) {
                       if (
                         value != null &&
-                        value != "" &&
+                        value != '' &&
                         emailValidate(value)
                       ) {
                         return Promise.resolve();
                       }
-                      return Promise.reject("Invalid email address");
+                      return Promise.reject('Invalid email address');
                     },
                   }),
                 ]}
@@ -243,7 +243,7 @@ const Index = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please input your password!",
+                    message: 'Please input your password!',
                   },
                   ({ getFieldValue }) => ({
                     validator(rule, value) {
@@ -251,7 +251,7 @@ const Index = () => {
                         return Promise.resolve();
                       }
                       return Promise.reject(
-                        "8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * &  ^)"
+                        '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * &  ^)',
                       );
                     },
                   }),
@@ -270,14 +270,14 @@ const Index = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please retype your password!",
+                    message: 'Please retype your password!',
                   },
                   ({ getFieldValue }) => ({
                     validator(rule, value) {
-                      if (value == getFieldValue("password")) {
+                      if (value == getFieldValue('password')) {
                         return Promise.resolve();
                       }
-                      return Promise.reject("please retype the same password");
+                      return Promise.reject('please retype the same password');
                     },
                   }),
                 ]}
@@ -313,14 +313,14 @@ const Index = () => {
             >
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "78px",
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: '78px',
                 }}
               >
                 <h3>
-                  Enter verification code for {form.getFieldValue("email")}
+                  Enter verification code for {form.getFieldValue('email')}
                 </h3>
               </div>
               <OtpInput
@@ -330,23 +330,23 @@ const Index = () => {
                 shouldAutoFocus={true}
                 skipDefaultStyles={true}
                 inputStyle={{
-                  height: "80px",
-                  width: "60px",
-                  border: "1px solid gray",
-                  borderRadius: "6px",
-                  textAlign: "center",
-                  fontSize: "36px",
+                  height: '80px',
+                  width: '60px',
+                  border: '1px solid gray',
+                  borderRadius: '6px',
+                  textAlign: 'center',
+                  fontSize: '36px',
                 }}
-                renderSeparator={<span style={{ width: "36px" }}></span>}
+                renderSeparator={<span style={{ width: '36px' }}></span>}
                 renderInput={(props) => <input {...props} />}
               />
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
-                  marginTop: "36px",
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flexDirection: 'column',
+                  marginTop: '36px',
                 }}
               >
                 <Button
@@ -358,7 +358,7 @@ const Index = () => {
                 >
                   submit
                 </Button>
-                <div style={{ display: "flex", margin: "12px 0" }}>
+                <div style={{ display: 'flex', margin: '12px 0' }}>
                   <Button
                     type="link"
                     onClick={() => setCurrentStep(0)}
@@ -368,10 +368,10 @@ const Index = () => {
                   </Button>
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      maxWidth: "180px",
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      maxWidth: '180px',
                     }}
                   >
                     <Button
@@ -382,8 +382,8 @@ const Index = () => {
                       Resend
                     </Button>
                     {isCounting && (
-                      <div style={{ width: "100px" }}>
-                        {" "}
+                      <div style={{ width: '100px' }}>
+                        {' '}
                         in {countVal} seconds
                       </div>
                     )}
@@ -399,10 +399,10 @@ const Index = () => {
         <>
           <div
             style={{
-              display: "flex",
-              color: "#757575",
-              justifyContent: "center",
-              alignItems: "center",
+              display: 'flex',
+              color: '#757575',
+              justifyContent: 'center',
+              alignItems: 'center',
               // margin: "-12px 0 18px 0",
             }}
           >

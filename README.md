@@ -1,6 +1,12 @@
-# React + TypeScript + Vite
+# Description
 
-User portal
+Uer portal
+
+# Tools
+
+React, Ant design, Zustand, Tailwind, Vite
+
+# Build
 
 ```
 cd <PROJECT-FOLDER>

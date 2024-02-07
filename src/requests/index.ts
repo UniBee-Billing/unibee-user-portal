@@ -1,6 +1,6 @@
-import axios from "axios";
-import { useProfileStore } from "../stores";
-import { IProfile } from "../shared.types";
+import axios from 'axios';
+import { IProfile } from '../shared.types';
+import { useProfileStore } from '../stores';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -56,7 +56,7 @@ export const loginWithOTPReq = async (email: string) => {
 };
 export const loginWithOTPVerifyReq = async (
   email: string,
-  verificationCode: string
+  verificationCode: string,
 ) => {
   return await axios.post(`${API_URL}/user/auth/sso/loginOTPVerify`, {
     email,
@@ -73,7 +73,7 @@ export const logoutReq = async () => {
       headers: {
         Authorization: `${profile.token}`, // Bearer: ******
       },
-    }
+    },
   );
 };
 
@@ -95,6 +95,14 @@ export const saveProfile = async (newProfile: IProfile) => {
   });
 };
 
+export const getAppConfigReq = async () => {
+  const body = { merchantId: 15621 };
+  return await axios.post(
+    `${API_URL}/system/merchant/merchant_information`,
+    body,
+  );
+};
+
 export const getSublist = async ({ page = 0 }: { page: number }) => {
   const profile = useProfileStore.getState();
   const body = {
@@ -111,13 +119,13 @@ export const getSublist = async ({ page = 0 }: { page: number }) => {
       headers: {
         Authorization: `${profile.token}`, // Bearer: ******
       },
-    }
+    },
   );
 };
 
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
-  console.log("profile from store: ", profile);
+  console.log('profile from store: ', profile);
   return await axios.post(
     `${API_URL}/user/subscription/subscription_list`,
     {
@@ -131,7 +139,7 @@ export const getActiveSub = async () => {
       headers: {
         Authorization: `${profile.token}`, // Bearer: ******
       },
-    }
+    },
   );
 };
 
@@ -150,7 +158,7 @@ export const getPlanList = async () => {
       headers: {
         Authorization: `${profile.token}`, // Bearer: ******
       },
-    }
+    },
   );
 };
 
@@ -158,10 +166,10 @@ export const getPlanList = async () => {
 export const createUpdatePreviewReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
-  subscriptionId: string | null
+  subscriptionId: string | null,
 ) => {
   const profile = useProfileStore.getState();
-  const urlPath = "subscription_update_preview";
+  const urlPath = 'subscription_update_preview';
 
   const body = {
     subscriptionId,
@@ -184,10 +192,10 @@ export const createPreviewReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
   vatNumber: string | null,
-  vatCountryCode: string | null
+  vatCountryCode: string | null,
 ) => {
   const profile = useProfileStore.getState();
-  const urlPath = "subscription_create_preview";
+  const urlPath = 'subscription_create_preview';
   const body = {
     userId: profile.id,
     gatewayId: 25,
@@ -198,7 +206,7 @@ export const createPreviewReq = async (
     vatNumber,
     vatCountryCode,
   };
-  console.log("preview req body: ", body);
+  console.log('preview req body: ', body);
   return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
     headers: {
       Authorization: `${profile.token}`, // Bearer: ******
@@ -212,7 +220,7 @@ export const updateSubscription = async (
   addons: { quantity: number; addonPlanId: number }[],
   confirmTotalAmount: number,
   confirmCurrency: string,
-  prorationDate: number
+  prorationDate: number,
 ) => {
   const profile = useProfileStore.getState();
   // "subscription_create_submit"
@@ -232,7 +240,7 @@ export const updateSubscription = async (
       headers: {
         Authorization: `${profile.token}`, // Bearer: ******
       },
-    }
+    },
   );
 };
 
@@ -242,7 +250,7 @@ export const createSubscription = async (
   confirmTotalAmount: number,
   confirmCurrency: string,
   vatCountryCode: string,
-  vatNumber: string
+  vatNumber: string,
 ) => {
   const profile = useProfileStore.getState();
   const body = {
@@ -265,7 +273,7 @@ export const createSubscription = async (
       headers: {
         Authorization: `${profile.token}`, // Bearer: ******
       },
-    }
+    },
   );
 };
 
@@ -290,7 +298,7 @@ export const checkPayment = async (subscriptionId: string) => {
       headers: {
         Authorization: profile.token, // Bearer: ******
       },
-    }
+    },
   );
 };
 
@@ -306,7 +314,7 @@ export const terminateSub = async (SubscriptionId: string) => {
       headers: {
         Authorization: `${profile.token}`, // Bearer: ******
       },
-    }
+    },
   );
 };
 
@@ -315,13 +323,13 @@ export const terminateOrResumeSubReq = async ({
   action,
 }: {
   subscriptionId: string;
-  action: "TERMINATE" | "RESUME";
+  action: 'TERMINATE' | 'RESUME';
 }) => {
   let URL = `${API_URL}/user/subscription/`;
   URL +=
-    action == "TERMINATE"
-      ? "subscription_cancel_at_period_end"
-      : "subscription_cancel_last_cancel_at_period_end";
+    action == 'TERMINATE'
+      ? 'subscription_cancel_at_period_end'
+      : 'subscription_cancel_last_cancel_at_period_end';
   //
   const body = {
     subscriptionId,
@@ -348,7 +356,7 @@ export const cancelSubReq = async (subscriptionId: string) => {
       headers: {
         Authorization: `${profile.token}`, // Bearer: ******
       },
-    }
+    },
   );
 };
 

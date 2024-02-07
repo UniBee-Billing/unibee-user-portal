@@ -1,10 +1,10 @@
-import { Button, Col, Divider, Modal, Row, Spin, message } from "antd";
-import { showAmount } from "../helpers";
-import { IPlan, IPreview, InvoiceItemTotal } from "../shared.types";
-import { useEffect, useState } from "react";
-import { createUpdatePreviewReq, updateSubscription } from "../requests";
-import { useNavigate } from "react-router-dom";
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from '@ant-design/icons';
+import { Button, Col, Divider, Modal, Row, Spin, message } from 'antd';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { showAmount } from '../../helpers';
+import { createUpdatePreviewReq, updateSubscription } from '../../requests';
+import { IPlan, IPreview, InvoiceItemTotal } from '../../shared.types';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -22,7 +22,7 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
   const [preview, setPreview] = useState<IPreview | null>(null);
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
-      state: { msg: "session expired, please re-login" },
+      state: { msg: 'session expired, please re-login' },
     });
 
   const onConfirm = async () => {
@@ -42,10 +42,10 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
         })),
         preview?.totalAmount as number,
         preview?.currency as string,
-        preview?.prorationDate as number
+        preview?.prorationDate as number,
       );
       setSubmitting(false);
-      console.log("update subscription submit res: ", updateSubRes);
+      console.log('update subscription submit res: ', updateSubRes);
       const code = updateSubRes.data.code;
       code == 61 && relogin();
       if (code != 0) {
@@ -54,10 +54,10 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
     } catch (err) {
       setSubmitting(false);
       if (err instanceof Error) {
-        console.log("err updating preview: ", err.message);
+        console.log('err updating preview: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
       return;
     }
@@ -67,15 +67,15 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
     // the payment will be done immediaetly(most of time).
     if (updateSubRes.data.data.paid) {
       refresh();
-      message.success("Plan updated");
+      message.success('Plan updated');
       closeModal();
       return;
     }
     navigate(`${APP_PATH}profile/subscription`, {
       // receiving route hasn't read this msg yet.
-      state: { msg: "Subscription updated" },
+      state: { msg: 'Subscription updated' },
     });
-    window.open(updateSubRes.data.data.link, "_blank");
+    window.open(updateSubRes.data.data.link, '_blank');
   };
 
   useEffect(() => {
@@ -92,10 +92,10 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
             quantity: a.quantity as number,
             addonPlanId: a.id,
           })),
-          subscriptionId as string
+          subscriptionId as string,
         );
         setLoading(false);
-        console.log("subscription create preview res: ", previewRes);
+        console.log('subscription create preview res: ', previewRes);
         const code = previewRes.data.code;
         code == 61 && relogin();
         if (code != 0) {
@@ -105,10 +105,10 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       } catch (err) {
         setLoading(false);
         if (err instanceof Error) {
-          console.log("err creating preview: ", err.message);
+          console.log('err creating preview: ', err.message);
           message.error(err.message);
         } else {
-          message.error("Unknown error");
+          message.error('Unknown error');
         }
       } // finally {      } // doesn't work.
     };
@@ -122,14 +122,14 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       open={true}
       footer={null}
       closeIcon={null}
-      width={"720px"}
+      width={'720px'}
     >
       {loading ? (
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
           <Spin
@@ -150,11 +150,11 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       )}
       <div
         style={{
-          display: "flex",
-          justifyContent: "end",
-          alignItems: "center",
-          gap: "18px",
-          marginTop: "24px",
+          display: 'flex',
+          justifyContent: 'end',
+          alignItems: 'center',
+          gap: '18px',
+          marginTop: '24px',
         }}
       >
         <Button onClick={closeModal} disabled={loading || submitting}>
@@ -183,23 +183,23 @@ const InvoiceLines = ({
   label: string;
 }) => (
   <>
-    <Divider orientation="left" style={{ margin: "32px 0", color: "#757575" }}>
+    <Divider orientation="left" style={{ margin: '32px 0', color: '#757575' }}>
       {label}
     </Divider>
     {invoice == null || invoice.lines.length == 0 ? (
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          fontSize: "16px",
-          color: "#757575",
+          display: 'flex',
+          justifyContent: 'center',
+          fontSize: '16px',
+          color: '#757575',
         }}
       >
         No Items
       </div>
     ) : (
       <>
-        <Row style={{ fontWeight: "bold", margin: "16px 0" }}>
+        <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
           <Col span={8}>Description</Col>
           <Col span={4}>Quantity</Col>
           <Col span={4}>Amt(Exc Tax)</Col>
@@ -216,18 +216,18 @@ const InvoiceLines = ({
               <Col span={4}>{showAmount(i.amount, i.currency)}</Col>
             </Row>
             {idx != invoice.lines.length - 1 && (
-              <Divider style={{ margin: "8px 0" }} />
+              <Divider style={{ margin: '8px 0' }} />
             )}
           </div>
         ))}
 
         <Row>
           <Col span={20}>
-            <span style={{ fontSize: "18px" }}>Total</span>
+            <span style={{ fontSize: '18px' }}>Total</span>
           </Col>
           <Col span={4}>
-            <span style={{ fontSize: "18px", fontWeight: "bold" }}>
-              {" "}
+            <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+              {' '}
               {`${showAmount(invoice.totalAmount, invoice.currency)}`}
             </span>
           </Col>

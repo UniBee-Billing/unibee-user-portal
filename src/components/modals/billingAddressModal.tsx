@@ -1,9 +1,9 @@
-import { Button, Form, Modal, Input, Select, message } from "antd";
-import { useProfileStore } from "../stores";
-import { getCountryList, saveProfile } from "../requests";
-import { useEffect, useState } from "react";
-import { Country, IProfile } from "../shared.types";
-import { useNavigate } from "react-router-dom";
+import { Button, Form, Input, Modal, Select, message } from 'antd';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getCountryList, saveProfile } from '../../requests';
+import { Country, IProfile } from '../../shared.types';
+import { useProfileStore } from '../../stores';
 const APP_PATH = import.meta.env.BASE_URL;
 
 interface Props {
@@ -20,21 +20,21 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
-      state: { msg: "session expired, please re-login" },
+      state: { msg: 'session expired, please re-login' },
     });
 
   const hiddenFields = [
-    "id",
-    "countryName",
-    "vATNumber",
-    "telegram",
-    "whatsAPP",
-    "weChat",
-    "linkedIn",
-    "facebook",
-    "tikTok",
-    "otherSocialInfo",
-    "paymentMethod",
+    'id',
+    'countryName',
+    'vATNumber',
+    'telegram',
+    'whatsAPP',
+    'weChat',
+    'linkedIn',
+    'facebook',
+    'tikTok',
+    'otherSocialInfo',
+    'paymentMethod',
   ];
 
   const onConfirm = async () => {
@@ -43,39 +43,38 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
     try {
       const saveProfileRes = await saveProfile(user);
       setLoading(false);
-      console.log("save profile res: ", saveProfileRes);
+      console.log('save profile res: ', saveProfileRes);
       const code = saveProfileRes.data.code;
       if (code != 0) {
         code == 61 && relogin();
-        // TODO: save all statu code in a constant
         throw new Error(saveProfileRes.data.message);
       }
-      message.success("saved");
+      message.success('saved');
       profile.setProfile(user);
       closeModal();
       openPreviewModal();
     } catch (err) {
       setLoading(false);
       if (err instanceof Error) {
-        console.log("profile update err: ", err.message);
+        console.log('profile update err: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
     }
   };
 
   const filterOption = (
     input: string,
-    option?: { label: string; value: string }
-  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+    option?: { label: string; value: string },
+  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
   useEffect(() => {
     const fetchData = async () => {
       let countryListRes;
       try {
         countryListRes = await getCountryList(15621); // merchantId
-        console.log("country list res: ", countryListRes);
+        console.log('country list res: ', countryListRes);
         if (countryListRes.data.code != 0) {
           throw new Error(countryListRes.data.message);
         }
@@ -83,14 +82,14 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           countryListRes.data.data.vatCountryList.map((c: any) => ({
             code: c.countryCode,
             name: c.countryName,
-          }))
+          })),
         );
       } catch (err) {
         if (err instanceof Error) {
-          console.log("err: ", err.message);
+          console.log('err: ', err.message);
           message.error(err.message);
         } else {
-          message.error("Unknown error");
+          message.error('Unknown error');
         }
         return;
       }
@@ -98,24 +97,24 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
     fetchData();
   }, []);
 
-  const countryCode = Form.useWatch("countryCode", form);
+  const countryCode = Form.useWatch('countryCode', form);
   useEffect(() => {
     countryCode &&
       form.setFieldValue(
-        "countryName",
-        countryList.find((c) => c.code == countryCode)!.name
+        'countryName',
+        countryList.find((c) => c.code == countryCode)!.name,
       );
   }, [countryCode]);
 
   return (
     <Modal
       title="Fill out your billing address"
-      width={"640px"}
+      width={'640px'}
       open={isOpen}
       footer={null}
       closeIcon={null}
     >
-      <div style={{ height: "24px" }}></div>
+      <div style={{ height: '24px' }}></div>
       <Form
         form={form}
         name="basic"
@@ -154,7 +153,7 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           rules={[
             {
               required: true,
-              message: "Please input your phone!",
+              message: 'Please input your phone!',
             },
           ]}
         >
@@ -167,13 +166,11 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           rules={[
             {
               required: true,
-              message: "Please select your country!",
+              message: 'Please select your country!',
             },
           ]}
         >
           <Select
-            // value={country}
-            // onChange={onCountryChange}
             showSearch
             placeholder="Type to search"
             optionFilterProp="children"
@@ -192,38 +189,20 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           rules={[
             {
               required: true,
-              message: "Please input your billing address!",
+              message: 'Please input your billing address!',
             },
           ]}
         >
           <Input />
         </Form.Item>
-
-        {/*
-              <Form.Item
-                wrapperCol={{
-                  offset: 8,
-                  span: 16,
-                }}
-              >
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  // onClick={onSubmit}
-                  // loading={submitting}
-                >
-                  Submit
-                </Button>
-              </Form.Item>
-            */}
       </Form>
       <div
         style={{
-          display: "flex",
-          justifyContent: "end",
-          alignItems: "center",
-          gap: "18px",
-          marginTop: "24px",
+          display: 'flex',
+          justifyContent: 'end',
+          alignItems: 'center',
+          gap: '18px',
+          marginTop: '24px',
         }}
       >
         <Button onClick={closeModal} disabled={loading}>

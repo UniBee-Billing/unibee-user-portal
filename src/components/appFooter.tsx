@@ -5,7 +5,6 @@ import {
   TwitterOutlined,
 } from '@ant-design/icons';
 import { Divider } from 'antd';
-const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = () => (
   <div
@@ -33,7 +32,6 @@ const Index = () => (
           gap: '12px',
         }}
       >
-        {/* <img src={`${APP_PATH}UniBeeLogo.png`} height={"32px"} /> */}
         <span>Copyright © 2024 Multilogin, Inc.</span>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { LoadingOutlined } from '@ant-design/icons';
 import {
   Button,
   Col,
@@ -8,17 +9,16 @@ import {
   Select,
   Spin,
   message,
-} from "antd";
-import { showAmount } from "../helpers";
-import { LoadingOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import { IPlan, IPreview, Country } from "../shared.types";
+} from 'antd';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { showAmount } from '../../helpers';
 import {
   createPreviewReq,
   createSubscription,
   vatNumberCheckReq,
-} from "../requests";
+} from '../../requests';
+import { Country, IPlan, IPreview } from '../../shared.types';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -40,7 +40,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
-  const [vatNumber, setVatNumber] = useState("");
+  const [vatNumber, setVatNumber] = useState('');
   const [vatDetail, setVatDetail] = useState<null | TVATDetail>(null);
   const [isVatValid, setIsVatValid] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
@@ -49,7 +49,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
 
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
-      state: { msg: "session expired, please re-login" },
+      state: { msg: 'session expired, please re-login' },
     });
 
   const onVatChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -60,8 +60,8 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   };
   const filterOption = (
     input: string,
-    option?: { label: string; value: string }
-  ) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+    option?: { label: string; value: string },
+  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
   const createPreview = async () => {
     const addons =
@@ -78,10 +78,10 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           addonPlanId: a.id,
         })),
         vatNumber,
-        selectedCountry
+        selectedCountry,
       );
       setLoading(false);
-      console.log("subscription create preview res: ", previewRes);
+      console.log('subscription create preview res: ', previewRes);
       const code = previewRes.data.code;
       code == 61 && relogin();
       if (code != 0) {
@@ -91,24 +91,24 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     } catch (err) {
       setLoading(false);
       if (err instanceof Error) {
-        console.log("err creating preview: ", err.message);
+        console.log('err creating preview: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
       return;
     }
   };
 
   const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
-    if (evt.relatedTarget?.classList.contains("confirm-btn-wrapper")) {
+    if (evt.relatedTarget?.classList.contains('confirm-btn-wrapper')) {
       vatChechkingRef.current = true;
     }
 
     try {
       setSubmitting(true);
       const res = await vatNumberCheckReq(vatNumber);
-      console.log("vat check res: ", res);
+      console.log('vat check res: ', res);
       const code = res.data.code;
       code == 61 && relogin();
       if (code != 0) {
@@ -125,7 +125,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
         });
       } else {
         setVatDetail(null);
-        message.error("Invalid VAT, please re-type or leave it blank.");
+        message.error('Invalid VAT, please re-type or leave it blank.');
       }
       setSubmitting(false);
       vatChechkingRef.current = false;
@@ -135,10 +135,10 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       setVatDetail(null);
       vatChechkingRef.current = false;
       if (err instanceof Error) {
-        console.log("err checking vat validity: ", err.message);
+        console.log('err checking vat validity: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
       return false;
     }
@@ -150,8 +150,8 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       return;
     }
 
-    if (!isVatValid && vatNumber != "") {
-      message.error("Invalid VAT, please re-type or leave it blank.");
+    if (!isVatValid && vatNumber != '') {
+      message.error('Invalid VAT, please re-type or leave it blank.');
       return;
     }
 
@@ -171,10 +171,10 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
         preview?.totalAmount as number,
         preview?.currency as string,
         preview?.vatCountryCode as string,
-        preview?.vatNumber as string
+        preview?.vatNumber as string,
       );
       setSubmitting(false);
-      console.log("create subscription res: ", createSubRes);
+      console.log('create subscription res: ', createSubRes);
       const code = createSubRes.data.code;
       code == 61 && relogin();
       if (code != 0) {
@@ -183,19 +183,19 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     } catch (err) {
       setSubmitting(false);
       if (err instanceof Error) {
-        console.log("err creating subscripion: ", err.message);
+        console.log('err creating subscripion: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
       return;
     }
     navigate(`${APP_PATH}profile/subscription`);
     if (
-      createSubRes.data.data.link != "" ||
+      createSubRes.data.data.link != '' ||
       createSubRes.data.data.link != null
     ) {
-      window.open(createSubRes.data.data.link, "_blank");
+      window.open(createSubRes.data.data.link, '_blank');
     }
   };
 
@@ -214,14 +214,14 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       open={true}
       footer={null}
       closeIcon={null}
-      width={"720px"}
+      width={'720px'}
     >
       {preview == null ? (
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
           <Spin
@@ -231,7 +231,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
         </div>
       ) : (
         <>
-          <Row style={{ fontWeight: "bold", margin: "16px 0" }}>
+          <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
             <Col span={8}>Description</Col>
             <Col span={4}>Quantity</Col>
             <Col span={4}>Amt(Exc Tax)</Col>
@@ -250,31 +250,31 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                 <Col span={4}>{showAmount(i.amount, i.currency)}</Col>
               </Row>
               {idx != preview.invoice.lines.length - 1 && (
-                <Divider style={{ margin: "8px 0" }} />
+                <Divider style={{ margin: '8px 0' }} />
               )}
             </div>
           ))}
           <Divider />
           <Row>
             <Col span={5}>VAT number</Col>
-            <Col span={6} style={{ marginLeft: "12px" }}>
+            <Col span={6} style={{ marginLeft: '12px' }}>
               Country
             </Col>
           </Row>
-          <Row style={{ marginBottom: "12px" }}>
+          <Row style={{ marginBottom: '12px' }}>
             <Col span={5}>
               <Input
                 value={vatNumber}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={onVatChange}
                 onBlur={onVATCheck}
                 placeholder="Your VAT number"
               />
             </Col>
-            <Col span={6} style={{ marginLeft: "12px" }}>
+            <Col span={6} style={{ marginLeft: '12px' }}>
               <Select
                 value={selectedCountry}
-                style={{ width: "160px" }}
+                style={{ width: '160px' }}
                 onChange={onCountryChange}
                 showSearch
                 placeholder="Type to search"
@@ -289,19 +289,19 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           </Row>
           {isVatValid && (
             <>
-              <Row style={{ fontWeight: "bold" }}>
+              <Row style={{ fontWeight: 'bold' }}>
                 <Col span={6}>Company Address</Col>
                 <Col span={6}>Company Name</Col>
                 <Col span={6}>Country Code</Col>
               </Row>
-              <Row style={{ marginBottom: "12px" }}>
-                <Col span={6} style={{ fontSize: "11px" }}>
+              <Row style={{ marginBottom: '12px' }}>
+                <Col span={6} style={{ fontSize: '11px' }}>
                   {vatDetail?.companyAddress}
                 </Col>
-                <Col span={6} style={{ fontSize: "11px" }}>
+                <Col span={6} style={{ fontSize: '11px' }}>
                   {vatDetail?.companyName}
                 </Col>
-                <Col span={6} style={{ fontSize: "11px" }}>
+                <Col span={6} style={{ fontSize: '11px' }}>
                   {vatDetail?.countryCode}
                 </Col>
               </Row>
@@ -309,11 +309,11 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           )}
           <Row>
             <Col span={20}>
-              <span style={{ fontSize: "18px" }}>Total</span>
+              <span style={{ fontSize: '18px' }}>Total</span>
             </Col>
             <Col span={4}>
-              <span style={{ fontSize: "18px", fontWeight: "bold" }}>
-                {" "}
+              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                {' '}
                 {`${showAmount(preview.totalAmount, preview.currency)}`}
               </span>
             </Col>
@@ -322,11 +322,11 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       )}
       <div
         style={{
-          display: "flex",
-          justifyContent: "end",
-          alignItems: "center",
-          gap: "18px",
-          marginTop: "24px",
+          display: 'flex',
+          justifyContent: 'end',
+          alignItems: 'center',
+          gap: '18px',
+          marginTop: '24px',
         }}
       >
         <Button onClick={closeModal} disabled={loading || submitting}>

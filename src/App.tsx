@@ -9,19 +9,16 @@ import React, { useEffect, useState } from 'react';
 import {
   Navigate,
   Route,
-  // BrowserRouter as Router,
   Routes,
   useLocation,
-  // Link,
   useNavigate,
 } from 'react-router-dom';
 
-import NotFound from './components/notFound';
-import ProductsUpdate from './components/productUpdate';
-// import CheckoutForm from "./components/checkoutForm";
 import Invoices from './components/invoices';
 import Login from './components/login';
+import NotFound from './components/notFound';
 import PaymentResult from './components/paymentResult';
+import ProductsUpdate from './components/productUpdate';
 import ProfileBasic from './components/profile/basicInfo';
 import ProfileSubscription from './components/profile/subscription';
 import Signup from './components/signup';
@@ -91,7 +88,7 @@ const App: React.FC = () => {
   const logout = async () => {
     localStorage.removeItem('token');
     try {
-      const logoutRes = await logoutReq();
+      await logoutReq();
       navigate(`${APP_PATH}login`);
     } catch (err) {
       if (err instanceof Error) {
@@ -193,7 +190,7 @@ const App: React.FC = () => {
                 style={{
                   padding: 24,
                   minHeight: 360,
-                  height: '100%',
+                  // height: '100%',
                   background: colorBgContainer,
                   borderRadius: borderRadiusLG,
                 }}
