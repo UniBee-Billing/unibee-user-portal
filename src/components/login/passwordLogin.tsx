@@ -120,6 +120,7 @@ const Index = ({
         }}
       >
         <Button
+          className="inline-flex items-center rounded-md"
           type="primary"
           onClick={onSubmit}
           loading={submitting}

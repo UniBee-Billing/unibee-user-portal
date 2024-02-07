@@ -1,11 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
-import "./index.css";
+// import "./index.css";
 import "antd/dist/reset.css";
 import { BrowserRouter } from "react-router-dom";
 import { Button, ConfigProvider, Space } from "antd";
 
+/*
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -25,13 +26,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       </ConfigProvider>
     </BrowserRouter>
     ,
-  </React.StrictMode>
-);
-
-/*
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  </React.StrictMode>,
 );
 */
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+);
