@@ -478,7 +478,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         <Col span={6}>
           {subInfo.firstPaidTime == null
             ? "N/A"
-            : dayjs(subInfo.firstPaidTime).format("YYYY-MMM-DD")}
+            : dayjs(subInfo.firstPaidTime * 1000).format("YYYY-MMM-DD")}
         </Col>
         <Col span={4} style={colStyle}>
           Next Due Date
