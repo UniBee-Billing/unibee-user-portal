@@ -1,41 +1,32 @@
-import { Input } from "antd";
+import { Input } from 'antd';
 
 const { Search } = Input;
 const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = () => (
   <div
+    className="absolute top-0 z-50 flex h-16 w-full items-center justify-between px-6 py-0 text-white"
     style={{
-      position: "absolute",
-      top: "0",
-      height: "64px",
-      padding: "0 24px",
-      display: "flex",
-      zIndex: "100",
-      justifyContent: "space-between",
-      alignItems: "center",
-      width: "100%",
-      background: "#334b61",
-      color: "#FFF",
+      background: '#334b61',
     }}
   >
     <div>
       <img
         src={`${APP_PATH}Multilogin-logo-white-horizontal.svg`}
-        height={"36px"}
+        height={'36px'}
       />
     </div>
-    <ul style={{ marginBottom: "0", display: "flex", alignItems: "center" }}>
-      <li style={{ display: "inline", marginRight: "16px" }}>
+    <ul style={{ marginBottom: '0', display: 'flex', alignItems: 'center' }}>
+      <li style={{ display: 'inline', marginRight: '16px' }}>
         <span>Home</span>
       </li>
-      <li style={{ display: "inline", marginRight: "16px" }}>
+      <li style={{ display: 'inline', marginRight: '16px' }}>
         <span>About</span>
       </li>
-      <li style={{ display: "inline", marginRight: "16px" }}>
+      <li style={{ display: 'inline', marginRight: '16px' }}>
         <span>Contact</span>
       </li>
-      <li style={{ display: "inline", marginRight: "0px" }}>
+      <li style={{ display: 'inline', marginRight: '0px' }}>
         <Search style={{ width: 120 }} />
       </li>
     </ul>

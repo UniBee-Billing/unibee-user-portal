@@ -57,7 +57,7 @@ const Index = () => {
   const onAddonChange = (
     addonId: number,
     quantity: number | null, // null means: don't update this field, keep its original value
-    checked: boolean | null // ditto
+    checked: boolean | null, // ditto
   ) => {
     const planIdx = plans.findIndex((p) => p.id == selectedPlan);
     if (planIdx == -1) {
@@ -97,7 +97,7 @@ const Index = () => {
         countryListRes.data.data.vatCountryList.map((c: any) => ({
           code: c.countryCode,
           name: c.countryName,
-        }))
+        })),
       );
     } catch (err) {
       if (err instanceof Error) {
@@ -191,7 +191,7 @@ const Index = () => {
       if (planIdx != -1 && plans[planIdx].addons != null) {
         for (let i = 0; i < plans[planIdx].addons!.length; i++) {
           const addonIdx = localActiveSub.addons.findIndex(
-            (subAddon) => subAddon.addonPlanId == plans[planIdx].addons![i].id
+            (subAddon) => subAddon.addonPlanId == plans[planIdx].addons![i].id,
           );
           if (addonIdx != -1) {
             plans[planIdx].addons![i].checked = true;
@@ -336,7 +336,7 @@ const Index = () => {
         )
       }
 
-      <div style={{ display: "flex", gap: "18px" }}>
+      <div style={{ display: "flex", gap: "18px", flexWrap: "wrap" }}>
         {plans.map((p) => (
           <Plan
             key={p.id}

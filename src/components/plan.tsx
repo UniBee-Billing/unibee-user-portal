@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Checkbox, Input } from "antd";
-import type { CheckboxChangeEvent } from "antd/es/checkbox";
-import { showAmount } from "../helpers";
-import { IPlan } from "../shared.types";
+import { Checkbox, Input } from 'antd';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import React, { useEffect, useState } from 'react';
+import { showAmount } from '../helpers';
+import { IPlan } from '../shared.types';
 
 /*
 interface IAddon extends IPlan {
@@ -33,7 +33,7 @@ interface IPLanProps {
   onAddonChange: (
     addonId: number,
     quantity: number | null,
-    checked: boolean | null
+    checked: boolean | null,
   ) => void;
 }
 
@@ -69,71 +69,59 @@ const Index = ({
 
   return (
     <div>
-      <div
-        style={{
-          height: "32px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <div className="flex h-8 items-center justify-center">
         {isActive ? (
-          <span style={{ color: "orange" }}>My Subscription</span>
+          <span style={{ color: 'orange' }}>My Subscription</span>
         ) : null}
       </div>
       <div
+        className="flex h-80 w-64 cursor-pointer flex-col items-center justify-center rounded-md"
         onClick={() => setSelectedPlan(plan.id)}
         style={{
-          width: "240px",
-          height: "320px",
-          padding: "8px",
-          border: `1px solid ${isActive ? "orange" : "#EEE"}`,
-          borderRadius: "4px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "24px",
-          background: selectedPlan == plan.id ? "#FFF" : "#FBFBFB",
+          // width: "240px",
+          // height: "320px",
+          padding: '8px',
+          border: `1px solid ${isActive ? 'orange' : '#EEE'}`,
+          gap: '24px',
+          background: selectedPlan == plan.id ? '#FFF' : '#FBFBFB',
           boxShadow:
             selectedPlan == plan.id
-              ? "rgba(0, 0, 0, 0.35) 0px 5px 15px"
-              : "unset",
-          cursor: "pointer",
+              ? 'rgba(0, 0, 0, 0.35) 0px 5px 15px'
+              : 'unset',
         }}
       >
-        <div style={{ fontSize: "28px" }}>{plan.planName}</div>
+        <div style={{ fontSize: '28px' }}>{plan.planName}</div>
         <div>{plan.description}</div>
 
         {plan.addons && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {plan.addons.map((a) => (
               <div
                 key={a.id}
                 style={{
-                  display: "flex",
-                  width: "100%",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  display: 'flex',
+                  width: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
                 <Checkbox onChange={addonCheck(a.id)} checked={a.checked}>
-                  <div style={{ display: "flex" }}>
+                  <div style={{ display: 'flex' }}>
                     <div>
                       <div
                         style={{
-                          width: "120px",
-                          textOverflow: "ellipsis",
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
+                          width: '120px',
+                          textOverflow: 'ellipsis',
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         {a.planName}
                       </div>
-                      <div style={{ fontSize: "11px" }}>{` ${showAmount(
+                      <div style={{ fontSize: '11px' }}>{` ${showAmount(
                         a.amount,
-                        a.currency
-                      )}/${a.intervalCount == 1 ? "" : a.intervalCount}${
+                        a.currency,
+                      )}/${a.intervalCount == 1 ? '' : a.intervalCount}${
                         a.intervalUnit
                       }`}</div>
                     </div>
@@ -144,7 +132,7 @@ const Index = ({
                       onChange={addonQuantityChange}
                       disabled={!a.checked}
                       size="small"
-                      style={{ width: "48px", height: "24px" }}
+                      style={{ width: '48px', height: '24px' }}
                       placeholder="count"
                     />
                   </div>
@@ -153,16 +141,16 @@ const Index = ({
             ))}
           </div>
         )}
-        <div style={{ fontSize: "14px" }}>{`${showAmount(
+        <div style={{ fontSize: '14px' }}>{`${showAmount(
           plan.amount,
-          plan.currency
-        )}/${plan.intervalCount == 1 ? "" : plan.intervalCount}${
+          plan.currency,
+        )}/${plan.intervalCount == 1 ? '' : plan.intervalCount}${
           plan.intervalUnit
         }`}</div>
-        <div style={{ fontSize: "24px" }}>
+        <div style={{ fontSize: '24px' }}>
           Total:&nbsp;
           {`${showAmount(totalAmount, plan.currency)}/${
-            plan.intervalCount == 1 ? "" : plan.intervalCount
+            plan.intervalCount == 1 ? '' : plan.intervalCount
           }${plan.intervalUnit}`}
         </div>
       </div>

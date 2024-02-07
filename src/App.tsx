@@ -1,41 +1,41 @@
-import React, { useEffect, useState } from "react";
 import {
   DesktopOutlined,
-  PieChartOutlined,
   LogoutOutlined,
-} from "@ant-design/icons";
-import type { MenuProps } from "antd";
+  PieChartOutlined,
+} from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { Layout, Menu, message, theme } from 'antd';
+import React, { useEffect, useState } from 'react';
 import {
+  Navigate,
+  Route,
   // BrowserRouter as Router,
   Routes,
-  Route,
+  useLocation,
   // Link,
   useNavigate,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
-import { Layout, Menu, theme, message } from "antd";
+} from 'react-router-dom';
 
-import NotFound from "./components/notFound";
-import ProductsUpdate from "./components/productUpdate";
+import NotFound from './components/notFound';
+import ProductsUpdate from './components/productUpdate';
 // import CheckoutForm from "./components/checkoutForm";
-import PaymentResult from "./components/paymentResult";
-import ProfileBasic from "./components/profile/basicInfo";
-import ProfileSubscription from "./components/profile/subscription";
-import Invoices from "./components/invoices";
-import Login from "./components/login";
-import Signup from "./components/signup";
-import { logoutReq } from "./requests";
+import Invoices from './components/invoices';
+import Login from './components/login';
+import PaymentResult from './components/paymentResult';
+import ProfileBasic from './components/profile/basicInfo';
+import ProfileSubscription from './components/profile/subscription';
+import Signup from './components/signup';
+import { logoutReq } from './requests';
 
 const APP_PATH = import.meta.env.BASE_URL;
 const { Header, Content, Footer, Sider } = Layout;
-type MenuItem = Required<MenuProps>["items"][number];
+type MenuItem = Required<MenuProps>['items'][number];
 
 function getItem(
   label: React.ReactNode,
   key: React.Key,
   icon?: React.ReactNode,
-  children?: MenuItem[]
+  children?: MenuItem[],
 ): MenuItem {
   return {
     key,
@@ -46,12 +46,12 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("Products", "/products", <PieChartOutlined />),
-  getItem("Profile", "/profile", <DesktopOutlined />, [
-    getItem("My Subscription", "/profile/subscription"),
-    getItem("Basic Info", "/profile/basic-info"),
+  getItem('Products', '/products', <PieChartOutlined />),
+  getItem('Profile', '/profile', <DesktopOutlined />, [
+    getItem('My Subscription', '/profile/subscription'),
+    getItem('Basic Info', '/profile/basic-info'),
   ]),
-  getItem("Invoices", "/invoices", <DesktopOutlined />),
+  getItem('Invoices', '/invoices', <DesktopOutlined />),
 ];
 
 const noSiderRoutes = [
@@ -63,9 +63,9 @@ const noSiderRoutes = [
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const [activeMenuItem, setActiveMenuItem] = useState<string[]>(["/profile"]);
+  const [activeMenuItem, setActiveMenuItem] = useState<string[]>(['/profile']);
   // this is the default open keys after successful login.
-  const [openKeys, setOpenKeys] = useState<string[]>(["/profile"]);
+  const [openKeys, setOpenKeys] = useState<string[]>(['/profile']);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -81,24 +81,24 @@ const App: React.FC = () => {
   }) => {
     needNavigate && navigate(`${APP_PATH}${key.substring(1)}`); // remove the leading '/' character, coz APP_PATH already has it
     setActiveMenuItem([key]);
-    const pathItem = key.split("/").filter((k) => !!k); // remove the empty leading item
+    const pathItem = key.split('/').filter((k) => !!k); // remove the empty leading item
     if (pathItem.length == 2) {
       // submenu item clicked
-      setOpenKeys(["/" + pathItem[0]]);
+      setOpenKeys(['/' + pathItem[0]]);
     }
   };
 
   const logout = async () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
     try {
       const logoutRes = await logoutReq();
       navigate(`${APP_PATH}login`);
     } catch (err) {
       if (err instanceof Error) {
-        console.log("profile update err: ", err.message);
+        console.log('profile update err: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
     }
   };
@@ -106,27 +106,27 @@ const App: React.FC = () => {
   useEffect(() => {
     // when user refresh or enter URL then ENTER, call this fn to highlight the active menu
     // since we are already in the current path, there is no need to navigate
-    console.log("app mounted, pathname: ", window.location.pathname);
+    console.log('app mounted, pathname: ', window.location.pathname);
     onItemClick({ key: window.location.pathname, needNavigate: false });
   }, []);
 
   // similar to onItemClick, try to refactor into one fn.
   useEffect(() => {
     const p = location.pathname;
-    console.log("location changed: ", p);
-    if (p == "/products/update") {
-      setActiveMenuItem(["/products"]);
-    } else if (p == "/profile/subscription") {
+    console.log('location changed: ', p);
+    if (p == '/products/update') {
+      setActiveMenuItem(['/products']);
+    } else if (p == '/profile/subscription') {
       setActiveMenuItem([p]);
     }
 
     if (location) {
-      const pathItems = location.pathname.split("/").filter((p) => p != "");
-      const keys = ["/" + pathItems[0]];
+      const pathItems = location.pathname.split('/').filter((p) => p != '');
+      const keys = ['/' + pathItems[0]];
       if (pathItems.length > 1) {
-        keys.push("/" + pathItems.join("/"));
+        keys.push('/' + pathItems.join('/'));
       }
-      setOpenKeys(["/profile", location.pathname]);
+      setOpenKeys(['/profile', location.pathname]);
     }
   }, [location]);
 
@@ -144,7 +144,7 @@ const App: React.FC = () => {
           </Routes>
         </Layout>
       ) : (
-        <Layout style={{ minHeight: "100vh" }}>
+        <Layout style={{ minHeight: '100vh' }}>
           <Sider
             collapsible
             collapsed={collapsed}
@@ -153,13 +153,13 @@ const App: React.FC = () => {
             <div className="demo-logo-vertical" />
             <div
               style={{
-                color: "#FFF",
-                margin: "18px 0",
-                display: "flex",
-                justifyContent: "center",
+                color: '#FFF',
+                margin: '18px 0',
+                display: 'flex',
+                justifyContent: 'center',
               }}
             >
-              <img src={`${APP_PATH}multiloginLogo.png`} height={"80px"} />
+              <img src={`${APP_PATH}multiloginLogo.png`} height={'80px'} />
             </div>
             <Menu
               theme="dark"
@@ -172,16 +172,7 @@ const App: React.FC = () => {
             />
             <div
               onClick={logout}
-              style={{
-                color: "#FFF",
-                position: "absolute",
-                bottom: "80px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                cursor: "pointer",
-              }}
+              className="absolute bottom-24 flex w-full cursor-pointer items-center justify-center text-gray-50"
             >
               <LogoutOutlined />
               &nbsp;&nbsp;Logout
@@ -193,16 +184,16 @@ const App: React.FC = () => {
             </Header>
             <Content
               style={{
-                padding: "16px",
-                height: "calc(100vh - 180px)",
-                overflowY: "auto",
+                padding: '16px',
+                height: 'calc(100vh - 180px)',
+                overflowY: 'auto',
               }}
             >
               <div
                 style={{
                   padding: 24,
                   minHeight: 360,
-                  height: "100%",
+                  height: '100%',
                   background: colorBgContainer,
                   borderRadius: borderRadiusLG,
                 }}
@@ -239,7 +230,7 @@ const App: React.FC = () => {
                 </Routes>
               </div>
             </Content>
-            <Footer style={{ textAlign: "center" }}>Multilogin ©2024</Footer>
+            <Footer style={{ textAlign: 'center' }}>Multilogin ©2024</Footer>
           </Layout>
         </Layout>
       )}

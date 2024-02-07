@@ -1,11 +1,11 @@
-import { Button, Form, Input, message } from "antd";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useProfileStore } from "../../stores";
-import { useCountdown } from "../hooks";
-import OtpInput from "react-otp-input";
-import { loginWithOTPReq, loginWithOTPVerifyReq } from "../../requests";
-import { emailValidate } from "../../helpers";
+import { Button, Form, Input, message } from 'antd';
+import { useEffect, useState } from 'react';
+import OtpInput from 'react-otp-input';
+import { useNavigate } from 'react-router-dom';
+import { emailValidate } from '../../helpers';
+import { loginWithOTPReq, loginWithOTPVerifyReq } from '../../requests';
+import { useProfileStore } from '../../stores';
+import { useCountdown } from '../hooks';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -16,52 +16,39 @@ const Index = ({
   email: string;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
-  const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
-  const [errMailMsg, setErrMailMsg] = useState("");
+  const [currentStep, setCurrentStep] = useState(1); // 0: input email, 1: input code
+  const [errMailMsg, setErrMailMsg] = useState('');
   const [sendingMailaddr, setSendingMailaddr] = useState(false);
   const [countVal, counting, startCount, stopCounter] = useCountdown(60);
 
   const goBackForward = () => setCurrentStep((currentStep + 1) % 2);
 
-  /*
-  useEffect(() => {
-    const keyDownHandler = (event: KeyboardEvent) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        submit();
-      }
-    };
-    // document.addEventListener("keydown", keyDownHandler);
-    // return () => {document.removeEventListener("keydown", keyDownHandler);};
-  }, []);
-*/
-
   const sendMailaddress = async () => {
-    if (email.trim() == "" || !emailValidate(email)) {
-      setErrMailMsg("Invalid email adderss!");
-      return Promise.reject(new Error("Invalid email address"));
+    if (email.trim() == '' || !emailValidate(email)) {
+      setErrMailMsg('Invalid email adderss!');
+      return Promise.reject(new Error('Invalid email address'));
     }
 
     setSendingMailaddr(true);
-    setErrMailMsg("");
+    setErrMailMsg('');
     try {
       const loginRes = await loginWithOTPReq(email);
       setSendingMailaddr(false);
-      console.log("login res: ", loginRes);
+      console.log('login res: ', loginRes);
       if (loginRes.data.code != 0) {
         throw new Error(loginRes.data.message);
       }
       stopCounter();
       startCount();
-      message.success("Code sent, please check your email");
+      message.success('Code sent, please check your email');
     } catch (err) {
       setSendingMailaddr(false);
       if (err instanceof Error) {
         setErrMailMsg(err.message);
         return Promise.reject(new Error(err.message));
       } else {
-        setErrMailMsg("Unknown error");
-        return Promise.reject(new Error("Unkown error"));
+        setErrMailMsg('Unknown error');
+        return Promise.reject(new Error('Unkown error'));
       }
     }
   };
@@ -104,22 +91,22 @@ const MailForm = ({
   sendMailaddress,
 }: IMailFormProps) => {
   const [submitting, setSubmitting] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
+  const [errMsg, setErrMsg] = useState('');
 
   const submit = async () => {
     try {
       setSubmitting(true);
       const res = await sendMailaddress();
-      console.log("send mail addre res: ", res);
+      console.log('send mail addre res: ', res);
       setSubmitting(false);
       goForward();
     } catch (err) {
       setSubmitting(false);
       if (err instanceof Error) {
-        console.log("err sending mailaddress: ", err.message);
+        console.log('err sending mailaddress: ', err.message);
         setErrMsg(err.message);
       } else {
-        setErrMsg("Unknown error");
+        setErrMsg('Unknown error');
       }
     }
   };
@@ -139,22 +126,13 @@ const MailForm = ({
         rules={[
           {
             required: true,
-            message: "Please input your email!",
+            message: 'Please input your email!',
           },
         ]}
       >
         <Input value={email} onChange={onEmailChange} onPressEnter={submit} />
       </Form.Item>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: "18px",
-          color: "red",
-        }}
-      >
-        {errMsg}
-      </div>
+      <div className="mb-4 flex justify-center text-red-500">{errMsg}</div>
 
       <Form.Item
         wrapperCol={{
@@ -200,8 +178,8 @@ const OTPForm = ({
   const navigate = useNavigate();
   const profileStore = useProfileStore();
   const [submitting, setSubmitting] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [errMsg, setErrMsg] = useState("");
+  const [otp, setOtp] = useState('');
+  const [errMsg, setErrMsg] = useState('');
 
   const onOTPchange = (value: string) => {
     setOtp(value.toUpperCase());
@@ -209,32 +187,32 @@ const OTPForm = ({
 
   const sendCode = async () => {
     if (otp.length != NUM_INPUTS) {
-      setErrMsg("Invalid code");
+      setErrMsg('Invalid code');
       return;
     }
     setSubmitting(true);
     try {
       const loginRes = await loginWithOTPVerifyReq(email, otp);
       setSubmitting(false);
-      console.log("otp loginVerify res: ", loginRes);
+      console.log('otp loginVerify res: ', loginRes);
       if (loginRes.data.code != 0) {
         setErrMsg(loginRes.data.message);
         throw new Error(loginRes.data.message);
       }
-      localStorage.setItem("token", loginRes.data.data.Token);
+      localStorage.setItem('token', loginRes.data.data.Token);
       loginRes.data.data.User.token = loginRes.data.data.Token;
       profileStore.setProfile(loginRes.data.data.User);
-      console.log("otp verified user: ", loginRes.data.data.User);
+      console.log('otp verified user: ', loginRes.data.data.User);
       navigate(`${APP_PATH}profile/subscription`, {
-        state: { from: "login" },
+        state: { from: 'login' },
       });
     } catch (err) {
       setSubmitting(false);
       if (err instanceof Error) {
-        console.log("login err: ", err.message);
+        console.log('login err: ', err.message);
         setErrMsg(err.message);
       } else {
-        setErrMsg("Unknown error");
+        setErrMsg('Unknown error');
       }
     }
   };
@@ -255,14 +233,7 @@ const OTPForm = ({
       }}
       autoComplete="off"
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "78px",
-        }}
-      >
+      <div className="flex h-24 items-center justify-center">
         <h3>Enter verification code for {email}</h3>
       </div>
       <OtpInput
@@ -272,28 +243,18 @@ const OTPForm = ({
         shouldAutoFocus={true}
         skipDefaultStyles={true}
         inputStyle={{
-          height: "80px",
-          width: "60px",
-          border: "1px solid gray",
-          borderRadius: "6px",
-          textAlign: "center",
-          fontSize: "36px",
+          height: '80px',
+          width: '60px',
+          border: '1px solid gray',
+          borderRadius: '6px',
+          textAlign: 'center',
+          fontSize: '36px',
         }}
-        renderSeparator={<span style={{ width: "36px" }}></span>}
+        renderSeparator={<span style={{ width: '36px' }}></span>}
         renderInput={(props) => <input {...props} />}
       />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          marginTop: "32px",
-        }}
-      >
-        <span style={{ marginBottom: "18px", color: "red" }}>
-          {errMailMsg || errMsg}
-        </span>
+      <div className="mt-8 flex flex-col items-center justify-center">
+        <span className="mb-4 text-red-500">{errMailMsg || errMsg}</span>
         <Button
           type="primary"
           block
@@ -304,24 +265,17 @@ const OTPForm = ({
         >
           OK
         </Button>
-        <div style={{ display: "flex", marginTop: "8px" }}>
+        <div className="mt-2 flex">
           <Button type="link" block onClick={goBack}>
             Go back
           </Button>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              maxWidth: "180px",
-            }}
-          >
+          <div className="flex max-w-44 items-center justify-center">
             <Button type="link" onClick={sendMailaddress} disabled={counting}>
               Resend
             </Button>
             {counting && (
-              <div style={{ width: "100px" }}> in {countVal} seconds</div>
+              <div style={{ width: '100px' }}> in {countVal} seconds</div>
             )}
           </div>
         </div>

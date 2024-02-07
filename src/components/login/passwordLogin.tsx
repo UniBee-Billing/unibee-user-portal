@@ -1,12 +1,11 @@
-import { Button, Form, Input } from "antd";
-import { loginWithPasswordReq } from "../../requests";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useProfileStore } from "../../stores";
-import { emailValidate } from "../../helpers";
+import { Button, Form, Input } from 'antd';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { emailValidate } from '../../helpers';
+import { loginWithPasswordReq } from '../../requests';
+import { useProfileStore } from '../../stores';
 const APP_PATH = import.meta.env.BASE_URL;
 
-// email + Pasword Login
 const Index = ({
   email,
   onEmailChange,
@@ -15,11 +14,11 @@ const Index = ({
   onEmailChange: (value: string) => void;
 }) => {
   const profileStore = useProfileStore();
-  const [errMsg, setErrMsg] = useState("");
+  const [errMsg, setErrMsg] = useState('');
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
-  const watchEmail = Form.useWatch("email", form);
+  const watchEmail = Form.useWatch('email', form);
 
   const onSubmit = async () => {
     const isInvalid = form.getFieldsError().some((f) => f.errors.length > 0);
@@ -27,28 +26,28 @@ const Index = ({
       return;
     }
 
-    setErrMsg("");
+    setErrMsg('');
     setSubmitting(true);
     try {
       const loginRes = await loginWithPasswordReq(form.getFieldsValue());
       setSubmitting(false);
-      console.log("login res: ", loginRes);
+      console.log('login res: ', loginRes);
       if (loginRes.data.code != 0) {
         throw new Error(loginRes.data.message);
       }
-      localStorage.setItem("token", loginRes.data.data.Token);
+      localStorage.setItem('token', loginRes.data.data.Token);
       loginRes.data.data.User.token = loginRes.data.data.Token;
       profileStore.setProfile(loginRes.data.data.User);
       navigate(`${APP_PATH}profile/subscription`, {
-        state: { from: "login" },
+        state: { from: 'login' },
       });
     } catch (err) {
       setSubmitting(false);
       if (err instanceof Error) {
-        console.log("login err: ", err.message);
+        console.log('login err: ', err.message);
         setErrMsg(err.message);
       } else {
-        setErrMsg("Unknown error");
+        setErrMsg('Unknown error');
       }
     }
   };
@@ -66,7 +65,7 @@ const Index = ({
       labelCol={{ span: 6 }}
       wrapperCol={{ span: 18 }}
       style={{ maxWidth: 640, width: 360 }}
-      initialValues={{ email, password: "" }}
+      initialValues={{ email, password: '' }}
     >
       <Form.Item
         label="Email"
@@ -74,14 +73,14 @@ const Index = ({
         rules={[
           {
             required: true,
-            message: "Please input your Email!",
+            message: 'Please input your Email!',
           },
           ({ getFieldValue }) => ({
             validator(rule, value) {
-              if (value != null && value != "" && emailValidate(value)) {
+              if (value != null && value != '' && emailValidate(value)) {
                 return Promise.resolve();
               }
-              return Promise.reject("Please input valid email address.");
+              return Promise.reject('Please input valid email address.');
             },
           }),
         ]}
@@ -95,23 +94,14 @@ const Index = ({
         rules={[
           {
             required: true,
-            message: "Please input your password!",
+            message: 'Please input your password!',
           },
         ]}
       >
         <Input.Password onPressEnter={onSubmit} />
       </Form.Item>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: "18px",
-          color: "red",
-        }}
-      >
-        {errMsg}
-      </div>
+      <div className="mb-4 flex justify-center text-red-500">{errMsg}</div>
 
       <Form.Item
         wrapperCol={{
@@ -120,7 +110,6 @@ const Index = ({
         }}
       >
         <Button
-          className="inline-flex items-center rounded-md"
           type="primary"
           onClick={onSubmit}
           loading={submitting}
