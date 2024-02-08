@@ -32,7 +32,7 @@ const Index = () => {
   const [updateModalOpen, setUpdateModalOpen] = useState(false); // update subscription Modal
   const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [terminateModal, setTerminateModal] = useState(false);
+  // const [terminateModal, setTerminateModal] = useState(false);
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
   const isNewUserRef = useRef(true); // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
   // they have different api call and Modal window
@@ -237,6 +237,7 @@ const Index = () => {
     isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal();
   };
 
+  /*
   const onTerminateSub = async () => {
     let terminateRes;
     try {
@@ -263,6 +264,7 @@ const Index = () => {
       state: { msg: 'Subscription ended on next billing cycle.' },
     });
   };
+  */
 
   // allow user to click the confirm button
   // when no active sub || current sub status == expired,

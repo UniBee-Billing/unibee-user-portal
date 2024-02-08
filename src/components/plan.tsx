@@ -54,12 +54,9 @@ const Index = ({
         ) : null}
       </div>
       <div
-        className="flex h-80 w-64 cursor-pointer flex-col items-center justify-center rounded-md"
+        className="flex h-80 w-64 cursor-pointer flex-col items-center justify-center rounded-md px-2 py-2"
         onClick={() => setSelectedPlan(plan.id)}
         style={{
-          // width: "240px",
-          // height: "320px",
-          padding: '8px',
           border: `1px solid ${isActive ? 'orange' : '#EEE'}`,
           gap: '24px',
           background: selectedPlan == plan.id ? '#FFF' : '#FBFBFB',
