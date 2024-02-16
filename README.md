@@ -4,9 +4,18 @@ Uer portal
 
 # Tools
 
-React, Ant design, Zustand, Tailwind, Vite
+React, TypeScript, Ant design, Zustand, TailwindCSS, Vite
 
-# Build
+# Build and deploy
+
+## environment
+
+Define the following env variables in .env file.( .env.local for development, .env.production for production build)
+
+- VITE_API_URL=http://unibee.top/unib
+- VITE_STRIPE_PUBLIC_KEY=YOUR_STRIPE_PUBLIC_KEY
+
+## build
 
 ```
 cd <PROJECT-FOLDER>
@@ -18,4 +27,4 @@ yarn build   // for production build
 
 For dev, open browser to [http://localhost:5173/](http://localhost:5173/)
 
-For build, the web app files are located under dist/ folder.
+For production depolyment, the web app files are located under dist/ folder.
