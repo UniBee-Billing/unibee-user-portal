@@ -3,7 +3,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import OtpInput from 'react-otp-input';
 import { useNavigate } from 'react-router-dom';
-import { emailValidate } from '../helpers';
+import { emailValidate, passwordRegx } from '../helpers';
 import { signUpReq, singUpVerifyReq } from '../requests';
 import AppFooter from './appFooter';
 import AppHeader from './appHeader';
@@ -12,19 +12,19 @@ import { useCountdown } from './hooks';
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
-const passwordRegx =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/;
+// const passwordRegx =
+//   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/;
 
 const Index = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
+  // const [firstName, setFirstName] = useState('');
+  // const [lastName, setLastName] = useState('');
+  // const [email, setEmail] = useState('');
   // const [phone, setPhone] = useState("");
   // const [address, setAddress] = useState("");
-  const [password, setPassword] = useState('');
-  const [password2, setPassword2] = useState('');
+  // const [password, setPassword] = useState('');
+  // const [password2, setPassword2] = useState('');
   // const [country, setCountry] = useState("");
   // const [verificationCode, setVerificationCode] = useState("");
   const [currentStep, setCurrentStep] = useState(0); // 0: signup-basic-info  |  1: enter verfication code

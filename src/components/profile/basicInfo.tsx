@@ -1,31 +1,51 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Radio, Select, Spin, message } from 'antd';
+import {
+  Button,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Modal,
+  Radio,
+  Row,
+  Select,
+  Spin,
+  message,
+} from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { passwordRegx } from '../../helpers';
 import {
   getAppConfigReq,
   getCountryList,
   getProfile,
+  logoutReq,
+  resetPassReq,
   saveProfile,
 } from '../../requests';
-import { Country } from '../../shared.types';
+import { Country, IProfile } from '../../shared.types';
 import { useProfileStore } from '../../stores';
+import { useRelogin } from '../hooks';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
-  const profileStore = useProfileStore();
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState({}); // ?????????? why do I need this??????
+  const [profile, setProfile] = useState<IProfile | null>(null);
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [countryList, setCountryList] = useState<Country[]>([]);
-
+  const [resetPasswordModal, setResetPasswordModal] = useState(false);
+  const togglePasswordModal = () => setResetPasswordModal(!resetPasswordModal);
+  const profileStore = useProfileStore();
+  const relogin = useRelogin();
+  /*
   const relogin = () =>
     navigate(`${APP_PATH}login`, {
       state: { msg: 'session expired, please re-login' },
     });
+    */
 
   const filterOption = (
     input: string,
@@ -47,6 +67,7 @@ const Index = () => {
       }
       message.success('saved');
       setProfile(saveProfileRes.data.data.User);
+      profileStore.setProfile(saveProfileRes.data.data.User);
     } catch (err) {
       setLoading(false);
       if (err instanceof Error) {
@@ -112,6 +133,12 @@ const Index = () => {
 
   return (
     <div>
+      {resetPasswordModal && (
+        <ResetPasswordModal
+          closeModal={togglePasswordModal}
+          email={profileStore.email}
+        />
+      )}
       <Spin
         spinning={loading}
         indicator={
@@ -122,119 +149,168 @@ const Index = () => {
       {loading ? null : (
         <Form
           form={form}
-          labelCol={{ span: 6 }}
-          wrapperCol={{ span: 24 }}
-          layout="horizontal"
+          // labelCol={{ span: 6 }}
+          // wrapperCol={{ span: 24 }}
+          // layout="horizontal"
           // disabled={componentDisabled}
-          style={{ maxWidth: 600 }}
+          // style={{ maxWidth: 600 }}
           initialValues={profile ?? {}}
         >
           <Form.Item label="ID" name="id" hidden>
             <Input disabled />
           </Form.Item>
 
-          <Form.Item label="First Name" name="firstName">
-            <Input />
-          </Form.Item>
+          <Row className="my-4 flex items-center" gutter={[8, 8]}>
+            <Col span={4}>First Name</Col>
+            <Col span={6}>
+              <Form.Item name="firstName" noStyle={true}>
+                <Input style={{ width: '80%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={4}>Last Name</Col>
+            <Col span={6}>
+              <Form.Item name="lastName" noStyle={true}>
+                <Input style={{ width: '80%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item label="Last Name" name="lastName">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="Email" name="email">
-            <Input disabled />
-          </Form.Item>
-
-          <Form.Item
-            label="Billing Address"
-            name="address"
-            rules={[
-              {
-                required: true,
-                message: 'Please input your billing address!',
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Country"
-            name="countryCode"
-            rules={[
-              {
-                required: true,
-                message: 'Please select your country!',
-              },
-            ]}
-          >
-            <Select
-              showSearch
-              placeholder="Type to search"
-              optionFilterProp="children"
-              // value={country}
-              // onChange={onCountryChange}
-              // onSearch={onSearch}
-              filterOption={filterOption}
-              options={countryList.map((c) => ({
-                label: c.name,
-                value: c.code,
-              }))}
-            />
-          </Form.Item>
+          <Row className="my-4 flex items-center" gutter={[8, 8]}>
+            <Col span={4}>Email </Col>
+            <Col span={6}>
+              <Form.Item name="email" noStyle={true}>
+                <Input disabled style={{ width: '80%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={4}>Billing Address</Col>
+            <Col span={6}>
+              <Form.Item
+                noStyle={true}
+                name="address"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input your billing address!',
+                  },
+                ]}
+              >
+                <Input style={{ width: '80%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item label="Country Name" name="countryName" hidden>
             <Input />
           </Form.Item>
 
-          <Form.Item label="Company Name" name="companyName">
-            <Input />
-          </Form.Item>
+          <Row className="my-4 flex items-center" gutter={[8, 8]}>
+            <Col span={4}>Country </Col>
+            <Col span={6}>
+              <Form.Item
+                name="countryCode"
+                noStyle={true}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please select your country!',
+                  },
+                ]}
+              >
+                <Select
+                  style={{ width: '80%' }}
+                  showSearch
+                  placeholder="Type to search"
+                  optionFilterProp="children"
+                  // value={country}
+                  // onChange={onCountryChange}
+                  // onSearch={onSearch}
+                  filterOption={filterOption}
+                  options={countryList.map((c) => ({
+                    label: c.name,
+                    value: c.code,
+                  }))}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={4}>Comapny Name</Col>
+            <Col span={6}>
+              {' '}
+              <Form.Item name="companyName" noStyle={true}>
+                <Input style={{ width: '80%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item label="VAT Number" name="vATNumber">
-            <Input />
-          </Form.Item>
+          <Row className="my-4 flex items-center" gutter={[8, 8]}>
+            <Col span={4}>VAT Number</Col>
+            <Col span={6}>
+              {' '}
+              <Form.Item name="vATNumber" noStyle={true}>
+                <Input style={{ width: '80%' }} />
+              </Form.Item>{' '}
+            </Col>
+            <Col span={4}>Phone Number</Col>
+            <Col span={6}>
+              <Form.Item name="phone" noStyle={true}>
+                <Input style={{ width: '80%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item label="Phone Number" name="phone">
-            <Input />
-          </Form.Item>
+          <Divider
+            orientation="left"
+            style={{ margin: '32px 0', color: '#757575' }}
+          >
+            Social Info{' '}
+          </Divider>
+          {[
+            [
+              { label: 'Telegram', name: 'telegram' },
+              { label: 'WhatsApp', name: 'whatsAPP' },
+            ],
+            [
+              { label: 'WeChat', name: 'weChat' },
+              { label: 'LinkedIn', name: 'linkedIn' },
+            ],
+            [
+              { label: 'Facebook', name: 'facebook' },
+              { label: 'TikTok', name: 'tiktok' },
+            ],
+            [{ label: 'Other Social Info', name: 'otherSocialInfo' }],
+          ].map((s, idx) => (
+            <Row key={idx} className="my-4 flex items-center" gutter={[8, 8]}>
+              <Col span={4}>{s[0].label}</Col>
+              <Col span={6}>
+                <Form.Item name={s[0].name} noStyle={true}>
+                  <Input style={{ width: '80%' }} />
+                </Form.Item>
+              </Col>
+              {s[1] != null && (
+                <>
+                  <Col span={4}>{s[1].label}</Col>
+                  <Col span={6}>
+                    <Form.Item name={s[1].name} noStyle={true}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                </>
+              )}
+            </Row>
+          ))}
 
-          <Form.Item label="Telegram" name="telegram">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="WhatsApp" name="whatsAPP">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="WeChat" name="weChat">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="LinkedIn" name="linkedIn">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="Facebook" name="facebook">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="TikTok" name="tikTok">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="Other Social Info" name="otherSocialInfo">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="Payment Methods" name="paymentMethod">
-            <Radio.Group>
-              <Radio value="CreditCard">Credit Card</Radio>
-              <Radio value="Crypto">Crypto</Radio>
-              <Radio value="PayPal">PayPal</Radio>
-              <Radio value="WireTransfer">Wire Transfer</Radio>
-            </Radio.Group>
-          </Form.Item>
+          <Row className="my-4 flex items-center" gutter={[8, 8]}>
+            <Col span={4}>Payment Methods</Col>
+            <Col span={10}>
+              <Form.Item name="paymentMethod" noStyle={true}>
+                <Radio.Group>
+                  <Radio value="CreditCard">Credit Card</Radio>
+                  <Radio value="Crypto">Crypto</Radio>
+                  <Radio value="PayPal">PayPal</Radio>
+                  <Radio value="WireTransfer">Wire Transfer</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
 
           <div
             style={{
@@ -243,6 +319,8 @@ const Index = () => {
               margin: '36px',
             }}
           >
+            <Button onClick={togglePasswordModal}>Reset Password</Button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
             <Button
               type="primary"
               onClick={onSave}
@@ -259,3 +337,158 @@ const Index = () => {
 };
 
 export default Index;
+interface IResetPassProps {
+  email: string;
+  closeModal: () => void;
+}
+const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
+  const relogin = useRelogin();
+  const navigate = useNavigate();
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  const logout = async () => {
+    localStorage.removeItem('token');
+    try {
+      await logoutReq();
+      navigate(`${APP_PATH}login`, {
+        state: { msg: 'Password reset succeeded, please relogin.' },
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log('logout err: ', err.message);
+        message.error(err.message);
+      } else {
+        message.error('Unknown error');
+      }
+    }
+  };
+
+  const onConfirm = async () => {
+    const formValues = form.getFieldsValue();
+    // console.log('form: ', form.getFieldsValue(), '///', form.getFieldsError());
+    setLoading(true);
+    try {
+      const res = await resetPassReq(
+        formValues.oldPassword,
+        formValues.newPassword,
+      );
+      setLoading(false);
+      console.log('reset pass res: ', res);
+      const code = res.data.code;
+      code == 61 && relogin();
+      if (code != 0) {
+        throw new Error(res.data.message);
+      }
+      await logout();
+    } catch (err) {
+      setLoading(false);
+      if (err instanceof Error) {
+        console.log('reset password err: ', err.message);
+        message.error(err.message);
+      } else {
+        message.error('Unknown error');
+      }
+    }
+  };
+
+  return (
+    <Modal
+      title="Reset Password"
+      open={true}
+      width={'640px'}
+      footer={null}
+      closeIcon={null}
+    >
+      <Form
+        form={form}
+        onFinish={onConfirm}
+        //name="reset-password"
+        labelCol={{ span: 8 }}
+        wrapperCol={{ span: 16 }}
+        // style={{ maxWidth: 640, width: 360 }}
+        className="my-6"
+        initialValues={{
+          email,
+          oldPassword: '',
+          newPassword: '',
+          newPassword2: '',
+        }}
+      >
+        <Form.Item
+          label="Old Password"
+          name="oldPassword"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your old password!',
+            },
+          ]}
+        >
+          <Input.Password />
+        </Form.Item>
+
+        {/* <div className="mb-4 flex justify-center text-red-500">{errMsg}</div> */}
+
+        <Form.Item
+          label="New Password"
+          name="newPassword"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your new password!',
+            },
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                if (passwordRegx.test(value)) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * &  ^)',
+                );
+              },
+            }),
+          ]}
+        >
+          <Input.Password />
+        </Form.Item>
+
+        <Form.Item
+          label="New Password Confirm"
+          name="newPassword2"
+          rules={[
+            {
+              required: true,
+              message: 'Please retype your new password!',
+            },
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                if (value == getFieldValue('newPassword')) {
+                  return Promise.resolve();
+                }
+                return Promise.reject('please retype the same password');
+              },
+            }),
+          ]}
+        >
+          <Input.Password onPressEnter={onConfirm} />
+        </Form.Item>
+      </Form>
+
+      <div className="my-6 flex items-center justify-end">
+        <Button onClick={closeModal} disabled={loading}>
+          Cancel
+        </Button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <Button
+          type="primary"
+          onClick={form.submit}
+          loading={loading}
+          disabled={loading}
+        >
+          OK
+        </Button>
+      </div>
+    </Modal>
+  );
+};

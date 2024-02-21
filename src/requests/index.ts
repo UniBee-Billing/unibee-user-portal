@@ -64,6 +64,25 @@ export const loginWithOTPVerifyReq = async (
   });
 };
 
+export const resetPassReq = async (
+  oldPassword: string,
+  newPassword: string,
+) => {
+  const profile = useProfileStore.getState();
+  return await axios.post(
+    `${API_URL}/user/passwordReset`,
+    {
+      oldPassword,
+      newPassword,
+    },
+    {
+      headers: {
+        Authorization: `${profile.token}`, // Bearer: ******
+      },
+    },
+  );
+};
+
 export const logoutReq = async () => {
   const profile = useProfileStore.getState();
   return await axios.post(

@@ -1,7 +1,9 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+const APP_PATH = import.meta.env.BASE_URL;
 
 const useCountdown = (
-  initialVal: number
+  initialVal: number,
 ): [number, boolean, () => void, () => void] => {
   const [currentVal, setCurrentVal] = useState(initialVal);
   const [counting, setCounting] = useState(false);
@@ -37,4 +39,13 @@ const useCountdown = (
   return [currentVal, counting, start, stop];
 };
 
-export { useCountdown };
+const useRelogin = () => {
+  const navigate = useNavigate();
+  const relogin = () =>
+    navigate(`${APP_PATH}login`, {
+      state: { msg: 'session expired, please re-login' },
+    });
+  return relogin;
+};
+
+export { useCountdown, useRelogin };

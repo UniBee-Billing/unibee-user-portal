@@ -92,7 +92,7 @@ const App: React.FC = () => {
       navigate(`${APP_PATH}login`);
     } catch (err) {
       if (err instanceof Error) {
-        console.log('profile update err: ', err.message);
+        console.log('logout err: ', err.message);
         message.error(err.message);
       } else {
         message.error('Unknown error');

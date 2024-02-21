@@ -1,5 +1,8 @@
 import { CURRENCY } from '../constants';
 
+export const passwordRegx =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/;
+
 export const showAmount = (
   amount: number,
   currency: keyof typeof CURRENCY,
