@@ -1,8 +1,12 @@
-import { Button, Form, Input } from 'antd';
+import { Button, Form, Input, Modal, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { emailValidate } from '../../helpers';
-import { loginWithPasswordReq } from '../../requests';
+import { emailValidate, passwordRegx } from '../../helpers';
+import {
+  forgetPassReq,
+  forgetPassVerifyReq,
+  loginWithPasswordReq,
+} from '../../requests';
 import { useProfileStore } from '../../stores';
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -16,9 +20,39 @@ const Index = ({
   const profileStore = useProfileStore();
   const [errMsg, setErrMsg] = useState('');
   const navigate = useNavigate();
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false); // login submit
+  const [submittingForgetPass, setSubmittingForgetPass] = useState(false); // click 'forget password'
+  const [forgetPassModalOpen, setForgetPassModalOpen] = useState(false);
+  const toggleForgetPassModal = () =>
+    setForgetPassModalOpen(!forgetPassModalOpen);
   const [form] = Form.useForm();
   const watchEmail = Form.useWatch('email', form);
+
+  const onForgetPass = async () => {
+    const isValid = form.getFieldError('email').length == 0;
+    console.log("form.getFieldError('email');: ", form.getFieldError('email'));
+    if (!isValid) {
+      return;
+    }
+    setSubmittingForgetPass(true);
+    try {
+      const res = await forgetPassReq(form.getFieldValue('email'));
+      setSubmittingForgetPass(false);
+      console.log('forget pass res: ', res);
+      if (res.data.code != 0) {
+        throw new Error(res.data.message);
+      }
+      toggleForgetPassModal();
+    } catch (err) {
+      setSubmittingForgetPass(false);
+      if (err instanceof Error) {
+        console.log('forget pass err: ', err.message);
+        message.error(err.message);
+      } else {
+        message.error('Unknown error');
+      }
+    }
+  };
 
   const onSubmit = async () => {
     const isInvalid = form.getFieldsError().some((f) => f.errors.length > 0);
@@ -59,67 +93,239 @@ const Index = ({
   }, [watchEmail]);
 
   return (
-    <Form
-      form={form}
-      name="login-password"
-      labelCol={{ span: 6 }}
-      wrapperCol={{ span: 18 }}
-      style={{ maxWidth: 640, width: 360 }}
-      initialValues={{ email, password: '' }}
-    >
-      <Form.Item
-        label="Email"
-        name="email"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your Email!',
-          },
-          ({ getFieldValue }) => ({
-            validator(rule, value) {
-              if (value != null && value != '' && emailValidate(value)) {
-                return Promise.resolve();
-              }
-              return Promise.reject('Please input valid email address.');
+    <>
+      {forgetPassModalOpen && (
+        <ForgetPasswordModal
+          email={form.getFieldValue('email')}
+          closeModal={toggleForgetPassModal}
+        />
+      )}
+
+      <Form
+        form={form}
+        name="login-password"
+        labelCol={{ span: 6 }}
+        wrapperCol={{ span: 18 }}
+        style={{ maxWidth: 640, width: 360, position: 'relative' }}
+        initialValues={{ email, password: '' }}
+      >
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your Email!',
             },
-          }),
-        ]}
-      >
-        <Input onPressEnter={onSubmit} />
-      </Form.Item>
-
-      <Form.Item
-        label="Password"
-        name="password"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your password!',
-          },
-        ]}
-      >
-        <Input.Password onPressEnter={onSubmit} />
-      </Form.Item>
-
-      <div className="mb-4 flex justify-center text-red-500">{errMsg}</div>
-
-      <Form.Item
-        wrapperCol={{
-          offset: 8,
-          span: 16,
-        }}
-      >
-        <Button
-          type="primary"
-          onClick={onSubmit}
-          loading={submitting}
-          disabled={submitting}
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                if (value != null && value != '' && emailValidate(value)) {
+                  return Promise.resolve();
+                }
+                return Promise.reject('Please input valid email address.');
+              },
+            }),
+          ]}
         >
-          Submit
-        </Button>
-      </Form.Item>
-    </Form>
+          <Input onPressEnter={onSubmit} />
+        </Form.Item>
+
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your password!',
+            },
+          ]}
+        >
+          <Input.Password onPressEnter={onSubmit} />{' '}
+        </Form.Item>
+        <div style={{ position: 'absolute', right: '-130px', top: '56px' }}>
+          <Button
+            onClick={onForgetPass}
+            loading={submittingForgetPass}
+            disabled={submittingForgetPass}
+            type="link"
+            style={{ fontSize: '11px' }}
+          >
+            Forget Password?
+          </Button>
+        </div>
+
+        <div className="mb-4 flex justify-center text-red-500">{errMsg}</div>
+
+        <Form.Item
+          wrapperCol={{
+            offset: 8,
+            span: 16,
+          }}
+        >
+          <Button
+            type="primary"
+            onClick={onSubmit}
+            loading={submitting}
+            disabled={submitting}
+          >
+            Submit
+          </Button>
+        </Form.Item>
+      </Form>
+    </>
   );
 };
 
 export default Index;
+
+const ForgetPasswordModal = ({
+  email,
+  closeModal,
+}: {
+  email: string;
+  closeModal: () => void;
+}) => {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  const onConfirm = async () => {
+    console.log(form.getFieldsValue());
+    return;
+    /*
+    const formValues = form.getFieldsValue();
+    // console.log('form: ', form.getFieldsValue(), '///', form.getFieldsError());
+    setLoading(true);
+    try {
+      const res = await forgetPassVerifyReq( ...formValues
+      );
+      setLoading(false);
+      console.log('reset pass res: ', res);
+      const code = res.data.code;
+      if (code != 0) {
+        throw new Error(res.data.message);
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err instanceof Error) {
+        console.log('reset password err: ', err.message);
+        message.error(err.message);
+      } else {
+        message.error('Unknown error');
+      }
+    }
+    */
+  };
+
+  return (
+    <Modal
+      title="Forget Password"
+      open={true}
+      width={'640px'}
+      footer={null}
+      closeIcon={null}
+    >
+      <Form
+        form={form}
+        onFinish={onConfirm}
+        name="forget-password"
+        labelCol={{ span: 8 }}
+        wrapperCol={{ span: 16 }}
+        // style={{ maxWidth: 640, width: 360 }}
+        className="my-6"
+        initialValues={{
+          email,
+          verificationCode: '',
+          newPassword: '',
+          newPassword2: '',
+        }}
+      >
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your old password!',
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Verification Code"
+          name="verificationCode"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your old password!',
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        {/* <div className="mb-4 flex justify-center text-red-500">{errMsg}</div> */}
+
+        <Form.Item
+          label="New Password"
+          name="newPassword"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your new password!',
+            },
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                if (passwordRegx.test(value)) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * &  ^)',
+                );
+              },
+            }),
+          ]}
+        >
+          <Input.Password />
+        </Form.Item>
+
+        <Form.Item
+          label="New Password Confirm"
+          name="newPassword2"
+          rules={[
+            {
+              required: true,
+              message: 'Please retype your new password!',
+            },
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                if (value == getFieldValue('newPassword')) {
+                  return Promise.resolve();
+                }
+                return Promise.reject('please retype the same password');
+              },
+            }),
+          ]}
+        >
+          <Input.Password onPressEnter={onConfirm} />
+        </Form.Item>
+      </Form>
+
+      <div className="my-6 flex items-center justify-end">
+        <Button onClick={closeModal} disabled={loading}>
+          Cancel
+        </Button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <Button
+          type="primary"
+          onClick={form.submit}
+          loading={loading}
+          disabled={loading}
+        >
+          OK
+        </Button>
+      </div>
+    </Modal>
+  );
+};

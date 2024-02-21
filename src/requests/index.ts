@@ -83,6 +83,24 @@ export const resetPassReq = async (
   );
 };
 
+export const forgetPassReq = async (email: string) => {
+  return await axios.post(`${API_URL}/user/auth/sso/passwordForgetOTP`, {
+    email,
+  });
+};
+
+export const forgetPassVerifyReq = async (
+  email: string,
+  verificationCode: string,
+  newPassword: string,
+) => {
+  return await axios.post(`${API_URL}/user/auth/sso/passwordForgetOTPVerify`, {
+    email,
+    verificationCode,
+    newPassword,
+  });
+};
+
 export const logoutReq = async () => {
   const profile = useProfileStore.getState();
   return await axios.post(

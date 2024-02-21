@@ -16,7 +16,7 @@ const Index = ({
   email: string;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
-  const [currentStep, setCurrentStep] = useState(1); // 0: input email, 1: input code
+  const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
   const [errMailMsg, setErrMailMsg] = useState('');
   const [sendingMailaddr, setSendingMailaddr] = useState(false);
   const [countVal, counting, startCount, stopCounter] = useCountdown(60);
@@ -53,6 +53,7 @@ const Index = ({
     }
   };
 
+  console.log('current step: ', currentStep);
   return (
     <div>
       {currentStep == 0 ? (
