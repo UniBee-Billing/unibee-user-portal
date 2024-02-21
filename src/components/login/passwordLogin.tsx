@@ -43,6 +43,7 @@ const Index = ({
         throw new Error(res.data.message);
       }
       toggleForgetPassModal();
+      message.success('Code sent, please check your email!');
     } catch (err) {
       setSubmittingForgetPass(false);
       if (err instanceof Error) {
@@ -189,21 +190,21 @@ const ForgetPasswordModal = ({
   const [loading, setLoading] = useState(false);
 
   const onConfirm = async () => {
-    console.log(form.getFieldsValue());
-    return;
-    /*
-    const formValues = form.getFieldsValue();
-    // console.log('form: ', form.getFieldsValue(), '///', form.getFieldsError());
     setLoading(true);
     try {
-      const res = await forgetPassVerifyReq( ...formValues
+      const res = await forgetPassVerifyReq(
+        form.getFieldValue('email'),
+        form.getFieldValue('verificationCode'),
+        form.getFieldValue('newPassword'),
       );
       setLoading(false);
-      console.log('reset pass res: ', res);
+      console.log('forget pass verify res: ', res);
       const code = res.data.code;
       if (code != 0) {
         throw new Error(res.data.message);
       }
+      message.success('Password reset succeeded, please relogin');
+      closeModal();
     } catch (err) {
       setLoading(false);
       if (err instanceof Error) {
@@ -213,7 +214,6 @@ const ForgetPasswordModal = ({
         message.error('Unknown error');
       }
     }
-    */
   };
 
   return (
@@ -249,7 +249,7 @@ const ForgetPasswordModal = ({
             },
           ]}
         >
-          <Input />
+          <Input disabled />
         </Form.Item>
 
         <Form.Item
