@@ -61,6 +61,13 @@ const Index = ({
       return;
     }
 
+    console.log(
+      'login form: ',
+      form.getFieldsError(),
+      '///',
+      form.getFieldsValue(),
+    );
+
     setErrMsg('');
     setSubmitting(true);
     try {
@@ -141,8 +148,9 @@ const Index = ({
             },
           ]}
         >
-          <Input.Password onPressEnter={onSubmit} />{' '}
+          <Input.Password onPressEnter={onSubmit} />
         </Form.Item>
+
         <div style={{ position: 'absolute', right: '-130px', top: '56px' }}>
           <Button
             onClick={onForgetPass}
@@ -186,16 +194,16 @@ const ForgetPasswordModal = ({
   email: string;
   closeModal: () => void;
 }) => {
-  const [form] = Form.useForm();
+  const [form2] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
   const onConfirm = async () => {
     setLoading(true);
     try {
       const res = await forgetPassVerifyReq(
-        form.getFieldValue('email'),
-        form.getFieldValue('verificationCode'),
-        form.getFieldValue('newPassword'),
+        form2.getFieldValue('email'),
+        form2.getFieldValue('verificationCode'),
+        form2.getFieldValue('newPassword'),
       );
       setLoading(false);
       console.log('forget pass verify res: ', res);
@@ -225,7 +233,7 @@ const ForgetPasswordModal = ({
       closeIcon={null}
     >
       <Form
-        form={form}
+        form={form2}
         onFinish={onConfirm}
         name="forget-password"
         labelCol={{ span: 8 }}
@@ -319,7 +327,7 @@ const ForgetPasswordModal = ({
         &nbsp;&nbsp;&nbsp;&nbsp;
         <Button
           type="primary"
-          onClick={form.submit}
+          onClick={form2.submit}
           loading={loading}
           disabled={loading}
         >
