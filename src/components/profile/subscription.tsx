@@ -15,7 +15,7 @@ import { daysBetweenDate, showAmount } from '../../helpers';
 import { getSublist } from '../../requests';
 import '../../shared.css';
 import { ISubscription } from '../../shared.types';
-import { useProfileStore } from '../../stores';
+import { useAppConfigStore, useProfileStore } from '../../stores';
 import CancelSubModal from '../modals/modalCancelPendingSub';
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub';
 
@@ -59,6 +59,7 @@ const columns: ColumnsType<ISubscription> = [
 
 const Index = () => {
   const location = useLocation();
+  // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false);
   const [subscriptions, setSubscriptions] = useState<ISubscription[]>([]);
   const navigate = useNavigate();
@@ -72,7 +73,9 @@ const Index = () => {
     let subListRes;
     setLoading(true);
     try {
-      subListRes = await getSublist({ page: 0 });
+      subListRes = await getSublist({
+        page: 0,
+      });
       setLoading(false);
       console.log('user sub list: ', subListRes);
       const code = subListRes.data.code;

@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCountryList, saveProfile } from '../../requests';
 import { Country, IProfile } from '../../shared.types';
-import { useProfileStore } from '../../stores';
+import { useAppConfigStore, useProfileStore } from '../../stores';
+
 const APP_PATH = import.meta.env.BASE_URL;
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
   openPreviewModal: () => void;
 }
 const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
+  // const appConfigStore = useAppConfigStore();
   const navigate = useNavigate();
   const profile = useProfileStore.getState();
   const [form] = Form.useForm();
@@ -73,7 +75,7 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
     const fetchData = async () => {
       let countryListRes;
       try {
-        countryListRes = await getCountryList(15621); // merchantId
+        countryListRes = await getCountryList();
         console.log('country list res: ', countryListRes);
         if (countryListRes.data.code != 0) {
           throw new Error(countryListRes.data.message);

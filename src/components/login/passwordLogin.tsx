@@ -5,9 +5,10 @@ import { emailValidate, passwordRegx } from '../../helpers';
 import {
   forgetPassReq,
   forgetPassVerifyReq,
+  getAppConfigReq,
   loginWithPasswordReq,
 } from '../../requests';
-import { useProfileStore } from '../../stores';
+import { useAppConfigStore, useProfileStore } from '../../stores';
 const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = ({
@@ -18,6 +19,7 @@ const Index = ({
   onEmailChange: (value: string) => void;
 }) => {
   const profileStore = useProfileStore();
+  const appConfigStore = useAppConfigStore();
   const [errMsg, setErrMsg] = useState('');
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false); // login submit
@@ -61,18 +63,10 @@ const Index = ({
       return;
     }
 
-    console.log(
-      'login form: ',
-      form.getFieldsError(),
-      '///',
-      form.getFieldsValue(),
-    );
-
     setErrMsg('');
     setSubmitting(true);
     try {
       const loginRes = await loginWithPasswordReq(form.getFieldsValue());
-      setSubmitting(false);
       console.log('login res: ', loginRes);
       if (loginRes.data.code != 0) {
         throw new Error(loginRes.data.message);
@@ -80,6 +74,15 @@ const Index = ({
       localStorage.setItem('token', loginRes.data.data.Token);
       loginRes.data.data.User.token = loginRes.data.data.Token;
       profileStore.setProfile(loginRes.data.data.User);
+
+      const appConfigRes = await getAppConfigReq();
+      setSubmitting(false);
+      console.log('app config res: ', appConfigRes);
+      if (appConfigRes.data.code != 0) {
+        throw new Error(appConfigRes.data.message);
+      }
+      appConfigStore.setAppConfig(appConfigRes.data.data);
+
       navigate(`${APP_PATH}profile/subscription`, {
         state: { from: 'login' },
       });

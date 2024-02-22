@@ -3,8 +3,12 @@ import { useEffect, useState } from 'react';
 import OtpInput from 'react-otp-input';
 import { useNavigate } from 'react-router-dom';
 import { emailValidate } from '../../helpers';
-import { loginWithOTPReq, loginWithOTPVerifyReq } from '../../requests';
-import { useProfileStore } from '../../stores';
+import {
+  getAppConfigReq,
+  loginWithOTPReq,
+  loginWithOTPVerifyReq,
+} from '../../requests';
+import { useAppConfigStore, useProfileStore } from '../../stores';
 import { useCountdown } from '../hooks';
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -177,6 +181,7 @@ const OTPForm = ({
   goBack,
 }: IOtpFormProps) => {
   const navigate = useNavigate();
+  const appConfigStore = useAppConfigStore();
   const profileStore = useProfileStore();
   const [submitting, setSubmitting] = useState(false);
   const [otp, setOtp] = useState('');
@@ -194,7 +199,6 @@ const OTPForm = ({
     setSubmitting(true);
     try {
       const loginRes = await loginWithOTPVerifyReq(email, otp);
-      setSubmitting(false);
       console.log('otp loginVerify res: ', loginRes);
       if (loginRes.data.code != 0) {
         setErrMsg(loginRes.data.message);
@@ -204,6 +208,15 @@ const OTPForm = ({
       loginRes.data.data.User.token = loginRes.data.data.Token;
       profileStore.setProfile(loginRes.data.data.User);
       console.log('otp verified user: ', loginRes.data.data.User);
+
+      const appConfigRes = await getAppConfigReq();
+      setSubmitting(false);
+      console.log('app config res: ', appConfigRes);
+      if (appConfigRes.data.code != 0) {
+        throw new Error(appConfigRes.data.message);
+      }
+      appConfigStore.setAppConfig(appConfigRes.data.data);
+
       navigate(`${APP_PATH}profile/subscription`, {
         state: { from: 'login' },
       });

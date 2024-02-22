@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { IProfile } from '../shared.types';
-import { useProfileStore } from '../stores';
+import { useAppConfigStore, useProfileStore } from '../stores';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -133,17 +133,14 @@ export const saveProfile = async (newProfile: IProfile) => {
 };
 
 export const getAppConfigReq = async () => {
-  const body = { merchantId: 15621 };
-  return await axios.post(
-    `${API_URL}/system/merchant/merchant_information`,
-    body,
-  );
+  return await axios.post(`${API_URL}/system/merchant/merchant_information`);
 };
 
 export const getSublist = async ({ page = 0 }: { page: number }) => {
   const profile = useProfileStore.getState();
+  const appConfig = useAppConfigStore.getState();
   const body = {
-    merchantId: 15621,
+    merchantId: appConfig.MerchantId,
     userId: profile.id,
     // status: 0,
     page,
@@ -162,11 +159,12 @@ export const getSublist = async ({ page = 0 }: { page: number }) => {
 
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
+  const appConfig = useAppConfigStore.getState();
   console.log('profile from store: ', profile);
   return await axios.post(
     `${API_URL}/user/subscription/subscription_list`,
     {
-      merchantId: 15621,
+      merchantId: appConfig.MerchantId,
       userId: profile.id,
       status: 2, // active subscription
       page: 0,
@@ -183,10 +181,11 @@ export const getActiveSub = async () => {
 export const getPlanList = async () => {
   // pass page/count as params
   const profile = useProfileStore.getState();
+  const appConfig = useAppConfigStore.getState();
   return await axios.post(
     `${API_URL}/user/plan/subscription_plan_list`,
     {
-      merchantId: 15621,
+      merchantId: appConfig.MerchantId,
       page: 0,
       count: 100,
       // type: 1,
@@ -316,7 +315,8 @@ export const createSubscription = async (
 
 export const vatNumberCheckReq = async (vatNumber: string) => {
   const profile = useProfileStore.getState();
-  const body = { merchantId: 15621, vatNumber };
+  const appConfig = useAppConfigStore.getState();
+  const body = { merchantId: appConfig.MerchantId, vatNumber };
   return await axios.post(`${API_URL}/user/vat/vat_number_validate`, body, {
     headers: {
       Authorization: profile.token, // Bearer: ******
@@ -397,10 +397,11 @@ export const cancelSubReq = async (subscriptionId: string) => {
   );
 };
 
-export const getCountryList = async (merchantId: number) => {
+export const getCountryList = async () => {
   const profile = useProfileStore.getState();
+  const appConfig = useAppConfigStore.getState();
   const body = {
-    merchantId,
+    merchantId: appConfig.MerchantId,
   };
   return await axios.post(`${API_URL}/user/vat/vat_country_list`, body, {
     headers: {

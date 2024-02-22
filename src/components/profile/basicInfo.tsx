@@ -16,7 +16,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { passwordRegx } from '../../helpers';
 import {
-  getAppConfigReq,
   getCountryList,
   getProfile,
   logoutReq,
@@ -24,13 +23,14 @@ import {
   saveProfile,
 } from '../../requests';
 import { Country, IProfile } from '../../shared.types';
-import { useProfileStore } from '../../stores';
+import { useAppConfigStore, useProfileStore } from '../../stores';
 import { useRelogin } from '../hooks';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
+  // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<IProfile | null>(null);
   const navigate = useNavigate();
@@ -83,14 +83,12 @@ const Index = () => {
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      let profileRes, countryListRes, appConfigRes;
+      let profileRes, countryListRes;
       try {
-        const res = ([profileRes, countryListRes, appConfigRes] =
-          await Promise.all([
-            getProfile(),
-            getCountryList(15621),
-            getAppConfigReq(),
-          ]));
+        const res = ([profileRes, countryListRes] = await Promise.all([
+          getProfile(),
+          getCountryList(),
+        ]));
         setLoading(false);
         console.log('res: ', res);
         res.forEach((r) => {

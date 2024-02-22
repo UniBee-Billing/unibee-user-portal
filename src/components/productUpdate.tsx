@@ -14,7 +14,7 @@ import Plan from './plan';
 import { LoadingOutlined } from '@ant-design/icons';
 import { SUBSCRIPTION_STATUS } from '../constants';
 import { Country, IPlan, ISubscription } from '../shared.types';
-import { useProfileStore } from '../stores';
+import { useAppConfigStore, useProfileStore } from '../stores';
 import BillingAddressModal from './modals/billingAddressModal';
 import CancelSubModal from './modals/modalCancelPendingSub';
 import CreateSubModal from './modals/modalCreateSub';
@@ -24,6 +24,7 @@ const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = () => {
   const profileStore = useProfileStore();
+  // const appConfigStore = useAppConfigStore();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
@@ -88,7 +89,7 @@ const Index = () => {
   const fetchCountry = async () => {
     let countryListRes;
     try {
-      countryListRes = await getCountryList(15621); // merchantId
+      countryListRes = await getCountryList();
       console.log('country list res: ', countryListRes);
       if (countryListRes.data.code != 0) {
         throw new Error(countryListRes.data.message);

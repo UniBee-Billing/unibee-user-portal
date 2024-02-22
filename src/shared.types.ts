@@ -20,6 +20,25 @@ interface IProfile {
   token: string;
 }
 
+type TMerchantInfo = {
+  id: number;
+  address: string;
+  companyId: string;
+  companyLogo: string;
+  companyName: string;
+  email: string;
+  location: string;
+  phone: string;
+};
+
+interface IAppConfig {
+  SupportCurrency: { Currency: string; Symbol: string; Scale: number }[];
+  SupportTimeZone: string[];
+  MerchantId: number;
+  MerchantInfo: TMerchantInfo;
+  Gateway: { gatewayId: number; gatewayName: string }[];
+}
+
 type Country = {
   code: string;
   name: string;
@@ -130,9 +149,11 @@ interface IPreview {
 
 export type {
   Country,
+  IAppConfig,
   IPlan,
   IPreview,
   IProfile,
   ISubscription,
   InvoiceItemTotal,
+  TMerchantInfo,
 };
