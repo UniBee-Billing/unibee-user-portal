@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Spin, message, Result } from "antd";
 import { checkSession } from "../requests";
+import { useProfileStore } from "../stores";
 import { LoadingOutlined } from "@ant-design/icons";
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -10,6 +11,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 
 export default function SessionResult() {
+  const profileStore = useProfileStore();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loginStatus, setLoginStatus] = useState<number | null>(null);
@@ -32,6 +34,10 @@ export default function SessionResult() {
         throw new Error(res.data.message);
       }
       setLoginStatus(res.data.data.payStatus);
+      localStorage.setItem('token', res.data.data.Token);
+      res.data.data.User.token = res.data.data.Token;
+      profileStore.setProfile(res.data.data.User);
+
       navigate(`${APP_PATH}profile/subscription`, {
         state: { from: 'login' },
       });
