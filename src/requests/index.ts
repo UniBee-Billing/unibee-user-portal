@@ -339,6 +339,18 @@ export const checkPayment = async (subscriptionId: string) => {
   );
 };
 
+export const checkSession = async (session: string) => {
+  const body = { session };
+  return await axios.post(
+    `${API_URL}/user/auth/session_login`,
+    body,
+    {
+      headers: {
+      },
+    },
+  );
+};
+
 export const terminateSub = async (SubscriptionId: string) => {
   const profile = useProfileStore.getState();
   const body = {

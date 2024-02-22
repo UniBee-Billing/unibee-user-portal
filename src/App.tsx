@@ -18,6 +18,7 @@ import Invoices from './components/invoices';
 import Login from './components/login';
 import NotFound from './components/notFound';
 import PaymentResult from './components/paymentResult';
+import SessionResult from './components/sessionResult';
 import ProductsUpdate from './components/productUpdate';
 import ProfileBasic from './components/profile/basicInfo';
 import ProfileSubscription from './components/profile/subscription';
@@ -138,6 +139,10 @@ const App: React.FC = () => {
               path={`${APP_PATH}payment-result`}
               Component={PaymentResult}
             />
+             <Route
+              path={`${APP_PATH}session-result`}
+              Component={SessionResult}
+            />
           </Routes>
         </Layout>
       ) : (
@@ -206,6 +211,10 @@ const App: React.FC = () => {
                   <Route
                     path={`${APP_PATH}payment-result`}
                     Component={PaymentResult}
+                  />
+                  <Route
+                    path={`${APP_PATH}session-result`}
+                    Component={SessionResult}
                   />
                   <Route
                     path={`${APP_PATH}profile/basic-info`}
