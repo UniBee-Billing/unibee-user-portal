@@ -317,7 +317,7 @@ const Index = () => {
               margin: '36px',
             }}
           >
-            <Button onClick={togglePasswordModal}>Reset Password</Button>
+            <Button onClick={togglePasswordModal}>Change Password</Button>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <Button
               type="primary"
@@ -438,6 +438,11 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
             },
             ({ getFieldValue }) => ({
               validator(rule, value) {
+                if (getFieldValue('oldPassword') == value) {
+                  return Promise.reject(
+                    'New password should not be the same as old password.',
+                  );
+                }
                 if (passwordRegx.test(value)) {
                   return Promise.resolve();
                 }

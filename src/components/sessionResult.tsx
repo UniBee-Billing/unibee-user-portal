@@ -33,7 +33,7 @@ export default function SessionResult() {
         }
         throw new Error(res.data.message);
       }
-      setLoginStatus(res.data.data.payStatus);
+      // setLoginStatus(res.data.data.payStatus);
       localStorage.setItem('token', res.data.data.Token);
       res.data.data.User.token = res.data.data.Token;
       profileStore.setProfile(res.data.data.User);
