@@ -1,33 +1,33 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Spin, message, Result } from "antd";
-import { checkSession } from "../requests";
-import { useProfileStore } from "../stores";
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from '@ant-design/icons';
+import { Result, Spin, message } from 'antd';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { checkSession, getAppConfigReq } from '../requests';
+import { useAppConfigStore, useProfileStore } from '../stores';
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 // https://user.unibee.top/session_result?session=1fMsrPDzxmv5mwYxukfCpQUlHtUnB1zaMCe6GeOr
 
-
 export default function SessionResult() {
   const profileStore = useProfileStore();
+  const appConfigStore = useAppConfigStore();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loginStatus, setLoginStatus] = useState<number | null>(null);
-  const session = searchParams.get("session");
-  console.log("session: ", session);
+  const session = searchParams.get('session');
+  console.log('session: ', session);
 
   const checking = async () => {
     try {
       const res = await checkSession(session as string);
-      console.log("session result res: ", res);
+      console.log('session result res: ', res);
       const statuCode = res.data.code;
       if (statuCode != 0) {
         if (statuCode == 61) {
-          console.log("invalid token");
+          console.log('invalid token');
           navigate(`${APP_PATH}login`, {
-            state: { msg: "session expired, please re-login" },
+            state: { msg: 'session expired, please re-login' },
           });
           return;
         }
@@ -38,44 +38,47 @@ export default function SessionResult() {
       res.data.data.User.token = res.data.data.Token;
       profileStore.setProfile(res.data.data.User);
 
+      const appConfigRes = await getAppConfigReq();
+      console.log('app config res: ', appConfigRes);
+      if (appConfigRes.data.code != 0) {
+        throw new Error(appConfigRes.data.message);
+      }
+
+      appConfigStore.setAppConfig(appConfigRes.data.data);
       navigate(`${APP_PATH}profile/subscription`, {
         state: { from: 'login' },
       });
     } catch (err) {
       if (err instanceof Error) {
-        console.log("err checking session result: ", err.message);
+        console.log('err checking session result: ', err.message);
         message.error(err.message);
       } else {
-        message.error("Unknown error");
+        message.error('Unknown error');
       }
     }
   };
 
   useEffect(() => {
     checking();
-    const interval = setInterval(checking, 3000);
-    
-    return () => clearInterval(interval);
+    // const interval = setInterval(checking, 3000);
+
+    // return () => clearInterval(interval);
   }, []);
 
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
       }}
     >
       <h1>session result</h1>
       {loginStatus == null ? (
         <span>Checking...</span>
       ) : (
-        <Result
-          status="success"
-          title="Login succeeded!"
-          subTitle=""
-        />
+        <Result status="success" title="Login succeeded!" subTitle="" />
       )}
     </div>
   );

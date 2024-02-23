@@ -18,10 +18,10 @@ import Invoices from './components/invoices';
 import Login from './components/login';
 import NotFound from './components/notFound';
 import PaymentResult from './components/paymentResult';
-import SessionResult from './components/sessionResult';
 import ProductsUpdate from './components/productUpdate';
 import ProfileBasic from './components/profile/basicInfo';
 import ProfileSubscription from './components/profile/subscription';
+import SessionResult from './components/sessionResult';
 import Signup from './components/signup';
 import { logoutReq } from './requests';
 
@@ -55,6 +55,7 @@ const items: MenuItem[] = [
 const noSiderRoutes = [
   `${APP_PATH}login`,
   `${APP_PATH}signup`,
+  `${APP_PATH}session-result`,
   // `${APP_PATH}payment-result`,
 ];
 
@@ -139,7 +140,7 @@ const App: React.FC = () => {
               path={`${APP_PATH}payment-result`}
               Component={PaymentResult}
             />
-             <Route
+            <Route
               path={`${APP_PATH}session-result`}
               Component={SessionResult}
             />
