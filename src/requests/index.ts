@@ -1,64 +1,46 @@
-import axios from 'axios';
 import { IProfile } from '../shared.types';
 import { useAppConfigStore, useProfileStore } from '../stores';
+import { request } from './client';
 
-const API_URL = import.meta.env.VITE_API_URL;
-
-export const signUpReq = async ({
-  email,
-  firstName,
-  lastName,
-  password,
-}: {
+// ------------
+type TSignupReq = {
   email: string;
   firstName: string;
   lastName: string;
   password: string;
-}) => {
-  return await axios.post(`${API_URL}/user/auth/sso/register`, {
-    email,
-    firstName,
-    lastName,
-    password,
-  });
 };
+export const signUpReq = async (body: TSignupReq) => {
+  return await request.post(`/user/auth/sso/register`, body);
+};
+// --------------
 
-export const singUpVerifyReq = async ({
-  email,
-  verificationCode,
-}: {
+type TSignupVerifyReq = {
   email: string;
   verificationCode: string;
-}) => {
-  return await axios.post(`${API_URL}/user/auth/sso/registerVerify`, {
-    email,
-    verificationCode,
-  });
+};
+export const singUpVerifyReq = async (body: TSignupVerifyReq) => {
+  return await request.post(`/user/auth/sso/registerVerify`, body);
 };
 
-export const loginWithPasswordReq = async ({
-  email,
-  password,
-}: {
+type TPassLogin = {
   email: string;
   password: string;
-}) => {
-  return await axios.post(`${API_URL}/user/auth/sso/login`, {
-    email,
-    password,
-  });
+};
+export const loginWithPasswordReq = async (body: TPassLogin) => {
+  return await request.post(`/user/auth/sso/login`, body);
 };
 
 export const loginWithOTPReq = async (email: string) => {
-  return await axios.post(`${API_URL}/user/auth/sso/loginOTP`, {
+  return await request.post(`/user/auth/sso/loginOTP`, {
     email,
   });
 };
+
 export const loginWithOTPVerifyReq = async (
   email: string,
   verificationCode: string,
 ) => {
-  return await axios.post(`${API_URL}/user/auth/sso/loginOTPVerify`, {
+  return await request.post(`/user/auth/sso/loginOTPVerify`, {
     email,
     verificationCode,
   });
@@ -68,23 +50,14 @@ export const resetPassReq = async (
   oldPassword: string,
   newPassword: string,
 ) => {
-  const profile = useProfileStore.getState();
-  return await axios.post(
-    `${API_URL}/user/passwordReset`,
-    {
-      oldPassword,
-      newPassword,
-    },
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
-  );
+  return await request.post(`/user/passwordReset`, {
+    oldPassword,
+    newPassword,
+  });
 };
 
 export const forgetPassReq = async (email: string) => {
-  return await axios.post(`${API_URL}/user/auth/sso/passwordForgetOTP`, {
+  return await request.post(`/user/auth/sso/passwordForgetOTP`, {
     email,
   });
 };
@@ -94,7 +67,7 @@ export const forgetPassVerifyReq = async (
   verificationCode: string,
   newPassword: string,
 ) => {
-  return await axios.post(`${API_URL}/user/auth/sso/passwordForgetOTPVerify`, {
+  return await request.post(`/user/auth/sso/passwordForgetOTPVerify`, {
     email,
     verificationCode,
     newPassword,
@@ -102,38 +75,19 @@ export const forgetPassVerifyReq = async (
 };
 
 export const logoutReq = async () => {
-  const profile = useProfileStore.getState();
-  return await axios.post(
-    `${API_URL}/user/user_logout`,
-    {},
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
-  );
+  return await request.post(`/user/user_logout`, {});
 };
 
 export const getProfile = async () => {
-  const profile = useProfileStore.getState();
-  return await axios.get(`${API_URL}/user/profile`, {
-    headers: {
-      Authorization: `${profile.token}`, // Bearer: ******
-    },
-  });
+  return await request.get(`/user/profile`);
 };
 
 export const saveProfile = async (newProfile: IProfile) => {
-  const profile = useProfileStore.getState();
-  return await axios.post(`${API_URL}/user/profile`, newProfile, {
-    headers: {
-      Authorization: `${profile.token}`, // Bearer: ******
-    },
-  });
+  return await request.post(`/user/profile`, newProfile);
 };
 
 export const getAppConfigReq = async () => {
-  return await axios.post(`${API_URL}/system/merchant/merchant_information`);
+  return await request.post(`/system/merchant/merchant_information`);
 };
 
 export const getSublist = async ({ page = 0 }: { page: number }) => {
@@ -146,56 +100,29 @@ export const getSublist = async ({ page = 0 }: { page: number }) => {
     page,
     count: 100,
   };
-  return await axios.post(
-    `${API_URL}/user/subscription/subscription_list`,
-    body,
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
-  );
+  return await request.post(`/user/subscription/subscription_list`, body);
 };
 
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
   const appConfig = useAppConfigStore.getState();
-  console.log('profile from store: ', profile);
-  return await axios.post(
-    `${API_URL}/user/subscription/subscription_list`,
-    {
-      merchantId: appConfig.MerchantId,
-      userId: profile.id,
-      status: 2, // active subscription
-      page: 0,
-      count: 100,
-    },
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
-  );
+  return await request.post(`/user/subscription/subscription_list`, {
+    merchantId: appConfig.MerchantId,
+    userId: profile.id,
+    status: 2, // active subscription
+    page: 0,
+    count: 100,
+  });
 };
 
 export const getPlanList = async () => {
-  // pass page/count as params
-  const profile = useProfileStore.getState();
   const appConfig = useAppConfigStore.getState();
-  return await axios.post(
-    `${API_URL}/user/plan/subscription_plan_list`,
-    {
-      merchantId: appConfig.MerchantId,
-      page: 0,
-      count: 100,
-      // type: 1,
-    },
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
-  );
+  return await request.post(`/user/plan/subscription_plan_list`, {
+    merchantId: appConfig.MerchantId,
+    page: 0,
+    count: 100,
+    // type: 1,
+  });
 };
 
 // for update preview
@@ -204,9 +131,7 @@ export const createUpdatePreviewReq = async (
   addons: { quantity: number; addonPlanId: number }[],
   subscriptionId: string | null,
 ) => {
-  const profile = useProfileStore.getState();
   const urlPath = 'subscription_update_preview';
-
   const body = {
     subscriptionId,
     // userId: profile.id,
@@ -216,11 +141,7 @@ export const createUpdatePreviewReq = async (
     quantity: 1,
     addonParams: addons,
   };
-  return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
-    headers: {
-      Authorization: `${profile.token}`, // Bearer: ******
-    },
-  });
+  return await request.post(`/user/subscription/${urlPath}`, body);
 };
 
 // for create new prview
@@ -242,12 +163,7 @@ export const createPreviewReq = async (
     vatNumber,
     vatCountryCode,
   };
-  console.log('preview req body: ', body);
-  return await axios.post(`${API_URL}/user/subscription/${urlPath}`, body, {
-    headers: {
-      Authorization: `${profile.token}`, // Bearer: ******
-    },
-  });
+  return await request.post(`/user/subscription/${urlPath}`, body);
 };
 
 export const updateSubscription = async (
@@ -258,7 +174,6 @@ export const updateSubscription = async (
   confirmCurrency: string,
   prorationDate: number,
 ) => {
-  const profile = useProfileStore.getState();
   // "subscription_create_submit"
   const body = {
     subscriptionId,
@@ -269,14 +184,9 @@ export const updateSubscription = async (
     confirmCurrency,
     prorationDate,
   };
-  return await axios.post(
-    `${API_URL}/user/subscription/subscription_update_submit`,
+  return await request.post(
+    `/user/subscription/subscription_update_submit`,
     body,
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
   );
 };
 
@@ -301,69 +211,33 @@ export const createSubscription = async (
     vatCountryCode,
     vatNumber,
   };
-  // console.log("create sub body: ", body);
-  return await axios.post(
-    `${API_URL}/user/subscription/subscription_create_submit`,
+  return await request.post(
+    `/user/subscription/subscription_create_submit`,
     body,
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
   );
 };
 
 export const vatNumberCheckReq = async (vatNumber: string) => {
-  const profile = useProfileStore.getState();
   const appConfig = useAppConfigStore.getState();
   const body = { merchantId: appConfig.MerchantId, vatNumber };
-  return await axios.post(`${API_URL}/user/vat/vat_number_validate`, body, {
-    headers: {
-      Authorization: profile.token, // Bearer: ******
-    },
-  });
+  return await request.post(`/user/vat/vat_number_validate`, body);
 };
 
 // check payment result
 export const checkPayment = async (subscriptionId: string) => {
-  const profile = useProfileStore.getState();
   const body = { subscriptionId };
-  return await axios.post(
-    `${API_URL}/user/subscription/subscription_pay_check`,
-    body,
-    {
-      headers: {
-        Authorization: profile.token, // Bearer: ******
-      },
-    },
-  );
+  return await request.post(`/user/subscription/subscription_pay_check`, body);
 };
 
 export const checkSession = async (session: string) => {
   const body = { session };
-  return await axios.post(
-    `${API_URL}/user/auth/session_login`,
-    body,
-    {
-      headers: {
-      },
-    },
-  );
+  return await request.post(`/user/auth/session_login`, body);
 };
 
 export const terminateSub = async (SubscriptionId: string) => {
-  const profile = useProfileStore.getState();
-  const body = {
-    SubscriptionId,
-  };
-  return await axios.post(
-    `${API_URL}/user/subscription/subscription_cancel_at_period_end`,
-    body,
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
+  return await request.post(
+    `/user/subscription/subscription_cancel_at_period_end`,
+    { SubscriptionId },
   );
 };
 
@@ -374,50 +248,29 @@ export const terminateOrResumeSubReq = async ({
   subscriptionId: string;
   action: 'TERMINATE' | 'RESUME';
 }) => {
-  let URL = `${API_URL}/user/subscription/`;
+  let URL = `/user/subscription/`;
   URL +=
     action == 'TERMINATE'
       ? 'subscription_cancel_at_period_end'
       : 'subscription_cancel_last_cancel_at_period_end';
-  //
   const body = {
     subscriptionId,
   };
-  const profile = useProfileStore.getState();
-  return await axios.post(URL, body, {
-    headers: {
-      Authorization: `${profile.token}`, // Bearer: ******
-    },
+  return await request.post(URL, body);
+};
+
+// new user has choosen a sub plan, but not paid yet, befoer the payment due date, user can still cancel it.
+// this fn is for this purpose only, it's not the same for terminate an active sub (which is the above terminateOrResumeSubReq's job).
+export const cancelSubReq = async (subscriptionId: string) => {
+  return await request.post(`/user/subscription/subscription_cancel`, {
+    subscriptionId,
   });
 };
 
-// new user has choosen a sub plan, but not paid yet, befoer the payment due date, user can still cancel it
-// this fn is for this purpose only, it's not the same for terminate an active sub (which is the above terminateOrResumeSubReq's job).
-export const cancelSubReq = async (subscriptionId: string) => {
-  const profile = useProfileStore.getState();
-  const body = {
-    subscriptionId,
-  };
-  return await axios.post(
-    `${API_URL}/user/subscription/subscription_cancel`,
-    body,
-    {
-      headers: {
-        Authorization: `${profile.token}`, // Bearer: ******
-      },
-    },
-  );
-};
-
 export const getCountryList = async () => {
-  const profile = useProfileStore.getState();
   const appConfig = useAppConfigStore.getState();
   const body = {
     merchantId: appConfig.MerchantId,
   };
-  return await axios.post(`${API_URL}/user/vat/vat_country_list`, body, {
-    headers: {
-      Authorization: `${profile.token}`, // Bearer: ******
-    },
-  });
+  return await request.post(`/user/vat/vat_country_list`, body);
 };
