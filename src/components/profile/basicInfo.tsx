@@ -272,7 +272,7 @@ const Index = () => {
             ],
             [
               { label: 'Facebook', name: 'facebook' },
-              { label: 'TikTok', name: 'tiktok' },
+              { label: 'TikTok', name: 'tikTok' },
             ],
             [{ label: 'Other Social Info', name: 'otherSocialInfo' }],
           ].map((s, idx) => (
