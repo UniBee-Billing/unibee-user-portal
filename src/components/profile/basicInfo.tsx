@@ -310,13 +310,7 @@ const Index = () => {
             </Col>
           </Row>
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              margin: '36px',
-            }}
-          >
+          <div className="mx-8 my-8 flex justify-center">
             <Button onClick={togglePasswordModal}>Change Password</Button>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <Button
@@ -335,6 +329,7 @@ const Index = () => {
 };
 
 export default Index;
+
 interface IResetPassProps {
   email: string;
   closeModal: () => void;
@@ -392,7 +387,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
 
   return (
     <Modal
-      title="Reset Password"
+      title="Change Password"
       open={true}
       width={'640px'}
       footer={null}

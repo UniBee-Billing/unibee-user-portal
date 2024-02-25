@@ -18,7 +18,7 @@ type TSignupVerifyReq = {
   email: string;
   verificationCode: string;
 };
-export const singUpVerifyReq = async (body: TSignupVerifyReq) => {
+export const signUpVerifyReq = async (body: TSignupVerifyReq) => {
   return await request.post(`/user/auth/sso/registerVerify`, body);
 };
 

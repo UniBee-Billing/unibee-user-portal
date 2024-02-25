@@ -57,7 +57,6 @@ const Index = ({
     }
   };
 
-  console.log('current step: ', currentStep);
   return (
     <div>
       {currentStep == 0 ? (

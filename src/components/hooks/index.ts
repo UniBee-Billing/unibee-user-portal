@@ -35,7 +35,6 @@ const useCountdown = (
     setCounting(false);
     countdownReqId.current = 0;
   };
-
   return [currentVal, counting, start, stop];
 };
 

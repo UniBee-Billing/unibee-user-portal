@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import OtpInput from 'react-otp-input';
 import { useNavigate } from 'react-router-dom';
 import { emailValidate, passwordRegx } from '../helpers';
-import { signUpReq, singUpVerifyReq } from '../requests';
+import { signUpReq, signUpVerifyReq } from '../requests';
 import AppFooter from './appFooter';
 import AppHeader from './appHeader';
 import { useCountdown } from './hooks';
@@ -111,7 +111,7 @@ const Index = () => {
   const onSubmit2 = async () => {
     setSubmitting(true);
     try {
-      const res = await singUpVerifyReq({
+      const res = await signUpVerifyReq({
         email: form.getFieldValue('email'),
         verificationCode: otp,
       });

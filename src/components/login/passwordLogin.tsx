@@ -162,7 +162,7 @@ const Index = ({
             type="link"
             style={{ fontSize: '11px' }}
           >
-            Forget Password?
+            Forgot Password?
           </Button>
         </div>
 
@@ -209,7 +209,7 @@ const ForgetPasswordModal = ({
         form2.getFieldValue('newPassword'),
       );
       setLoading(false);
-      console.log('forget pass verify res: ', res);
+      console.log('forgot pass verify res: ', res);
       const code = res.data.code;
       if (code != 0) {
         throw new Error(res.data.message);
@@ -229,7 +229,7 @@ const ForgetPasswordModal = ({
 
   return (
     <Modal
-      title="Forget Password"
+      title="Forgot Password"
       open={true}
       width={'640px'}
       footer={null}
