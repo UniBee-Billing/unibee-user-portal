@@ -40,12 +40,6 @@ const Index = () => {
   const togglePasswordModal = () => setResetPasswordModal(!resetPasswordModal);
   const profileStore = useProfileStore();
   const relogin = useRelogin();
-  /*
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
-    */
 
   const filterOption = (
     input: string,
@@ -359,7 +353,6 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
 
   const onConfirm = async () => {
     const formValues = form.getFieldsValue();
-    // console.log('form: ', form.getFieldsValue(), '///', form.getFieldsError());
     setLoading(true);
     try {
       const res = await resetPassReq(
@@ -396,10 +389,8 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
       <Form
         form={form}
         onFinish={onConfirm}
-        //name="reset-password"
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
-        // style={{ maxWidth: 640, width: 360 }}
         className="my-6"
         initialValues={{
           email,
@@ -464,12 +455,12 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
                 if (value == getFieldValue('newPassword')) {
                   return Promise.resolve();
                 }
-                return Promise.reject('please retype the same password');
+                return Promise.reject('Please retype the same password');
               },
             }),
           ]}
         >
-          <Input.Password onPressEnter={onConfirm} />
+          <Input.Password onPressEnter={form.submit} />
         </Form.Item>
       </Form>
 

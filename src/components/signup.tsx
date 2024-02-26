@@ -12,43 +12,12 @@ import { useCountdown } from './hooks';
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
 
-// const passwordRegx =
-//   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/;
-
 const Index = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  // const [firstName, setFirstName] = useState('');
-  // const [lastName, setLastName] = useState('');
-  // const [email, setEmail] = useState('');
-  // const [phone, setPhone] = useState("");
-  // const [address, setAddress] = useState("");
-  // const [password, setPassword] = useState('');
-  // const [password2, setPassword2] = useState('');
-  // const [country, setCountry] = useState("");
-  // const [verificationCode, setVerificationCode] = useState("");
   const [currentStep, setCurrentStep] = useState(0); // 0: signup-basic-info  |  1: enter verfication code
   const [submitting, setSubmitting] = useState(false);
-  // const [countryList, setCountryList] = useState<Country[]>([]);
-
-  // const onEmailChange = (evt: ChangeEvent<HTMLInputElement>) =>
-  //     setEmail(evt.target.value);
-
-  /*
-  const onFirstNameChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
-    setFirstName(evt.target.value);
-  const onLastNameChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
-    setLastName(evt.target.value);
-  const onEmailChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
-    setEmail(evt.target.value);
-  const onPasswordChange = (evt: React.ChangeEvent<HTMLInputElement>) =>
-    setPassword(evt.target.value);
-  const onPassword2Change = (evt: React.ChangeEvent<HTMLInputElement>) =>
-    setPassword2(evt.target.value);
-  */
-
   const [countVal, isCounting, startCountdown, stopCounter] = useCountdown(60);
-
   const [otp, setOtp] = useState('');
   const onOTPchange = (value: string) => {
     setOtp(value.toUpperCase());
@@ -58,32 +27,6 @@ const Index = () => {
 
   // send basic signup info
   const onSubmit = async () => {
-    /*
-    if (
-      firstName == "" ||
-      lastName == "" ||
-      email == "" ||
-      // country == "" ||
-      password == "" ||
-      password2 == "" ||
-      password != password2 ||
-      !passwordRegx.test(password)
-    ) {
-      return;
-    }
-*/
-    console.log(
-      'form value: ',
-      form.getFieldsError(),
-      '//',
-      form.getFieldsValue(),
-    );
-
-    const isInvalid = form.getFieldsError().some((f) => f.errors.length > 0);
-    if (isInvalid) {
-      return;
-    }
-
     setSubmitting(true);
     try {
       const res = await signUpReq(form.getFieldsValue());
@@ -194,7 +137,6 @@ const Index = () => {
                   },
                 ]}
               >
-                {/* <Input value={firstName} onChange={onFirstNameChange} /> */}
                 <Input />
               </Form.Item>
 
@@ -208,7 +150,6 @@ const Index = () => {
                   },
                 ]}
               >
-                {/* <Input value={lastName} onChange={onLastNameChange} /> */}
                 <Input />
               </Form.Item>
 
@@ -234,7 +175,6 @@ const Index = () => {
                   }),
                 ]}
               >
-                {/* <Input value={email} onChange={onEmailChange} /> */}
                 <Input />
               </Form.Item>
               <Form.Item
@@ -257,10 +197,6 @@ const Index = () => {
                   }),
                 ]}
               >
-                {/* <Input.Password
-              value={password}
-              onChange={onPasswordChange}
-          /> */}
                 <Input.Password />
               </Form.Item>
 
@@ -277,12 +213,12 @@ const Index = () => {
                       if (value == getFieldValue('password')) {
                         return Promise.resolve();
                       }
-                      return Promise.reject('please retype the same password');
+                      return Promise.reject('Please retype the same password');
                     },
                   }),
                 ]}
               >
-                <Input.Password />
+                <Input.Password onPressEnter={form.submit} />
               </Form.Item>
 
               <Form.Item
@@ -293,8 +229,7 @@ const Index = () => {
               >
                 <Button
                   type="primary"
-                  htmlType="submit"
-                  // onClick={onSubmit}
+                  onClick={form.submit}
                   loading={submitting}
                 >
                   Submit
@@ -303,8 +238,6 @@ const Index = () => {
             </Form>
           ) : (
             <Form
-              // form={form}
-              // onFinish={submit}
               name="login_OTP_code"
               labelCol={{ span: 7 }}
               wrapperCol={{ span: 17 }}
