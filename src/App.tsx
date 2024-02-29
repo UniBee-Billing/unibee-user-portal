@@ -13,7 +13,7 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
-import { useMerchantInfoStore } from './stores';
+import { useMerchantInfoStore, useProfileStore } from './stores';
 
 import Invoices from './components/invoices';
 import Login from './components/login';
@@ -62,6 +62,7 @@ const noSiderRoutes = [
 
 const App: React.FC = () => {
   const merchantStore = useMerchantInfoStore();
+  const profileStore = useProfileStore();
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [activeMenuItem, setActiveMenuItem] = useState<string[]>(['/profile']);
@@ -178,12 +179,15 @@ const App: React.FC = () => {
               onClick={onItemClick}
               // onOpenChange={(keys) => console.log("on open change: ", keys)}
             />
-            <div
-              onClick={logout}
-              className="absolute bottom-24 flex w-full cursor-pointer items-center justify-center text-gray-50"
-            >
-              <LogoutOutlined />
-              &nbsp;&nbsp;Logout
+            <div className="absolute bottom-20 flex w-full flex-col items-center justify-center text-gray-50">
+              <div className="flex flex-col items-center">
+                <div className="text-xs">{profileStore.email}</div>
+                <div>{`${profileStore.firstName} ${profileStore.lastName}`}</div>
+              </div>
+              <div onClick={logout} className=" my-4 cursor-pointer">
+                <LogoutOutlined />
+                &nbsp;&nbsp;Logout
+              </div>
             </div>
           </Sider>
           <Layout>
