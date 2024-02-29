@@ -74,16 +74,17 @@ export const useMerchantInfoStore = create<MerchantInfoSlice>()(
 
 // --------------------------------
 const INITIAL_APP_VALUE: IAppConfig = {
-  SupportCurrency: [],
-  SupportTimeZone: [],
-  MerchantId: -1,
-  MerchantInfo: INITIAL_INFO,
-  Gateway: [],
+  env: 'local',
+  isProd: false,
+  supportCurrency: [],
+  supportTimeZone: [],
+  gateway: [],
 };
 
 interface AppConfigSlice extends IAppConfig {
   getAppConfig: () => IAppConfig;
   setAppConfig: (a: IAppConfig) => void;
+  setGateway: (g: any) => void;
 }
 
 export const useAppConfigStore = create<AppConfigSlice>()(
@@ -92,7 +93,36 @@ export const useAppConfigStore = create<AppConfigSlice>()(
       ...INITIAL_APP_VALUE,
       getAppConfig: () => get(),
       setAppConfig: (a) => set({ ...a }),
+      setGateway: (g: any) => {
+        // let a = get();
+        set({ ...get(), gateway: g });
+      },
     }),
     { name: 'appConfig' },
+  ),
+);
+
+// ---------------
+interface ISession {
+  expired: boolean;
+  refresh: null | (() => void); // if session is expired when making an async fn call, save this fn here, so after re-login, re-run this fn
+}
+const INITIAL_SESSION: ISession = {
+  expired: true,
+  refresh: null,
+};
+interface SessionStoreSlice extends ISession {
+  getSession: () => ISession;
+  setSession: (s: ISession) => void;
+}
+
+export const useSessionStore = create<SessionStoreSlice>()(
+  persist(
+    (set, get) => ({
+      ...INITIAL_SESSION,
+      getSession: () => get(),
+      setSession: (a) => set({ ...a }),
+    }),
+    { name: 'session' },
   ),
 );

@@ -553,7 +553,7 @@ const SubReminder = ({
             <a href={sub!.link} target="_blank">
               checkout page
             </a>{' '}
-            to finishe the payment within 3 days. If you haven't finished the
+            to finish the payment within 3 days. If you haven't finished the
             payment within 3 days, your subscription will be cancelled, or you
             can{' '}
             <Button type="link" style={{ padding: '0' }} onClick={toggleModal}>

@@ -6,6 +6,7 @@ import {
   forgetPassReq,
   forgetPassVerifyReq,
   getAppConfigReq,
+  initializeReq,
   loginWithPasswordReq,
 } from '../../requests';
 import { useAppConfigStore, useProfileStore } from '../../stores';
@@ -60,36 +61,31 @@ const Index = ({
   const onSubmit = async () => {
     setErrMsg('');
     setSubmitting(true);
-    try {
-      const loginRes = await loginWithPasswordReq(form.getFieldsValue());
-      console.log('login res: ', loginRes);
-      if (loginRes.data.code != 0) {
-        throw new Error(loginRes.data.message);
-      }
-      localStorage.setItem('token', loginRes.data.data.Token);
-      loginRes.data.data.User.token = loginRes.data.data.Token;
-      profileStore.setProfile(loginRes.data.data.User);
-
-      const appConfigRes = await getAppConfigReq();
+    const [loginRes, errLogin] = await loginWithPasswordReq(
+      form.getFieldsValue(),
+    );
+    if (null != errLogin) {
+      setErrMsg(errLogin.message);
       setSubmitting(false);
-      console.log('app config res: ', appConfigRes);
-      if (appConfigRes.data.code != 0) {
-        throw new Error(appConfigRes.data.message);
-      }
-      appConfigStore.setAppConfig(appConfigRes.data.data);
-
-      navigate(`${APP_PATH}profile/subscription`, {
-        state: { from: 'login' },
-      });
-    } catch (err) {
-      setSubmitting(false);
-      if (err instanceof Error) {
-        console.log('login err: ', err.message);
-        setErrMsg(err.message);
-      } else {
-        setErrMsg('Unknown error');
-      }
+      return;
     }
+    const { User, Token } = loginRes;
+    localStorage.setItem('token', Token);
+    User.token = Token;
+    profileStore.setProfile(User);
+
+    const [initRes, errInit] = await initializeReq();
+    setSubmitting(false);
+    if (null != errInit) {
+      setErrMsg(errInit.message);
+      return;
+    }
+    const { appConfig, gateways } = initRes;
+    appConfigStore.setAppConfig(appConfig);
+    appConfigStore.setGateway(gateways);
+    navigate(`${APP_PATH}profile/subscription`, {
+      state: { from: 'login' },
+    });
   };
 
   useEffect(() => {
@@ -110,7 +106,7 @@ const Index = ({
       <Form
         form={form}
         onFinish={onSubmit}
-        name="login-password"
+        name="login-with-password"
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
         style={{ maxWidth: 640, width: 360, position: 'relative' }}

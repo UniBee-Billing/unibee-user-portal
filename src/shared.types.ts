@@ -32,11 +32,11 @@ type TMerchantInfo = {
 };
 
 interface IAppConfig {
-  SupportCurrency: { Currency: string; Symbol: string; Scale: number }[];
-  SupportTimeZone: string[];
-  MerchantId: number;
-  MerchantInfo: TMerchantInfo;
-  Gateway: { gatewayId: number; gatewayName: string }[];
+  env: string;
+  isProd: boolean;
+  supportTimeZone: string[];
+  supportCurrency: { Currency: string; Symbol: string; Scale: number }[];
+  gateway: { gatewayId: number; gatewayName: string; gatewayLogo: string }[];
 }
 
 type Country = {

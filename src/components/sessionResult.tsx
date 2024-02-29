@@ -38,13 +38,14 @@ export default function SessionResult() {
       res.data.data.User.token = res.data.data.Token;
       profileStore.setProfile(res.data.data.User);
 
-      const appConfigRes = await getAppConfigReq();
-      console.log('app config res: ', appConfigRes);
-      if (appConfigRes.data.code != 0) {
-        throw new Error(appConfigRes.data.message);
+      const [appConfig, errConfig] = await getAppConfigReq();
+      console.log('app config res: ', appConfig);
+      if (null != errConfig) {
+        message.error(errConfig.message);
+        return;
       }
 
-      appConfigStore.setAppConfig(appConfigRes.data.data);
+      appConfigStore.setAppConfig(appConfig);
       navigate(`${APP_PATH}profile/subscription`, {
         state: { from: 'login' },
       });

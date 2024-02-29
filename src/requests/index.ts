@@ -1,6 +1,28 @@
 import { IProfile } from '../shared.types';
-import { useAppConfigStore, useProfileStore } from '../stores';
+import { useAppConfigStore, useProfileStore, useSessionStore } from '../stores';
 import { request } from './client';
+
+// after login, we need merchantInfo, appConfig, payment gatewayInfo, etc.
+// this fn get all these data in one go.
+export const initializeReq = async () => {
+  const [
+    [appConfig, errConfig],
+    [gateways, errGateway],
+    // [merchantInfo, errMerchant],
+  ] = await Promise.all([
+    getAppConfigReq(),
+    getGatewayListReq(),
+    // getMerchantInfoReq(),
+  ]);
+  if (null != errConfig) {
+    return [null, errConfig];
+  } else if (null != errGateway) {
+    return [null, errGateway];
+  }
+  return [{ appConfig, gateways }, null];
+};
+
+// http://127.0.0.1:8088/unib/user/gateway/list
 
 // ------------
 type TSignupReq = {
@@ -27,7 +49,17 @@ type TPassLogin = {
   password: string;
 };
 export const loginWithPasswordReq = async (body: TPassLogin) => {
-  return await request.post(`/user/auth/sso/login`, body);
+  try {
+    const res = await request.post(`/user/auth/sso/login`, body);
+    if (res.data.code != 0) {
+      throw new Error(res.data.message);
+    }
+    // const {Token, User} = res.data.data
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const loginWithOTPReq = async (email: string) => {
@@ -87,14 +119,65 @@ export const saveProfile = async (newProfile: IProfile) => {
 };
 
 export const getAppConfigReq = async () => {
-  return await request.post(`/system/merchant/merchant_information`);
+  const session = useSessionStore.getState();
+  try {
+    const res = await request.post(`/system/merchant/merchant_information`, {});
+    console.log('app config res: ', res);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    if (res.data.code != 0) {
+      throw new Error(res.data.message);
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+export const getMerchantInfoReq = async () => {
+  const session = useSessionStore.getState();
+  try {
+    const res = await request.get(`/merchant/merchant_info/info`);
+    console.log('merchant info res: ', res);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    if (res.data.code != 0) {
+      throw new Error(res.data.message);
+    }
+    return [res.data.data.MerchantInfo, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+export const getGatewayListReq = async () => {
+  const session = useSessionStore.getState();
+  try {
+    const res = await request.get(`/user/gateway/list`);
+    console.log('gateway res: ', res);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    if (res.data.code != 0) {
+      throw new Error(res.data.message);
+    }
+    return [res.data.data.gateways, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const getSublist = async ({ page = 0 }: { page: number }) => {
   const profile = useProfileStore.getState();
-  const appConfig = useAppConfigStore.getState();
   const body = {
-    merchantId: appConfig.MerchantId,
     userId: profile.id,
     // status: 0,
     page,
@@ -105,9 +188,7 @@ export const getSublist = async ({ page = 0 }: { page: number }) => {
 
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
-  const appConfig = useAppConfigStore.getState();
   return await request.post(`/user/subscription/subscription_list`, {
-    merchantId: appConfig.MerchantId,
     userId: profile.id,
     status: 2, // active subscription
     page: 0,
@@ -116,9 +197,7 @@ export const getActiveSub = async () => {
 };
 
 export const getPlanList = async () => {
-  const appConfig = useAppConfigStore.getState();
   return await request.post(`/user/plan/subscription_plan_list`, {
-    merchantId: appConfig.MerchantId,
     page: 0,
     count: 100,
     // type: 1,
@@ -131,11 +210,12 @@ export const createUpdatePreviewReq = async (
   addons: { quantity: number; addonPlanId: number }[],
   subscriptionId: string | null,
 ) => {
+  const appConfig = useAppConfigStore.getState();
   const urlPath = 'subscription_update_preview';
   const body = {
     subscriptionId,
     // userId: profile.id,
-    gatewayId: 25,
+    gatewayId: appConfig.gateway[0].gatewayId,
     // planId,
     newPlanId: planId,
     quantity: 1,
@@ -152,10 +232,11 @@ export const createPreviewReq = async (
   vatCountryCode: string | null,
 ) => {
   const profile = useProfileStore.getState();
+  const appConfig = useAppConfigStore.getState();
   const urlPath = 'subscription_create_preview';
   const body = {
     userId: profile.id,
-    gatewayId: 25,
+    gatewayId: appConfig.gateway[0].gatewayId,
     planId,
     newPlanId: planId,
     quantity: 1,
@@ -199,10 +280,11 @@ export const createSubscription = async (
   vatNumber: string,
 ) => {
   const profile = useProfileStore.getState();
+  const appConfig = useAppConfigStore.getState();
   const body = {
     planId,
     quantity: 1,
-    gatewayId: 25,
+    gatewayId: appConfig.gateway[0].gatewayId,
     UserId: profile.id,
     addonParams: addons,
     confirmTotalAmount,
@@ -218,8 +300,7 @@ export const createSubscription = async (
 };
 
 export const vatNumberCheckReq = async (vatNumber: string) => {
-  const appConfig = useAppConfigStore.getState();
-  const body = { merchantId: appConfig.MerchantId, vatNumber };
+  const body = { vatNumber };
   return await request.post(`/user/vat/vat_number_validate`, body);
 };
 
@@ -268,9 +349,6 @@ export const cancelSubReq = async (subscriptionId: string) => {
 };
 
 export const getCountryList = async () => {
-  const appConfig = useAppConfigStore.getState();
-  const body = {
-    merchantId: appConfig.MerchantId,
-  };
+  const body = {};
   return await request.post(`/user/vat/vat_country_list`, body);
 };

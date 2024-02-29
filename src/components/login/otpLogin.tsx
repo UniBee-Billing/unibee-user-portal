@@ -208,13 +208,14 @@ const OTPForm = ({
       profileStore.setProfile(loginRes.data.data.User);
       console.log('otp verified user: ', loginRes.data.data.User);
 
-      const appConfigRes = await getAppConfigReq();
+      const [appConfig, errConfig] = await getAppConfigReq();
       setSubmitting(false);
-      console.log('app config res: ', appConfigRes);
-      if (appConfigRes.data.code != 0) {
-        throw new Error(appConfigRes.data.message);
+      console.log('app config res: ', appConfig);
+      if (null != errConfig) {
+        setErrMsg(errConfig.message);
+        return;
       }
-      appConfigStore.setAppConfig(appConfigRes.data.data);
+      appConfigStore.setAppConfig(appConfig);
 
       navigate(`${APP_PATH}profile/subscription`, {
         state: { from: 'login' },
