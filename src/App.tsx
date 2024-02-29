@@ -13,6 +13,7 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
+import { useMerchantInfoStore } from './stores';
 
 import Invoices from './components/invoices';
 import Login from './components/login';
@@ -60,6 +61,7 @@ const noSiderRoutes = [
 ];
 
 const App: React.FC = () => {
+  const merchantStore = useMerchantInfoStore();
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [activeMenuItem, setActiveMenuItem] = useState<string[]>(['/profile']);
@@ -162,7 +164,10 @@ const App: React.FC = () => {
                 justifyContent: 'center',
               }}
             >
-              <img src={`${APP_PATH}multiloginLogo.png`} height={'80px'} />
+              <img
+                src={`${merchantStore.companyLogo || APP_PATH + 'logoPlaceholder.png'}`}
+                height={'80px'}
+              />
             </div>
             <Menu
               theme="dark"

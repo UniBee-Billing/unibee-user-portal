@@ -8,21 +8,18 @@ export const initializeReq = async () => {
   const [
     [appConfig, errConfig],
     [gateways, errGateway],
-    // [merchantInfo, errMerchant],
+    [merchantInfo, errMerchant],
   ] = await Promise.all([
     getAppConfigReq(),
     getGatewayListReq(),
-    // getMerchantInfoReq(),
+    getMerchantInfoReq(),
   ]);
-  if (null != errConfig) {
-    return [null, errConfig];
-  } else if (null != errGateway) {
-    return [null, errGateway];
+  let err = errConfig || errGateway || errMerchant;
+  if (null != err) {
+    return [null, err];
   }
-  return [{ appConfig, gateways }, null];
+  return [{ appConfig, gateways, merchantInfo }, null];
 };
-
-// http://127.0.0.1:8088/unib/user/gateway/list
 
 // ------------
 type TSignupReq = {
@@ -140,7 +137,7 @@ export const getAppConfigReq = async () => {
 export const getMerchantInfoReq = async () => {
   const session = useSessionStore.getState();
   try {
-    const res = await request.get(`/merchant/merchant_info/info`);
+    const res = await request.get(`/user/merchant/info`);
     console.log('merchant info res: ', res);
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null });

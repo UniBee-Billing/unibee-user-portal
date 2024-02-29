@@ -9,7 +9,11 @@ import {
   initializeReq,
   loginWithPasswordReq,
 } from '../../requests';
-import { useAppConfigStore, useProfileStore } from '../../stores';
+import {
+  useAppConfigStore,
+  useMerchantInfoStore,
+  useProfileStore,
+} from '../../stores';
 const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = ({
@@ -21,6 +25,7 @@ const Index = ({
 }) => {
   const profileStore = useProfileStore();
   const appConfigStore = useAppConfigStore();
+  const merchantStore = useMerchantInfoStore();
   const [errMsg, setErrMsg] = useState('');
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false); // login submit
@@ -80,9 +85,10 @@ const Index = ({
       setErrMsg(errInit.message);
       return;
     }
-    const { appConfig, gateways } = initRes;
+    const { appConfig, gateways, merchantInfo } = initRes;
     appConfigStore.setAppConfig(appConfig);
     appConfigStore.setGateway(gateways);
+    merchantStore.setMerchantInfo(merchantInfo);
     navigate(`${APP_PATH}profile/subscription`, {
       state: { from: 'login' },
     });

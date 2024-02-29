@@ -26,6 +26,7 @@ type TMerchantInfo = {
   companyId: string;
   companyLogo: string;
   companyName: string;
+  host: string;
   email: string;
   location: string;
   phone: string;

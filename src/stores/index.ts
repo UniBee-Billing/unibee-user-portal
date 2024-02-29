@@ -51,6 +51,7 @@ const INITIAL_INFO: TMerchantInfo = {
   companyId: '',
   companyLogo: '',
   companyName: '',
+  host: '',
   email: '',
   location: '',
   phone: '',

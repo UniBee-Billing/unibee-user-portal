@@ -110,17 +110,6 @@ const Index = () => {
                       quantity: a.quantity,
                     })),
               user: s.user,
-              /*
-                id: s.subscription.id,
-                subscriptionId: s.subscription.subscriptionId,
-                addons: "",
-                amount: s.subscription.amount,
-                currency: s.subscription.currency,
-                gatewayId: s.subscription.gatewayId,
-                firstPaidTime: s.subscription.firstPaidTime,
-                currentPeriodEnd: s.subscription.currentPeriodEnd,
-                currentPeriodStart: s.subscription.currentPeriodStart,
-                */
             };
           });
     console.log('final sub: ', sub);
