@@ -1,4 +1,4 @@
-import { Button, Modal, Spin, message } from 'antd';
+import { Button, Empty, Modal, Spin, message } from 'antd';
 import update from 'immutability-helper';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -209,7 +209,6 @@ const Index = () => {
       }
     }
     setPlans(plans);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -346,16 +345,22 @@ const Index = () => {
       }
 
       <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
-        {plans.map((p) => (
-          <Plan
-            key={p.id}
-            plan={p}
-            selectedPlan={selectedPlan}
-            setSelectedPlan={setSelectedPlan}
-            onAddonChange={onAddonChange}
-            isActive={p.id == activeSub?.planId}
-          />
-        ))}
+        {plans.length == 0 && !loading ? (
+          <div className="flex w-full items-center justify-center">
+            <Empty description="No plan" />
+          </div>
+        ) : (
+          plans.map((p) => (
+            <Plan
+              key={p.id}
+              plan={p}
+              selectedPlan={selectedPlan}
+              setSelectedPlan={setSelectedPlan}
+              onAddonChange={onAddonChange}
+              isActive={p.id == activeSub?.planId}
+            />
+          ))
+        )}
       </div>
       <div
         style={{
@@ -365,19 +370,21 @@ const Index = () => {
           margin: '48px',
         }}
       >
-        <Button
-          type="primary"
-          onClick={onPlanConfirm}
-          // disabled={selectedPlan == null || activeSub?.status != 2}
-          disabled={
-            selectedPlan == null ||
-            activeSub?.status == 0 || // initiating
-            activeSub?.status == 1 || // created (not paid)
-            activeSub?.status == 3 // pending (payment in processing)
-          }
-        >
-          Confirm
-        </Button>
+        {plans.length > 0 && (
+          <Button
+            type="primary"
+            onClick={onPlanConfirm}
+            // disabled={selectedPlan == null || activeSub?.status != 2}
+            disabled={
+              selectedPlan == null ||
+              activeSub?.status == 0 || // initiating
+              activeSub?.status == 1 || // created (not paid)
+              activeSub?.status == 3 // pending (payment in processing)
+            }
+          >
+            Confirm
+          </Button>
+        )}
         {/* 
         &nbsp;&nbsp;&nbsp;&nbsp;
         <Button
