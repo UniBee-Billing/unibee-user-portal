@@ -32,7 +32,7 @@ const Index = () => (
           gap: '12px',
         }}
       >
-        <span>Copyright © 2024 Multilogin, Inc.</span>
+        <span>Copyright © 2024</span>
       </div>
     </div>
   </div>

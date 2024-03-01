@@ -246,7 +246,7 @@ const App: React.FC = () => {
                 </Routes>
               </div>
             </Content>
-            <Footer style={{ textAlign: 'center' }}>Multilogin ©2024</Footer>
+            <Footer style={{ textAlign: 'center' }}>Copyright © 2024</Footer>
           </Layout>
         </Layout>
       )}
