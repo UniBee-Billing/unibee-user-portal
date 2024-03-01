@@ -12,7 +12,8 @@ const Index = () => (
   >
     <div>
       <img
-        src={`${APP_PATH}Multilogin-logo-white-horizontal.svg`}
+        // src={`${APP_PATH}Multilogin-logo-white-horizontal.svg`}
+        src={`${APP_PATH}UniBeeLogo.png`}
         height={'36px'}
       />
     </div>
