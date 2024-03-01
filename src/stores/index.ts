@@ -95,7 +95,6 @@ export const useAppConfigStore = create<AppConfigSlice>()(
       getAppConfig: () => get(),
       setAppConfig: (a) => set({ ...a }),
       setGateway: (g: any) => {
-        // let a = get();
         set({ ...get(), gateway: g });
       },
     }),

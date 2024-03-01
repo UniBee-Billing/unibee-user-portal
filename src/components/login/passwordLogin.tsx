@@ -13,6 +13,7 @@ import {
   useAppConfigStore,
   useMerchantInfoStore,
   useProfileStore,
+  useSessionStore,
 } from '../../stores';
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -24,6 +25,7 @@ const Index = ({
   onEmailChange: (value: string) => void;
 }) => {
   const profileStore = useProfileStore();
+  const sessionStore = useSessionStore();
   const appConfigStore = useAppConfigStore();
   const merchantStore = useMerchantInfoStore();
   const [errMsg, setErrMsg] = useState('');
@@ -78,6 +80,7 @@ const Index = ({
     localStorage.setItem('token', Token);
     User.token = Token;
     profileStore.setProfile(User);
+    sessionStore.setSession({ expired: false, refresh: null });
 
     const [initRes, errInit] = await initializeReq();
     setSubmitting(false);

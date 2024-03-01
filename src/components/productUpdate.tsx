@@ -127,6 +127,7 @@ const Index = () => {
         }
       });
     } catch (err) {
+      setLoading(false);
       if (err instanceof Error) {
         console.log('err: ', err.message);
         message.error(err.message);
@@ -135,6 +136,8 @@ const Index = () => {
       }
       return;
     }
+
+    setLoading(false);
     console.log('subList/planList: ', subListRes, '//', planListRes);
 
     let sub;
@@ -163,25 +166,28 @@ const Index = () => {
       setSelectedPlan(sub.subscription.planId);
     }
 
-    let plans: IPlan[] = planListRes.data.data.Plans.map((p: any) => {
-      const p2 = p.plan;
-      if (p.plan.type == 2) {
-        // addon plan
-        return null;
-      }
-      return {
-        id: p2.id,
-        planName: p2.planName,
-        description: p2.description,
-        type: p2.type,
-        amount: p2.amount,
-        currency: p2.currency,
-        intervalUnit: p2.intervalUnit,
-        intervalCount: p2.intervalCount,
-        status: p2.status,
-        addons: p.addons,
-      };
-    });
+    let plans: IPlan[] =
+      planListRes.data.data.Plans == null
+        ? []
+        : planListRes.data.data.Plans.map((p: any) => {
+            const p2 = p.plan;
+            if (p.plan.type == 2) {
+              // addon plan
+              return null;
+            }
+            return {
+              id: p2.id,
+              planName: p2.planName,
+              description: p2.description,
+              type: p2.type,
+              amount: p2.amount,
+              currency: p2.currency,
+              intervalUnit: p2.intervalUnit,
+              intervalCount: p2.intervalCount,
+              status: p2.status,
+              addons: p.addons,
+            };
+          });
     plans = plans.filter((p) => p != null);
 
     if (localActiveSub != null) {
