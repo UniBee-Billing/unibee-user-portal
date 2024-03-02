@@ -194,7 +194,7 @@ export const getActiveSub = async () => {
 };
 
 export const getPlanList = async () => {
-  return await request.post(`/user/plan/subscription_plan_list`, {
+  return await request.post(`/user/plan/list`, {
     page: 0,
     count: 100,
     // type: 1,

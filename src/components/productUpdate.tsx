@@ -167,9 +167,9 @@ const Index = () => {
     }
 
     let plans: IPlan[] =
-      planListRes.data.data.Plans == null
+      planListRes.data.data.plans == null
         ? []
-        : planListRes.data.data.Plans.map((p: any) => {
+        : planListRes.data.data.plans.map((p: any) => {
             const p2 = p.plan;
             if (p.plan.type == 2) {
               // addon plan
