@@ -142,12 +142,12 @@ const Index = () => {
 
     let sub;
     if (
-      subListRes.data.data.Subscriptions != null &&
-      subListRes.data.data.Subscriptions[0] != null
+      subListRes.data.data.subscriptions != null &&
+      subListRes.data.data.subscriptions[0] != null
     ) {
       // there is only one active sub at most or null.
       // null: new user(no purchase record), non-null: user has bought one plan, and want to change/upgrade/downgrade
-      sub = subListRes.data.data.Subscriptions[0];
+      sub = subListRes.data.data.subscriptions[0];
       isNewUserRef.current = false;
       // TODO: backup current user's selectedPlan and addons info
     } else {

@@ -60,8 +60,8 @@ const Index = () => {
         throw new Error(saveProfileRes.data.message);
       }
       message.success('saved');
-      setProfile(saveProfileRes.data.data.User);
-      profileStore.setProfile(saveProfileRes.data.data.User);
+      setProfile(saveProfileRes.data.data.user);
+      profileStore.setProfile(saveProfileRes.data.data.user);
     } catch (err) {
       setLoading(false);
       if (err instanceof Error) {
@@ -102,7 +102,7 @@ const Index = () => {
         }
         return;
       }
-      setProfile(profileRes.data.data.User);
+      setProfile(profileRes.data.data.user);
       setCountryList(
         countryListRes.data.data.vatCountryList.map((c: any) => ({
           code: c.countryCode,

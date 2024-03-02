@@ -34,9 +34,9 @@ export default function SessionResult() {
         throw new Error(res.data.message);
       }
       // setLoginStatus(res.data.data.payStatus);
-      localStorage.setItem('token', res.data.data.Token);
-      res.data.data.User.token = res.data.data.Token;
-      profileStore.setProfile(res.data.data.User);
+      localStorage.setItem('token', res.data.data.token);
+      res.data.data.User.token = res.data.data.token;
+      profileStore.setProfile(res.data.data.user);
 
       const [appConfig, errConfig] = await getAppConfigReq();
       console.log('app config res: ', appConfig);

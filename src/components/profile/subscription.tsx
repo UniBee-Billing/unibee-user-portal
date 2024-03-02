@@ -96,9 +96,9 @@ const Index = () => {
     }
 
     const sub: ISubscription[] =
-      subListRes.data.data.Subscriptions == null
+      subListRes.data.data.subscriptions == null
         ? []
-        : subListRes.data.data.Subscriptions.map((s: any) => {
+        : subListRes.data.data.subscriptions.map((s: any) => {
             return {
               ...s.subscription,
               plan: s.plan,

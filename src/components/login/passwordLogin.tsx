@@ -76,10 +76,10 @@ const Index = ({
       setSubmitting(false);
       return;
     }
-    const { User, Token } = loginRes;
-    localStorage.setItem('token', Token);
-    User.token = Token;
-    profileStore.setProfile(User);
+    const { user, token } = loginRes;
+    localStorage.setItem('token', token);
+    user.token = token;
+    profileStore.setProfile(user);
     sessionStore.setSession({ expired: false, refresh: null });
 
     const [initRes, errInit] = await initializeReq();

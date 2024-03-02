@@ -104,21 +104,21 @@ export const forgetPassVerifyReq = async (
 };
 
 export const logoutReq = async () => {
-  return await request.post(`/user/user_logout`, {});
+  return await request.post(`/user/logout`, {});
 };
 
 export const getProfile = async () => {
-  return await request.get(`/user/profile`);
+  return await request.get(`/user/get`);
 };
 
 export const saveProfile = async (newProfile: IProfile) => {
-  return await request.post(`/user/profile`, newProfile);
+  return await request.post(`/user/update`, newProfile);
 };
 
 export const getAppConfigReq = async () => {
   const session = useSessionStore.getState();
   try {
-    const res = await request.post(`/system/information`, {});
+    const res = await request.get(`/system/information/get`, {});
     console.log('app config res: ', res);
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null });
@@ -180,12 +180,12 @@ export const getSublist = async ({ page = 0 }: { page: number }) => {
     page,
     count: 100,
   };
-  return await request.post(`/user/subscription/subscription_list`, body);
+  return await request.post(`/user/subscription/list`, body);
 };
 
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
-  return await request.post(`/user/subscription/subscription_list`, {
+  return await request.post(`/user/subscription/list`, {
     userId: profile.id,
     status: 2, // active subscription
     page: 0,
@@ -208,7 +208,7 @@ export const createUpdatePreviewReq = async (
   subscriptionId: string | null,
 ) => {
   const appConfig = useAppConfigStore.getState();
-  const urlPath = 'subscription_update_preview';
+  const urlPath = 'update_preview';
   const body = {
     subscriptionId,
     // userId: profile.id,
@@ -230,7 +230,7 @@ export const createPreviewReq = async (
 ) => {
   const profile = useProfileStore.getState();
   const appConfig = useAppConfigStore.getState();
-  const urlPath = 'subscription_create_preview';
+  const urlPath = 'create_preview';
   const body = {
     userId: profile.id,
     gatewayId: appConfig.gateway[0].gatewayId,
@@ -252,7 +252,7 @@ export const updateSubscription = async (
   confirmCurrency: string,
   prorationDate: number,
 ) => {
-  // "subscription_create_submit"
+  // "create_submit"
   const body = {
     subscriptionId,
     newPlanId,
@@ -263,7 +263,7 @@ export const updateSubscription = async (
     prorationDate,
   };
   return await request.post(
-    `/user/subscription/subscription_update_submit`,
+    `/user/subscription/update_submit`,
     body,
   );
 };
@@ -291,7 +291,7 @@ export const createSubscription = async (
     vatNumber,
   };
   return await request.post(
-    `/user/subscription/subscription_create_submit`,
+    `/user/subscription/create_submit`,
     body,
   );
 };
@@ -304,7 +304,7 @@ export const vatNumberCheckReq = async (vatNumber: string) => {
 // check payment result
 export const checkPayment = async (subscriptionId: string) => {
   const body = { subscriptionId };
-  return await request.post(`/user/subscription/subscription_pay_check`, body);
+  return await request.post(`/user/subscription/pay_check`, body);
 };
 
 export const checkSession = async (session: string) => {
@@ -314,7 +314,7 @@ export const checkSession = async (session: string) => {
 
 export const terminateSub = async (SubscriptionId: string) => {
   return await request.post(
-    `/user/subscription/subscription_cancel_at_period_end`,
+    `/user/subscription/cancel_at_period_end`,
     { SubscriptionId },
   );
 };
@@ -329,8 +329,8 @@ export const terminateOrResumeSubReq = async ({
   let URL = `/user/subscription/`;
   URL +=
     action == 'TERMINATE'
-      ? 'subscription_cancel_at_period_end'
-      : 'subscription_cancel_last_cancel_at_period_end';
+      ? 'cancel_at_period_end'
+      : 'cancel_last_cancel_at_period_end';
   const body = {
     subscriptionId,
   };
@@ -340,7 +340,7 @@ export const terminateOrResumeSubReq = async ({
 // new user has choosen a sub plan, but not paid yet, befoer the payment due date, user can still cancel it.
 // this fn is for this purpose only, it's not the same for terminate an active sub (which is the above terminateOrResumeSubReq's job).
 export const cancelSubReq = async (subscriptionId: string) => {
-  return await request.post(`/user/subscription/subscription_cancel`, {
+  return await request.post(`/user/subscription/cancel`, {
     subscriptionId,
   });
 };

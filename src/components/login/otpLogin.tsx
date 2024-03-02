@@ -203,10 +203,10 @@ const OTPForm = ({
         setErrMsg(loginRes.data.message);
         throw new Error(loginRes.data.message);
       }
-      localStorage.setItem('token', loginRes.data.data.Token);
-      loginRes.data.data.User.token = loginRes.data.data.Token;
-      profileStore.setProfile(loginRes.data.data.User);
-      console.log('otp verified user: ', loginRes.data.data.User);
+      localStorage.setItem('token', loginRes.data.data.token);
+      loginRes.data.data.User.token = loginRes.data.data.token;
+      profileStore.setProfile(loginRes.data.data.user);
+      console.log('otp verified user: ', loginRes.data.data.user);
 
       const [appConfig, errConfig] = await getAppConfigReq();
       setSubmitting(false);
