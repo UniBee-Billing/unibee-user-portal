@@ -118,7 +118,7 @@ export const saveProfile = async (newProfile: IProfile) => {
 export const getAppConfigReq = async () => {
   const session = useSessionStore.getState();
   try {
-    const res = await request.post(`/system/merchant/merchant_information`, {});
+    const res = await request.post(`/system/information`, {});
     console.log('app config res: ', res);
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null });
@@ -137,7 +137,7 @@ export const getAppConfigReq = async () => {
 export const getMerchantInfoReq = async () => {
   const session = useSessionStore.getState();
   try {
-    const res = await request.get(`/user/merchant/info`);
+    const res = await request.get(`/user/merchant/get`);
     console.log('merchant info res: ', res);
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null });
@@ -146,7 +146,7 @@ export const getMerchantInfoReq = async () => {
     if (res.data.code != 0) {
       throw new Error(res.data.message);
     }
-    return [res.data.data.MerchantInfo, null];
+    return [res.data.data.merchant, null];
   } catch (err) {
     let e = err instanceof Error ? err : new Error('Unknown error');
     return [null, e];
