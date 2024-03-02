@@ -347,5 +347,5 @@ export const cancelSubReq = async (subscriptionId: string) => {
 
 export const getCountryList = async () => {
   const body = {};
-  return await request.post(`/user/vat/vat_country_list`, body);
+  return await request.post(`/user/vat/country_list`, body);
 };
