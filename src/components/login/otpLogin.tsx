@@ -204,7 +204,7 @@ const OTPForm = ({
         throw new Error(loginRes.data.message);
       }
       localStorage.setItem('token', loginRes.data.data.token);
-      loginRes.data.data.User.token = loginRes.data.data.token;
+      loginRes.data.data.user.token = loginRes.data.data.token;
       profileStore.setProfile(loginRes.data.data.user);
       console.log('otp verified user: ', loginRes.data.data.user);
 

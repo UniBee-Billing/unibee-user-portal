@@ -35,7 +35,7 @@ export default function SessionResult() {
       }
       // setLoginStatus(res.data.data.payStatus);
       localStorage.setItem('token', res.data.data.token);
-      res.data.data.User.token = res.data.data.token;
+      res.data.data.user.token = res.data.data.token;
       profileStore.setProfile(res.data.data.user);
 
       const [appConfig, errConfig] = await getAppConfigReq();
