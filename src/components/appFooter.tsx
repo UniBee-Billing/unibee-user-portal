@@ -19,7 +19,6 @@ const Index = () => (
           <GithubOutlined style={{ fontSize: '24px' }} />
           <TwitterOutlined style={{ fontSize: '24px' }} />
           <LinkedinOutlined style={{ fontSize: '24px' }} />
-          <FacebookOutlined style={{ fontSize: '24px' }} />
         </div>
       </Divider>
       <div

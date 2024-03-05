@@ -17,7 +17,7 @@ const Index = () => (
         height={'36px'}
       />
     </div>
-    <ul style={{ marginBottom: '0', display: 'flex', alignItems: 'center' }}>
+    {/* <ul style={{ marginBottom: '0', display: 'flex', alignItems: 'center' }}>
       <li style={{ display: 'inline', marginRight: '16px' }}>
         <span>Home</span>
       </li>
@@ -30,7 +30,7 @@ const Index = () => (
       <li style={{ display: 'inline', marginRight: '0px' }}>
         <Search style={{ width: 120 }} />
       </li>
-    </ul>
+  </ul>*/}
   </div>
 );
 export default Index;

@@ -1,5 +1,5 @@
 {
-  "name": "unibee-front",
+  "name": "unibee-userportal-front",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,8 +13,9 @@
     "@ant-design/icons": "^5.2.6",
     "@stripe/react-stripe-js": "^2.4.0",
     "@stripe/stripe-js": "^2.3.0",
-    "antd": "^5.12.5",
+    "antd": "~5.12.5",
     "axios": "^1.6.3",
+    "currency.js": "^2.0.4",
     "immer": "^10.0.3",
     "immutability-helper": "^3.1.1",
     "react": "^18.2.0",
