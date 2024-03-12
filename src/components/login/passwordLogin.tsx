@@ -1,5 +1,6 @@
+import type { InputRef } from 'antd';
 import { Button, Form, Input, Modal, message } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { emailValidate, passwordRegx } from '../../helpers';
 import {
@@ -20,9 +21,11 @@ const APP_PATH = import.meta.env.BASE_URL;
 const Index = ({
   email,
   onEmailChange,
+  triggeredByExpired,
 }: {
   email: string;
   onEmailChange: (value: string) => void;
+  triggeredByExpired: boolean;
 }) => {
   const profileStore = useProfileStore();
   const sessionStore = useSessionStore();
@@ -37,10 +40,11 @@ const Index = ({
     setForgetPassModalOpen(!forgetPassModalOpen);
   const [form] = Form.useForm();
   const watchEmail = Form.useWatch('email', form);
+  const passwordRef = useRef<InputRef>(null);
+  const emailRef = useRef<InputRef>(null);
 
   const onForgetPass = async () => {
     const isValid = form.getFieldError('email').length == 0;
-    console.log("form.getFieldError('email');: ", form.getFieldError('email'));
     if (!isValid) {
       return;
     }
@@ -82,10 +86,26 @@ const Index = ({
     appConfigStore.setAppConfig(appConfig);
     appConfigStore.setGateway(gateways);
     merchantStore.setMerchantInfo(merchantInfo);
-    navigate(`${APP_PATH}profile/subscription`, {
-      state: { from: 'login' },
-    });
+
+    if (triggeredByExpired) {
+      console.log('expired in password login: ', sessionStore);
+      sessionStore.refresh && sessionStore.refresh();
+      message.success('Login succeeded');
+    } else {
+      navigate(`${APP_PATH}profile/subscription`, {
+        state: { from: 'login' },
+      });
+    }
+    sessionStore.setSession({ expired: false, refresh: null });
   };
+
+  useEffect(() => {
+    if (triggeredByExpired) {
+      passwordRef.current?.focus();
+    } else {
+      emailRef.current?.focus();
+    }
+  }, []);
 
   useEffect(() => {
     if (watchEmail != null) {
@@ -129,7 +149,7 @@ const Index = ({
             }),
           ]}
         >
-          <Input onPressEnter={form.submit} />
+          <Input onPressEnter={form.submit} ref={emailRef} />
         </Form.Item>
 
         <Form.Item
@@ -142,7 +162,7 @@ const Index = ({
             },
           ]}
         >
-          <Input.Password onPressEnter={form.submit} />
+          <Input.Password onPressEnter={form.submit} ref={passwordRef} />
         </Form.Item>
 
         <div style={{ position: 'absolute', right: '-130px', top: '56px' }}>

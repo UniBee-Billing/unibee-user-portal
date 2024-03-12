@@ -7,7 +7,7 @@ interface IProfile {
   facebook: string;
   firstName: string;
   lastName: string;
-  id: number;
+  id: number | null;
   phone: string;
   paymentMethod: string;
   linkedIn: string;

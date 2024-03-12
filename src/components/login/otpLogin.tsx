@@ -22,9 +22,11 @@ const APP_PATH = import.meta.env.BASE_URL;
 const Index = ({
   email,
   onEmailChange,
+  triggeredByExpired,
 }: {
   email: string;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  triggeredByExpired: boolean;
 }) => {
   const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
   const [errMailMsg, setErrMailMsg] = useState('');
@@ -70,6 +72,7 @@ const Index = ({
           goBack={goBackForward}
           counting={counting}
           countVal={countVal}
+          triggeredByExpired={triggeredByExpired}
         />
       )}
     </div>
@@ -163,6 +166,7 @@ interface IOtpFormProps {
   countVal: number;
   sendMailaddress: () => Promise<any>;
   goBack: () => void;
+  triggeredByExpired: boolean;
 }
 
 const NUM_INPUTS = 6;
@@ -174,6 +178,7 @@ const OTPForm = ({
   countVal,
   sendMailaddress,
   goBack,
+  triggeredByExpired,
 }: IOtpFormProps) => {
   const navigate = useNavigate();
   const merchantStore = useMerchantInfoStore();
@@ -218,9 +223,16 @@ const OTPForm = ({
     appConfigStore.setAppConfig(appConfig);
     appConfigStore.setGateway(gateways);
     merchantStore.setMerchantInfo(merchantInfo);
-    navigate(`${APP_PATH}profile/subscription`, {
-      state: { from: 'login' },
-    });
+
+    if (triggeredByExpired) {
+      sessionStore.refresh && sessionStore.refresh();
+      message.success('Login succeeded');
+    } else {
+      navigate(`${APP_PATH}profile/subscription`, {
+        state: { from: 'login' },
+      });
+    }
+    sessionStore.setSession({ expired: false, refresh: null });
   };
 
   return (

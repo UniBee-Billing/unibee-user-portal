@@ -22,6 +22,7 @@ import {
 
 import Invoices from './components/invoices';
 import Login from './components/login';
+import LoginModal from './components/login/LoginModal';
 import NotFound from './components/notFound';
 import PaymentResult from './components/paymentResult';
 import ProductsUpdate from './components/productUpdate';
@@ -70,6 +71,7 @@ const App: React.FC = () => {
   const profileStore = useProfileStore();
   const sessionStore = useSessionStore();
   const appConfig = useAppConfigStore();
+  const [openLoginModal, setOpenLoginModal] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [activeMenuItem, setActiveMenuItem] = useState<string[]>(['/profile']);
@@ -142,6 +144,19 @@ const App: React.FC = () => {
     }
   }, [location]);
 
+  useEffect(() => {
+    if (sessionStore.expired) {
+      if (null == profileStore.id) {
+        // is it better to use email?
+        navigate(`${APP_PATH}login`);
+      } else {
+        setOpenLoginModal(true);
+      }
+    } else {
+      setOpenLoginModal(false);
+    }
+  }, [sessionStore.expired]);
+
   return (
     <>
       {noSiderRoutes.findIndex((r) => r == location.pathname) != -1 ? (
@@ -161,6 +176,8 @@ const App: React.FC = () => {
         </Layout>
       ) : (
         <Layout style={{ minHeight: '100vh' }}>
+          {openLoginModal && <LoginModal email={profileStore.email} />}
+
           <Sider
             collapsible
             collapsed={collapsed}

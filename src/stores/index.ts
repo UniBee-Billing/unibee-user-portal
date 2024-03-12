@@ -13,7 +13,7 @@ const INITIAL_PROFILE: IProfile = {
   lastName: '',
   countryCode: '',
   countryName: '',
-  id: 0,
+  id: null,
   phone: '',
   paymentMethod: '',
   linkedIn: '',

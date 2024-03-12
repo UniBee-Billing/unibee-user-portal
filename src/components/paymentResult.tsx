@@ -25,7 +25,6 @@ export default function PaymentResult() {
   const [messageApi, contextHolder] = message.useMessage();
   const [payStatus, setPayStatus] = useState<number | null>(null);
   const subscriptionId = searchParams.get('subId');
-  console.log('subId: ', subscriptionId);
 
   const checking = async () => {
     const [chkPayemntRes, err] = await checkPaymentReq(
@@ -35,7 +34,7 @@ export default function PaymentResult() {
       message.error(err.message);
       return;
     }
-    const [payStatus] = chkPayemntRes;
+    const { payStatus } = chkPayemntRes;
     setPayStatus(payStatus);
   };
 

@@ -282,7 +282,7 @@ export const getActiveSub = async () => {
     });
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null });
-      throw new Error('Session expired');
+      throw new ExpiredError('Session expired');
     }
     return [res.data.data.subscriptions, null];
   } catch (err) {
@@ -300,7 +300,7 @@ export const getPlanList = async () => {
     });
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null });
-      throw new Error('Session expired');
+      throw new ExpiredError('Session expired');
     }
     return [res.data.data.plans, null];
   } catch (err) {
@@ -309,10 +309,20 @@ export const getPlanList = async () => {
   }
 };
 
-export const getActiveSubWithMore = async (refreshCb: (() => void) | null) => {
+export const getActiveSubWithMore = async (refreshCb: () => void) => {
   const [[subscriptions, errSubDetail], [plans, errPlanList]] =
     await Promise.all([getActiveSub(), getPlanList()]);
   const err = errSubDetail || errPlanList;
+  console.log(
+    'err: ',
+    err,
+    '//',
+    err instanceof ExpiredError,
+    '///',
+    err instanceof Error,
+    '////',
+    refreshCb,
+  );
   if (null != err) {
     if (err instanceof ExpiredError) {
       session.setSession({ expired: true, refresh: refreshCb });
@@ -332,7 +342,6 @@ export const createUpdatePreviewReq = async (
   const urlPath = 'update_preview';
   const body = {
     subscriptionId,
-    // userId: profile.id,
     gatewayId: appConfig.gateway[0].gatewayId,
     // planId,
     newPlanId: planId,
