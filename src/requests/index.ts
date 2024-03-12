@@ -163,8 +163,8 @@ export const getProfileReq = async () => {
   try {
     const res = await request.get(`/user/get`);
     if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null });
-      throw new Error('Session expired');
+      //  session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
     }
     return [res.data.data.user, null];
   } catch (err) {
@@ -281,7 +281,7 @@ export const getActiveSub = async () => {
       count: 100,
     });
     if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null });
+      // session.setSession({ expired: true, refresh: null });
       throw new ExpiredError('Session expired');
     }
     return [res.data.data.subscriptions, null];
@@ -299,7 +299,7 @@ export const getPlanList = async () => {
       // type: 1,
     });
     if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null });
+      // session.setSession({ expired: true, refresh: null });
       throw new ExpiredError('Session expired');
     }
     return [res.data.data.plans, null];
@@ -313,16 +313,6 @@ export const getActiveSubWithMore = async (refreshCb: () => void) => {
   const [[subscriptions, errSubDetail], [plans, errPlanList]] =
     await Promise.all([getActiveSub(), getPlanList()]);
   const err = errSubDetail || errPlanList;
-  console.log(
-    'err: ',
-    err,
-    '//',
-    err instanceof ExpiredError,
-    '///',
-    err instanceof Error,
-    '////',
-    refreshCb,
-  );
   if (null != err) {
     if (err instanceof ExpiredError) {
       session.setSession({ expired: true, refresh: refreshCb });
@@ -557,8 +547,8 @@ export const getCountryList = async () => {
   try {
     const res = await request.post(`/user/vat/country_list`, body);
     if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null });
-      throw new Error('Session expired');
+      // session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
     }
     return [res.data.data.vatCountryList, null];
   } catch (err) {

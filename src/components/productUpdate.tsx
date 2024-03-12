@@ -15,12 +15,9 @@ import CancelSubModal from './modals/modalCancelPendingSub';
 import CreateSubModal from './modals/modalCreateSub';
 import UpdatePlanModal from './modals/modalUpdateSub';
 
-const APP_PATH = import.meta.env.BASE_URL;
-
 const Index = () => {
   const profileStore = useProfileStore();
   // const appConfigStore = useAppConfigStore();
-  const navigate = useNavigate();
   const [plans, setPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
   const [countryList, setCountryList] = useState<Country[]>([]);
@@ -37,11 +34,6 @@ const Index = () => {
   // this modal is for this purpose only.
   // It's not the same as 'terminate an active sub'.
   const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
-
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
 
   const toggleCreateModal = () => setCreateModalOpen(!createModalOpen); // Modal for first time plan choosing
   const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen); // Modal for update plan

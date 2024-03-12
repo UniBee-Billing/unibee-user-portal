@@ -16,8 +16,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { passwordRegx } from '../../helpers';
 import {
-  getCountryList,
-  getProfileReq,
   getProfileWithMoreReq,
   logoutReq,
   resetPassReq,

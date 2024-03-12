@@ -74,7 +74,7 @@ const Index = ({
     localStorage.setItem('token', token);
     user.token = token;
     profileStore.setProfile(user);
-    sessionStore.setSession({ expired: false, refresh: null });
+    // sessionStore.setSession({ expired: false, refresh: null });
 
     const [initRes, errInit] = await initializeReq();
     setSubmitting(false);

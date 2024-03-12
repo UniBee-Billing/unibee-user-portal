@@ -1,7 +1,10 @@
-import { Modal } from 'antd'
-import LoginContainer from './loginContainer'
+import { Modal } from 'antd';
+import { useSessionStore } from '../../stores';
+import LoginContainer from './loginContainer';
 
 const Index = ({ email }: { email: string }) => {
+  const session = useSessionStore();
+  console.log('sessin in password login modal: ', session);
   return (
     <Modal
       title="Session expired"
@@ -12,7 +15,7 @@ const Index = ({ email }: { email: string }) => {
     >
       <LoginContainer triggeredByExpired={true} initialEmail={email} />
     </Modal>
-  )
-}
+  );
+};
 
-export default Index
+export default Index;
