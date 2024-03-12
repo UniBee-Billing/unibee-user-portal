@@ -1,6 +1,8 @@
-import { IProfile } from '../shared.types';
+import { ExpiredError, IProfile } from '../shared.types';
 import { useAppConfigStore, useProfileStore, useSessionStore } from '../stores';
 import { request } from './client';
+
+const session = useSessionStore.getState();
 
 // after login, we need merchantInfo, appConfig, payment gatewayInfo, etc.
 // this fn get all these data in one go.
@@ -29,16 +31,28 @@ type TSignupReq = {
   password: string;
 };
 export const signUpReq = async (body: TSignupReq) => {
-  return await request.post(`/user/auth/sso/register`, body);
+  try {
+    const res = await request.post(`/user/auth/sso/register`, body);
+    return [null, null];
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
-// --------------
+// -------------
 
 type TSignupVerifyReq = {
   email: string;
   verificationCode: string;
 };
 export const signUpVerifyReq = async (body: TSignupVerifyReq) => {
-  return await request.post(`/user/auth/sso/registerVerify`, body);
+  try {
+    const res = await request.post(`/user/auth/sso/registerVerify`, body);
+    return [null, null];
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 type TPassLogin = {
@@ -48,10 +62,7 @@ type TPassLogin = {
 export const loginWithPasswordReq = async (body: TPassLogin) => {
   try {
     const res = await request.post(`/user/auth/sso/login`, body);
-    if (res.data.code != 0) {
-      throw new Error(res.data.message);
-    }
-    // const {Token, User} = res.data.data
+    session.setSession({ expired: false, refresh: null });
     return [res.data.data, null];
   } catch (err) {
     let e = err instanceof Error ? err : new Error('Unknown error');
@@ -60,35 +71,64 @@ export const loginWithPasswordReq = async (body: TPassLogin) => {
 };
 
 export const loginWithOTPReq = async (email: string) => {
-  return await request.post(`/user/auth/sso/loginOTP`, {
-    email,
-  });
+  try {
+    request.post(`/user/auth/sso/loginOTP`, {
+      email,
+    });
+    return [null, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const loginWithOTPVerifyReq = async (
   email: string,
   verificationCode: string,
 ) => {
-  return await request.post(`/user/auth/sso/loginOTPVerify`, {
-    email,
-    verificationCode,
-  });
+  try {
+    const res = await request.post(`/user/auth/sso/loginOTPVerify`, {
+      email,
+      verificationCode,
+    });
+    session.setSession({ expired: false, refresh: null });
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const resetPassReq = async (
   oldPassword: string,
   newPassword: string,
 ) => {
-  return await request.post(`/user/passwordReset`, {
-    oldPassword,
-    newPassword,
-  });
+  try {
+    const res = await request.post(`/user/passwordReset`, {
+      oldPassword,
+      newPassword,
+    });
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [null, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const forgetPassReq = async (email: string) => {
-  return await request.post(`/user/auth/sso/passwordForgetOTP`, {
-    email,
-  });
+  try {
+    await request.post(`/user/auth/sso/passwordForgetOTP`, {
+      email,
+    });
+    return [null, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const forgetPassVerifyReq = async (
@@ -96,23 +136,70 @@ export const forgetPassVerifyReq = async (
   verificationCode: string,
   newPassword: string,
 ) => {
-  return await request.post(`/user/auth/sso/passwordForgetOTPVerify`, {
-    email,
-    verificationCode,
-    newPassword,
-  });
+  try {
+    await request.post(`/user/auth/sso/passwordForgetOTPVerify`, {
+      email,
+      verificationCode,
+      newPassword,
+    });
+    return [null, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const logoutReq = async () => {
-  return await request.post(`/user/logout`, {});
+  try {
+    const res = await request.post(`/user/logout`, {});
+    return [null, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
-export const getProfile = async () => {
-  return await request.get(`/user/get`);
+export const getProfileReq = async () => {
+  try {
+    const res = await request.get(`/user/get`);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.user, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
-export const saveProfile = async (newProfile: IProfile) => {
-  return await request.post(`/user/update`, newProfile);
+export const getProfileWithMoreReq = async (refreshCb: () => void) => {
+  const [[user, errUser], [countryList, countryErr]] = await Promise.all([
+    getProfileReq(),
+    getCountryList(),
+  ]);
+  const err = errUser || countryErr;
+  if (null != err) {
+    if (err instanceof ExpiredError) {
+      session.setSession({ expired: true, refresh: refreshCb });
+    }
+    return [null, err];
+  }
+  return [{ user, countryList }, null];
+};
+
+export const saveProfileReq = async (newProfile: IProfile) => {
+  try {
+    const res = await request.post(`/user/update`, newProfile);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const getAppConfigReq = async () => {
@@ -123,9 +210,6 @@ export const getAppConfigReq = async () => {
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null });
       throw new Error('Session expired');
-    }
-    if (res.data.code != 0) {
-      throw new Error(res.data.message);
     }
     return [res.data.data, null];
   } catch (err) {
@@ -143,9 +227,6 @@ export const getMerchantInfoReq = async () => {
       session.setSession({ expired: true, refresh: null });
       throw new Error('Session expired');
     }
-    if (res.data.code != 0) {
-      throw new Error(res.data.message);
-    }
     return [res.data.data.merchant, null];
   } catch (err) {
     let e = err instanceof Error ? err : new Error('Unknown error');
@@ -162,9 +243,6 @@ export const getGatewayListReq = async () => {
       session.setSession({ expired: true, refresh: null });
       throw new Error('Session expired');
     }
-    if (res.data.code != 0) {
-      throw new Error(res.data.message);
-    }
     return [res.data.data.gateways, null];
   } catch (err) {
     let e = err instanceof Error ? err : new Error('Unknown error');
@@ -172,36 +250,79 @@ export const getGatewayListReq = async () => {
   }
 };
 
-export const getSublist = async ({ page = 0 }: { page: number }) => {
+export const getSublistReq = async (refreshCb: () => void) => {
   const profile = useProfileStore.getState();
   const body = {
     userId: profile.id,
     // status: 0,
-    page,
+    page: 0,
     count: 100,
   };
-  return await request.post(`/user/subscription/list`, body);
+  try {
+    const res = await request.post(`/user/subscription/list`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: refreshCb });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.subscriptions, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
-  return await request.post(`/user/subscription/list`, {
-    userId: profile.id,
-    status: 2, // active subscription
-    page: 0,
-    count: 100,
-  });
+  try {
+    const res = await request.post(`/user/subscription/list`, {
+      userId: profile.id,
+      status: 2, // active subscription
+      page: 0,
+      count: 100,
+    });
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.subscriptions, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const getPlanList = async () => {
-  return await request.post(`/user/plan/list`, {
-    page: 0,
-    count: 100,
-    // type: 1,
-  });
+  try {
+    const res = await request.post(`/user/plan/list`, {
+      page: 0,
+      count: 100,
+      // type: 1,
+    });
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.plans, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
-// for update preview
+export const getActiveSubWithMore = async (refreshCb: (() => void) | null) => {
+  const [[subscriptions, errSubDetail], [plans, errPlanList]] =
+    await Promise.all([getActiveSub(), getPlanList()]);
+  const err = errSubDetail || errPlanList;
+  if (null != err) {
+    if (err instanceof ExpiredError) {
+      session.setSession({ expired: true, refresh: refreshCb });
+    }
+    return [null, err];
+  }
+  return [{ subscriptions, plans }, null];
+};
+
+// update preview
 export const createUpdatePreviewReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
@@ -218,10 +339,20 @@ export const createUpdatePreviewReq = async (
     quantity: 1,
     addonParams: addons,
   };
-  return await request.post(`/user/subscription/${urlPath}`, body);
+  try {
+    const res = await request.post(`/user/subscription/${urlPath}`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
-// for create new prview
+// create new prview
 export const createPreviewReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
@@ -241,10 +372,20 @@ export const createPreviewReq = async (
     vatNumber,
     vatCountryCode,
   };
-  return await request.post(`/user/subscription/${urlPath}`, body);
+  try {
+    const res = await request.post(`/user/subscription/${urlPath}`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
-export const updateSubscription = async (
+export const updateSubscriptionReq = async (
   newPlanId: number,
   subscriptionId: string,
   addons: { quantity: number; addonPlanId: number }[],
@@ -262,13 +403,20 @@ export const updateSubscription = async (
     confirmCurrency,
     prorationDate,
   };
-  return await request.post(
-    `/user/subscription/update_submit`,
-    body,
-  );
+  try {
+    const res = await request.post(`/user/subscription/update_submit`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
-export const createSubscription = async (
+export const createSubscriptionReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
   confirmTotalAmount: number,
@@ -290,33 +438,63 @@ export const createSubscription = async (
     vatCountryCode,
     vatNumber,
   };
-  return await request.post(
-    `/user/subscription/create_submit`,
-    body,
-  );
+  try {
+    const res = await request.post(`/user/subscription/create_submit`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const vatNumberCheckReq = async (vatNumber: string) => {
   const body = { vatNumber };
-  return await request.post(`/user/vat/vat_number_validate`, body);
+  try {
+    const res = await request.post(`/user/vat/vat_number_validate`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.vatNumberValidate, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 // check payment result
-export const checkPayment = async (subscriptionId: string) => {
+export const checkPaymentReq = async (subscriptionId: string) => {
   const body = { subscriptionId };
-  return await request.post(`/user/subscription/pay_check`, body);
+  try {
+    const res = await request.post(`/user/subscription/pay_check`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
-export const checkSession = async (session: string) => {
-  const body = { session };
-  return await request.post(`/user/auth/session_login`, body);
-};
-
-export const terminateSub = async (SubscriptionId: string) => {
-  return await request.post(
-    `/user/subscription/cancel_at_period_end`,
-    { SubscriptionId },
-  );
+export const checkSessionReq = async (sessionId: string) => {
+  const body = { session: sessionId };
+  try {
+    const res = await request.post(`/user/auth/session_login`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const terminateOrResumeSubReq = async ({
@@ -334,18 +512,48 @@ export const terminateOrResumeSubReq = async ({
   const body = {
     subscriptionId,
   };
-  return await request.post(URL, body);
+  try {
+    const res = await request.post(URL, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [null, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 // new user has choosen a sub plan, but not paid yet, befoer the payment due date, user can still cancel it.
-// this fn is for this purpose only, it's not the same for terminate an active sub (which is the above terminateOrResumeSubReq's job).
+// this fn is for this purpose only, it's not the same as terminate an active sub (which is the above terminateOrResumeSubReq's job).
 export const cancelSubReq = async (subscriptionId: string) => {
-  return await request.post(`/user/subscription/cancel`, {
-    subscriptionId,
-  });
+  try {
+    const res = await request.post(`/user/subscription/cancel`, {
+      subscriptionId,
+    });
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [null, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };
 
 export const getCountryList = async () => {
   const body = {};
-  return await request.post(`/user/vat/country_list`, body);
+  try {
+    const res = await request.post(`/user/vat/country_list`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.vatCountryList, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
 };

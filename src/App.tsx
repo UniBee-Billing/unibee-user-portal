@@ -13,7 +13,12 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
-import { useMerchantInfoStore, useProfileStore } from './stores';
+import {
+  useAppConfigStore,
+  useMerchantInfoStore,
+  useProfileStore,
+  useSessionStore,
+} from './stores';
 
 import Invoices from './components/invoices';
 import Login from './components/login';
@@ -63,6 +68,8 @@ const noSiderRoutes = [
 const App: React.FC = () => {
   const merchantStore = useMerchantInfoStore();
   const profileStore = useProfileStore();
+  const sessionStore = useSessionStore();
+  const appConfig = useAppConfigStore();
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [activeMenuItem, setActiveMenuItem] = useState<string[]>(['/profile']);
@@ -91,18 +98,21 @@ const App: React.FC = () => {
   };
 
   const logout = async () => {
-    localStorage.removeItem('token');
-    try {
-      await logoutReq();
-      navigate(`${APP_PATH}login`);
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log('logout err: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [res, err] = await logoutReq();
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    sessionStore.reset();
+    profileStore.reset();
+    merchantStore.reset();
+    appConfig.reset();
+    localStorage.removeItem('appConfig');
+    localStorage.removeItem('merchantInfo');
+    localStorage.removeItem('token');
+    localStorage.removeItem('profile');
+    localStorage.removeItem('session');
+    navigate(`${APP_PATH}login`);
   };
 
   useEffect(() => {

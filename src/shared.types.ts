@@ -148,6 +148,12 @@ interface IPreview {
   nextPeriodInvoice?: InvoiceItemTotal; // same as above invoice obj, only optional, used when downgrading.
 }
 
+export class ExpiredError extends Error {
+  constructor(m: string) {
+    super(m);
+  }
+}
+
 export type {
   Country,
   IAppConfig,

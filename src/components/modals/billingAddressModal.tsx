@@ -1,7 +1,7 @@
 import { Button, Form, Input, Modal, Select, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCountryList, saveProfile } from '../../requests';
+import { getCountryList, saveProfileReq } from '../../requests';
 import { Country, IProfile } from '../../shared.types';
 import { useAppConfigStore, useProfileStore } from '../../stores';
 
@@ -42,28 +42,16 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
   const onConfirm = async () => {
     const user: IProfile = form.getFieldsValue();
     setLoading(true);
-    try {
-      const saveProfileRes = await saveProfile(user);
-      setLoading(false);
-      console.log('save profile res: ', saveProfileRes);
-      const code = saveProfileRes.data.code;
-      if (code != 0) {
-        code == 61 && relogin();
-        throw new Error(saveProfileRes.data.message);
-      }
-      message.success('saved');
-      profile.setProfile(user);
-      closeModal();
-      openPreviewModal();
-    } catch (err) {
-      setLoading(false);
-      if (err instanceof Error) {
-        console.log('profile update err: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [saveProfileRes, err] = await saveProfileReq(user);
+    setLoading(false);
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    message.success('saved');
+    profile.setProfile(user);
+    closeModal();
+    openPreviewModal();
   };
 
   const filterOption = (
@@ -73,28 +61,17 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      let countryListRes;
-      try {
-        countryListRes = await getCountryList();
-        console.log('country list res: ', countryListRes);
-        if (countryListRes.data.code != 0) {
-          throw new Error(countryListRes.data.message);
-        }
-        setCountryList(
-          countryListRes.data.data.vatCountryList.map((c: any) => ({
-            code: c.countryCode,
-            name: c.countryName,
-          })),
-        );
-      } catch (err) {
-        if (err instanceof Error) {
-          console.log('err: ', err.message);
-          message.error(err.message);
-        } else {
-          message.error('Unknown error');
-        }
+      const [list, err] = await getCountryList();
+      if (null != err) {
+        message.error(err.message);
         return;
       }
+      setCountryList(
+        list.map((c: any) => ({
+          code: c.countryCode,
+          name: c.countryName,
+        })),
+      );
     };
     fetchData();
   }, []);

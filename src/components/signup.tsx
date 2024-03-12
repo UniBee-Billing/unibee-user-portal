@@ -26,55 +26,37 @@ const Index = () => {
   const goLogin = () => navigate(`${APP_PATH}login`);
 
   // send basic signup info
-  const onSubmit = async () => {
+  const onSubmitBasicInfo = async () => {
     setSubmitting(true);
-    try {
-      const res = await signUpReq(form.getFieldsValue());
-      console.log('signup res: ', res);
-      setSubmitting(false);
-      if (res.data.code != 0) {
-        throw new Error(res.data.message);
-      }
-      message.success('Verification code sent.');
-      setCurrentStep(1);
-      stopCounter();
-      startCountdown();
-    } catch (err) {
-      setSubmitting(false);
-      if (err instanceof Error) {
-        console.log('err signup: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+
+    const [res, err] = await signUpReq(form.getFieldsValue());
+    console.log('signup res: ', res);
+    setSubmitting(false);
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    message.success('Verification code sent.');
+    setCurrentStep(1);
+    stopCounter();
+    startCountdown();
   };
 
   // send verification code
-  const onSubmit2 = async () => {
+  const onSubmitCode = async () => {
     setSubmitting(true);
-    try {
-      const res = await signUpVerifyReq({
-        email: form.getFieldValue('email'),
-        verificationCode: otp,
-      });
-      setSubmitting(false);
-      console.log('reg res: ', res);
-      if (res.data.code != 0) {
-        throw new Error(res.data.message);
-      }
-      navigate(`${APP_PATH}login`, {
-        state: { msg: 'Thanks for your sign-up on UniBee' },
-      });
-    } catch (err) {
-      setSubmitting(false);
-      if (err instanceof Error) {
-        console.log('err signup: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [res, err] = await signUpVerifyReq({
+      email: form.getFieldValue('email'),
+      verificationCode: otp,
+    });
+    setSubmitting(false);
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    navigate(`${APP_PATH}login`, {
+      state: { msg: 'Thanks for your sign-up.' },
+    });
   };
 
   return (
@@ -114,7 +96,7 @@ const Index = () => {
             <Form
               form={form}
               name="basic"
-              onFinish={onSubmit}
+              onFinish={onSubmitBasicInfo}
               labelCol={{ span: 7 }}
               wrapperCol={{ span: 17 }}
               style={{ maxWidth: 640, width: 480 }}
@@ -284,7 +266,7 @@ const Index = () => {
               >
                 <Button
                   type="primary"
-                  onClick={onSubmit2}
+                  onClick={onSubmitCode}
                   loading={submitting}
                   disabled={submitting}
                   size="large"

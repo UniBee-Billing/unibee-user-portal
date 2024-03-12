@@ -5,10 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import { emailValidate } from '../../helpers';
 import {
   getAppConfigReq,
+  initializeReq,
   loginWithOTPReq,
   loginWithOTPVerifyReq,
 } from '../../requests';
-import { useAppConfigStore, useProfileStore } from '../../stores';
+import {
+  useAppConfigStore,
+  useMerchantInfoStore,
+  useProfileStore,
+  useSessionStore,
+} from '../../stores';
 import { useCountdown } from '../hooks';
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -35,26 +41,16 @@ const Index = ({
 
     setSendingMailaddr(true);
     setErrMailMsg('');
-    try {
-      const loginRes = await loginWithOTPReq(email);
-      setSendingMailaddr(false);
-      console.log('login res: ', loginRes);
-      if (loginRes.data.code != 0) {
-        throw new Error(loginRes.data.message);
-      }
-      stopCounter();
-      startCount();
-      message.success('Code sent, please check your email');
-    } catch (err) {
-      setSendingMailaddr(false);
-      if (err instanceof Error) {
-        setErrMailMsg(err.message);
-        return Promise.reject(new Error(err.message));
-      } else {
-        setErrMailMsg('Unknown error');
-        return Promise.reject(new Error('Unkown error'));
-      }
+    const [loginRes, err] = await loginWithOTPReq(email);
+    setSendingMailaddr(false);
+    if (null != err) {
+      let e = err instanceof Error ? err : new Error('Unkown error');
+      setErrMailMsg(e.message);
+      return Promise.reject(e);
     }
+    stopCounter();
+    startCount();
+    message.success('Code sent, please check your email');
   };
 
   return (
@@ -180,6 +176,8 @@ const OTPForm = ({
   goBack,
 }: IOtpFormProps) => {
   const navigate = useNavigate();
+  const merchantStore = useMerchantInfoStore();
+  const sessionStore = useSessionStore();
   const appConfigStore = useAppConfigStore();
   const profileStore = useProfileStore();
   const [submitting, setSubmitting] = useState(false);
@@ -195,40 +193,34 @@ const OTPForm = ({
       setErrMsg('Invalid code');
       return;
     }
+    setErrMsg('');
     setSubmitting(true);
-    try {
-      const loginRes = await loginWithOTPVerifyReq(email, otp);
-      console.log('otp loginVerify res: ', loginRes);
-      if (loginRes.data.code != 0) {
-        setErrMsg(loginRes.data.message);
-        throw new Error(loginRes.data.message);
-      }
-      localStorage.setItem('token', loginRes.data.data.token);
-      loginRes.data.data.user.token = loginRes.data.data.token;
-      profileStore.setProfile(loginRes.data.data.user);
-      console.log('otp verified user: ', loginRes.data.data.user);
-
-      const [appConfig, errConfig] = await getAppConfigReq();
+    const [loginRes, err] = await loginWithOTPVerifyReq(email, otp);
+    if (null != err) {
       setSubmitting(false);
-      console.log('app config res: ', appConfig);
-      if (null != errConfig) {
-        setErrMsg(errConfig.message);
-        return;
-      }
-      appConfigStore.setAppConfig(appConfig);
-
-      navigate(`${APP_PATH}profile/subscription`, {
-        state: { from: 'login' },
-      });
-    } catch (err) {
-      setSubmitting(false);
-      if (err instanceof Error) {
-        console.log('login err: ', err.message);
-        setErrMsg(err.message);
-      } else {
-        setErrMsg('Unknown error');
-      }
+      setErrMsg(err.message);
+      return;
     }
+    const { user, token } = loginRes;
+    localStorage.setItem('token', token);
+    user.token = token;
+    profileStore.setProfile(user);
+    sessionStore.setSession({ expired: false, refresh: null });
+
+    const [initRes, errInit] = await initializeReq();
+    setSubmitting(false);
+    if (null != errInit) {
+      setErrMsg(errInit.message);
+      return;
+    }
+
+    const { appConfig, gateways, merchantInfo } = initRes;
+    appConfigStore.setAppConfig(appConfig);
+    appConfigStore.setGateway(gateways);
+    merchantStore.setMerchantInfo(merchantInfo);
+    navigate(`${APP_PATH}profile/subscription`, {
+      state: { from: 'login' },
+    });
   };
 
   return (

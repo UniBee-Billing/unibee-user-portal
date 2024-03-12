@@ -12,10 +12,10 @@ import React, { CSSProperties, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SUBSCRIPTION_STATUS } from '../../constants';
 import { daysBetweenDate, showAmount } from '../../helpers';
-import { getSublist } from '../../requests';
+import { getSublistReq } from '../../requests';
 import '../../shared.css';
 import { ISubscription } from '../../shared.types';
-import { useAppConfigStore, useProfileStore } from '../../stores';
+// import { useAppConfigStore, useProfileStore } from '../../stores';
 import CancelSubModal from '../modals/modalCancelPendingSub';
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub';
 
@@ -64,41 +64,20 @@ const Index = () => {
   const [subscriptions, setSubscriptions] = useState<ISubscription[]>([]);
   const navigate = useNavigate();
 
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
-
   const fetchData = async () => {
-    let subListRes;
     setLoading(true);
-    try {
-      subListRes = await getSublist({
-        page: 0,
-      });
-      setLoading(false);
-      console.log('user sub list: ', subListRes);
-      const code = subListRes.data.code;
-      code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
-      if (code != 0) {
-        // TODO: save all the code as ENUM in constant,
-        throw new Error(subListRes.data.message);
-      }
-    } catch (err) {
-      setLoading(false);
-      if (err instanceof Error) {
-        console.log('err getting user sub list: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [subList, err] = await getSublistReq(fetchData);
+    setLoading(false);
+    console.log('user sub list: ', subList);
+    if (null != err) {
+      message.error(err.message);
       return;
     }
 
     const sub: ISubscription[] =
-      subListRes.data.data.subscriptions == null
+      subList == null
         ? []
-        : subListRes.data.data.subscriptions.map((s: any) => {
+        : subList.map((s: any) => {
             return {
               ...s.subscription,
               plan: s.plan,

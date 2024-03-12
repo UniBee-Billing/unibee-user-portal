@@ -2,12 +2,7 @@ import { Button, Empty, Modal, Spin, message } from 'antd';
 import update from 'immutability-helper';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  getActiveSub,
-  getCountryList,
-  getPlanList,
-  terminateSub,
-} from '../requests';
+import { getActiveSubWithMore, getCountryList } from '../requests';
 import Plan from './plan';
 // import { CURRENCY } from "../constants";
 // import { showAmount } from "../helpers";
@@ -87,71 +82,38 @@ const Index = () => {
   };
 
   const fetchCountry = async () => {
-    let countryListRes;
-    try {
-      countryListRes = await getCountryList();
-      console.log('country list res: ', countryListRes);
-      if (countryListRes.data.code != 0) {
-        throw new Error(countryListRes.data.message);
-      }
-      setCountryList(
-        countryListRes.data.data.vatCountryList.map((c: any) => ({
-          code: c.countryCode,
-          name: c.countryName,
-        })),
-      );
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log('err getting country list: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [list, err] = await getCountryList();
+    if (null != err) {
+      message.error(err.message);
       return;
     }
+    setCountryList(
+      list.map((c: any) => ({
+        code: c.countryCode,
+        name: c.countryName,
+      })),
+    );
   };
 
   const fetchData = async () => {
-    let subListRes, planListRes;
     setLoading(true);
-    try {
-      const res = ([subListRes, planListRes] = await Promise.all([
-        getActiveSub(),
-        getPlanList(),
-      ]));
-      res.forEach((r) => {
-        const code = r.data.code;
-        code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
-        if (code != 0) {
-          throw new Error(r.data.message);
-        }
-      });
-    } catch (err) {
-      setLoading(false);
-      if (err instanceof Error) {
-        console.log('err: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [res, err] = await getActiveSubWithMore(fetchData);
+    setLoading(false);
+    if (null != err) {
+      message.error(err.message);
       return;
     }
 
-    setLoading(false);
-    console.log('subList/planList: ', subListRes, '//', planListRes);
-
+    const { subscriptions, plans } = res;
     let sub;
-    if (
-      subListRes.data.data.subscriptions != null &&
-      subListRes.data.data.subscriptions[0] != null
-    ) {
+    if (subscriptions != null && subscriptions[0] != null) {
       // there is only one active sub at most or null.
       // null: new user(no purchase record), non-null: user has bought one plan, and want to change/upgrade/downgrade
-      sub = subListRes.data.data.subscriptions[0];
+      sub = subscriptions[0];
       isNewUserRef.current = false;
       // TODO: backup current user's selectedPlan and addons info
     } else {
-      // user has an active sub, but not paid, after cancel, active sub becomes null, I need to set its state to null
+      // user has an active sub, but not paid, after cancel, active sub becomes null, I need to set its state back to null
       // otherwise, page still use the obsolete sub info.
       setActiveSub(null);
     }
@@ -166,10 +128,10 @@ const Index = () => {
       setSelectedPlan(sub.subscription.planId);
     }
 
-    let plans: IPlan[] =
-      planListRes.data.data.plans == null
+    let localPlans: IPlan[] =
+      plans == null
         ? []
-        : planListRes.data.data.plans.map((p: any) => {
+        : plans.map((p: any) => {
             const p2 = p.plan;
             if (p.plan.type == 2) {
               // addon plan
@@ -188,10 +150,12 @@ const Index = () => {
               addons: p.addons,
             };
           });
-    plans = plans.filter((p) => p != null);
+    localPlans = localPlans.filter((p) => p != null);
 
     if (localActiveSub != null) {
-      const planIdx = plans.findIndex((p) => p.id == localActiveSub!.planId);
+      const planIdx = plans.findIndex(
+        (p: any) => p.id == localActiveSub!.planId,
+      );
       // let's say we have planA(which has addonA1, addonA2, addonA3), planB, planC, user has subscribed to planA, and selected addonA1, addonA3
       // I need to find the index of addonA1,3 in planA.addons array,
       // then set their {quantity, checked: true} props on planA.addons, these props value are from subscription.addons array.
@@ -208,7 +172,7 @@ const Index = () => {
         }
       }
     }
-    setPlans(plans);
+    setPlans(localPlans);
   };
 
   useEffect(() => {
@@ -243,41 +207,6 @@ const Index = () => {
     isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal();
   };
 
-  /*
-  const onTerminateSub = async () => {
-    let terminateRes;
-    try {
-      terminateRes = await terminateSub(activeSub?.subscriptionId as string);
-      console.log('update subscription submit res: ', terminateRes);
-      const code = terminateRes.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(terminateRes.data.message);
-      }
-      message.success('Subscription will terminate on next billing cycle');
-    } catch (err) {
-      setTerminateModal(false);
-      if (err instanceof Error) {
-        console.log('err creating preview: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
-      return;
-    }
-    navigate(`${APP_PATH}profile/subscription`, {
-      // receiving route hasn't read this msg yet.
-      state: { msg: 'Subscription ended on next billing cycle.' },
-    });
-  };
-  */
-
-  // allow user to click the confirm button
-  // when no active sub || current sub status == expired,
-
-  // allow user to click the terminate button
-  // const
-
   return (
     <div>
       <SubStatus sub={activeSub} toggleModal={toggleCancelSubModal} />
@@ -302,25 +231,7 @@ const Index = () => {
           refresh={fetchData}
         />
       )}
-      {/* activeSub && (
-        <Modal
-          title="Terminate Subscription"
-          open={terminateModal}
-          onOk={onTerminateSub}
-          onCancel={() => setTerminateModal(false)}
-        >
-          <div>subscription detail here</div>
-          <div>
-            Your subscription will terminate at the end of this billing cycle
-            <span style={{ color: "red" }}>
-              (
-              {new Date(activeSub.currentPeriodEnd * 1000).toLocaleDateString()}
-              )
-            </span>
-            , are you sure you want to terminate?
-          </div>
-        </Modal>
-              )*/}
+
       {
         // update subscription
         updateModalOpen && !isNewUserRef.current && (

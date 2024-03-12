@@ -2,8 +2,13 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Result, Spin, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { checkSession, getAppConfigReq } from '../requests';
-import { useAppConfigStore, useProfileStore } from '../stores';
+import { checkSessionReq, getAppConfigReq, initializeReq } from '../requests';
+import {
+  useAppConfigStore,
+  useMerchantInfoStore,
+  useProfileStore,
+  useSessionStore,
+} from '../stores';
 
 const APP_PATH = import.meta.env.BASE_URL;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -11,59 +16,42 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function SessionResult() {
   const profileStore = useProfileStore();
+  const sessionStore = useSessionStore();
   const appConfigStore = useAppConfigStore();
+  const merchantStore = useMerchantInfoStore();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loginStatus, setLoginStatus] = useState<number | null>(null);
   const session = searchParams.get('session');
-  console.log('session: ', session);
 
   const checking = async () => {
-    try {
-      const res = await checkSession(session as string);
-      console.log('session result res: ', res);
-      const statuCode = res.data.code;
-      if (statuCode != 0) {
-        if (statuCode == 61) {
-          console.log('invalid token');
-          navigate(`${APP_PATH}login`, {
-            state: { msg: 'session expired, please re-login' },
-          });
-          return;
-        }
-        throw new Error(res.data.message);
-      }
-      // setLoginStatus(res.data.data.payStatus);
-      localStorage.setItem('token', res.data.data.token);
-      res.data.data.user.token = res.data.data.token;
-      profileStore.setProfile(res.data.data.user);
-
-      const [appConfig, errConfig] = await getAppConfigReq();
-      console.log('app config res: ', appConfig);
-      if (null != errConfig) {
-        message.error(errConfig.message);
-        return;
-      }
-
-      appConfigStore.setAppConfig(appConfig);
-      navigate(`${APP_PATH}profile/subscription`, {
-        state: { from: 'login' },
-      });
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log('err checking session result: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [res, err] = await checkSessionReq(session as string);
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    const { user, token } = res;
+    localStorage.setItem('token', token);
+    user.token = token;
+    profileStore.setProfile(user);
+    sessionStore.setSession({ expired: false, refresh: null });
+
+    const [initRes, errInit] = await initializeReq();
+    if (null != errInit) {
+      message.error(errInit.message);
+      return;
+    }
+    const { appConfig, gateways, merchantInfo } = initRes;
+    appConfigStore.setAppConfig(appConfig);
+    appConfigStore.setGateway(gateways);
+    merchantStore.setMerchantInfo(merchantInfo);
+    navigate(`${APP_PATH}profile/subscription`, {
+      state: { from: 'login' },
+    });
   };
 
   useEffect(() => {
     checking();
-    // const interval = setInterval(checking, 3000);
-
-    // return () => clearInterval(interval);
   }, []);
 
   return (

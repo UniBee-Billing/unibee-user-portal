@@ -15,46 +15,26 @@ interface Props {
   refresh: () => void;
 }
 const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
-
   const onConfirm = async () => {
-    try {
-      setLoading(true);
-      const res = await terminateOrResumeSubReq({
-        subscriptionId: subInfo?.subscriptionId as string,
-        action,
-      });
-      console.log(`${action} sub res: `, res);
-      const code = res.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(res.data.message);
-      }
-      message.success(
-        `Subscription ${
-          action == 'RESUME'
-            ? 'resumed'
-            : 'terminated at the next billing cycle'
-        }`,
-      );
-      setLoading(false);
-      closeModal();
-      refresh();
-    } catch (err) {
-      setLoading(false);
-      if (err instanceof Error) {
-        console.log(`err ${action} sub: `, err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    setLoading(true);
+    const [res, err] = await terminateOrResumeSubReq({
+      subscriptionId: subInfo?.subscriptionId as string,
+      action,
+    });
+    setLoading(false);
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    message.success(
+      `Subscription ${
+        action == 'RESUME' ? 'resumed' : 'terminated at the next billing cycle'
+      }`,
+    );
+    closeModal();
+    refresh();
   };
 
   return (

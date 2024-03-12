@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { showAmount } from '../../helpers';
 import {
   createPreviewReq,
-  createSubscription,
+  createSubscriptionReq,
   vatNumberCheckReq,
 } from '../../requests';
 import { Country, IPlan, IPreview } from '../../shared.types';
@@ -69,35 +69,23 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
         ? plan.addons.filter((a) => a.checked)
         : [];
 
-    try {
-      setLoading(true);
-      const previewRes = await createPreviewReq(
-        plan.id,
-        addons.map((a) => ({
-          quantity: a.quantity as number,
-          addonPlanId: a.id,
-        })),
-        vatNumber,
-        selectedCountry,
-      );
-      setLoading(false);
-      console.log('subscription create preview res: ', previewRes);
-      const code = previewRes.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(previewRes.data.message);
-      }
-      setPreview(previewRes.data.data);
-    } catch (err) {
-      setLoading(false);
-      if (err instanceof Error) {
-        console.log('err creating preview: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
-      return;
+    setLoading(true);
+    const [previewRes, err] = await createPreviewReq(
+      plan.id,
+      addons.map((a) => ({
+        quantity: a.quantity as number,
+        addonPlanId: a.id,
+      })),
+      vatNumber,
+      selectedCountry,
+    );
+    setLoading(false);
+    if (null != err) {
+      message.error(err.message);
+      return false;
     }
+    setPreview(previewRes);
+    return true;
   };
 
   const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
@@ -105,47 +93,36 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       vatChechkingRef.current = true;
     }
 
-    try {
-      setSubmitting(true);
-      const res = await vatNumberCheckReq(vatNumber);
-      console.log('vat check res: ', res);
-      const code = res.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(res.data.message);
-      }
-      const v = res.data.data.vatNumberValidate;
-      setIsVatValid(v.valid);
-      if (v.valid) {
-        await createPreview();
-        setVatDetail({
-          companyAddress: v.companyAddress,
-          companyName: v.companyName,
-          countryCode: v.countryCode,
-        });
-      } else {
-        setVatDetail(null);
-        message.error('Invalid VAT, please re-type or leave it blank.');
-      }
-      setSubmitting(false);
-      vatChechkingRef.current = false;
-    } catch (err) {
-      setIsVatValid(false);
+    setSubmitting(true);
+    const [vatNumberValidate, err] = await vatNumberCheckReq(vatNumber);
+    if (null != err) {
+      message.error(err.message);
       setSubmitting(false);
       setVatDetail(null);
+      setIsVatValid(false);
       vatChechkingRef.current = false;
-      if (err instanceof Error) {
-        console.log('err checking vat validity: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
-      return false;
+      return;
     }
+    const v = vatNumberValidate;
+    setIsVatValid(v.valid);
+    vatChechkingRef.current = false;
+    if (!v.valid) {
+      setSubmitting(false);
+      setVatDetail(null);
+      message.error('Invalid VAT, please re-type or leave it blank.');
+      return;
+    }
+
+    setVatDetail({
+      companyAddress: v.companyAddress,
+      companyName: v.companyName,
+      countryCode: v.countryCode,
+    });
+    await createPreview();
+    setSubmitting(false);
   };
 
   const onConfirm = async () => {
-    // console.log("in confirm btn, is vat checking? ", vatChechkingRef.current);
     if (vatChechkingRef.current) {
       return;
     }
@@ -159,44 +136,29 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : [];
-    let createSubRes;
-    try {
-      setSubmitting(true);
-      createSubRes = await createSubscription(
-        plan.id,
-        addons.map((a) => ({
-          quantity: a.quantity as number,
-          addonPlanId: a.id,
-        })),
-        preview?.totalAmount as number,
-        preview?.currency as string,
-        preview?.vatCountryCode as string,
-        preview?.vatNumber as string,
-      );
-      setSubmitting(false);
-      console.log('create subscription res: ', createSubRes);
-      const code = createSubRes.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(createSubRes.data.message);
-      }
-    } catch (err) {
-      setSubmitting(false);
-      if (err instanceof Error) {
-        console.log('err creating subscripion: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    setSubmitting(true);
+    const [createSubRes, err] = await createSubscriptionReq(
+      plan.id,
+      addons.map((a) => ({
+        quantity: a.quantity as number,
+        addonPlanId: a.id,
+      })),
+      preview?.totalAmount as number,
+      preview?.currency as string,
+      preview?.vatCountryCode as string,
+      preview?.vatNumber as string,
+    );
+    setSubmitting(false);
+    if (err != null) {
+      message.error(err.message);
       return;
     }
-    navigate(`${APP_PATH}profile/subscription`);
-    if (
-      createSubRes.data.data.link != '' ||
-      createSubRes.data.data.link != null
-    ) {
-      window.open(createSubRes.data.data.link, '_blank');
+
+    const { link } = createSubRes;
+    if (link != '' || link != null) {
+      window.open(link, '_blank');
     }
+    navigate(`${APP_PATH}profile/subscription`);
   };
 
   useEffect(() => {

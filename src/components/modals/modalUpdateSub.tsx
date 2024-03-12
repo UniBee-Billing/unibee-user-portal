@@ -3,7 +3,7 @@ import { Button, Col, Divider, Modal, Row, Spin, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showAmount } from '../../helpers';
-import { createUpdatePreviewReq, updateSubscription } from '../../requests';
+import { createUpdatePreviewReq, updateSubscriptionReq } from '../../requests';
 import { IPlan, IPreview, InvoiceItemTotal } from '../../shared.types';
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -31,41 +31,28 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : [];
-    let updateSubRes;
-    try {
-      updateSubRes = await updateSubscription(
-        plan?.id,
-        subscriptionId,
-        addons.map((a) => ({
-          quantity: a.quantity as number,
-          addonPlanId: a.id,
-        })),
-        preview?.totalAmount as number,
-        preview?.currency as string,
-        preview?.prorationDate as number,
-      );
-      setSubmitting(false);
-      console.log('update subscription submit res: ', updateSubRes);
-      const code = updateSubRes.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(updateSubRes.data.message);
-      }
-    } catch (err) {
-      setSubmitting(false);
-      if (err instanceof Error) {
-        console.log('err updating preview: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [updateSubRes, err] = await updateSubscriptionReq(
+      plan?.id,
+      subscriptionId,
+      addons.map((a) => ({
+        quantity: a.quantity as number,
+        addonPlanId: a.id,
+      })),
+      preview?.totalAmount as number,
+      preview?.currency as string,
+      preview?.prorationDate as number,
+    );
+    setSubmitting(false);
+    if (null != err) {
+      message.error(err.message);
       return;
     }
 
+    const { paid, link } = updateSubRes;
     // if you're upgrading your plan, Stripe will use your card info from your last time purchase record.
     // so it won't redirect you to chckout form, only if your card is expired or has insufficient fund.
     // the payment will be done immediaetly(most of time).
-    if (updateSubRes.data.data.paid) {
+    if (paid) {
       refresh();
       message.success('Plan updated');
       closeModal();
@@ -75,7 +62,7 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       // receiving route hasn't read this msg yet.
       state: { msg: 'Subscription updated' },
     });
-    window.open(updateSubRes.data.data.link, '_blank');
+    window.open(link, '_blank');
   };
 
   useEffect(() => {
@@ -84,33 +71,22 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
         ? plan.addons.filter((a) => a.checked)
         : [];
     const fetchPreview = async () => {
-      try {
-        setLoading(true);
-        const previewRes = await createUpdatePreviewReq(
-          plan!.id,
-          addons.map((a) => ({
-            quantity: a.quantity as number,
-            addonPlanId: a.id,
-          })),
-          subscriptionId as string,
-        );
-        setLoading(false);
-        console.log('subscription create preview res: ', previewRes);
-        const code = previewRes.data.code;
-        code == 61 && relogin();
-        if (code != 0) {
-          throw new Error(previewRes.data.message);
-        }
-        setPreview(previewRes.data.data);
-      } catch (err) {
-        setLoading(false);
-        if (err instanceof Error) {
-          console.log('err creating preview: ', err.message);
-          message.error(err.message);
-        } else {
-          message.error('Unknown error');
-        }
-      } // finally {      } // doesn't work.
+      setLoading(true);
+      const [previewRes, err] = await createUpdatePreviewReq(
+        plan!.id,
+        addons.map((a) => ({
+          quantity: a.quantity as number,
+          addonPlanId: a.id,
+        })),
+        subscriptionId as string,
+      );
+      setLoading(false);
+      if (null != err) {
+        message.error(err.message);
+        return;
+      }
+
+      setPreview(previewRes);
     };
     fetchPreview();
   }, []);

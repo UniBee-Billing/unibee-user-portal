@@ -45,24 +45,14 @@ const Index = ({
       return;
     }
     setSubmittingForgetPass(true);
-    try {
-      const res = await forgetPassReq(form.getFieldValue('email'));
-      setSubmittingForgetPass(false);
-      console.log('forget pass res: ', res);
-      if (res.data.code != 0) {
-        throw new Error(res.data.message);
-      }
-      toggleForgetPassModal();
-      message.success('Code sent, please check your email!');
-    } catch (err) {
-      setSubmittingForgetPass(false);
-      if (err instanceof Error) {
-        console.log('forget pass err: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [res, err] = await forgetPassReq(form.getFieldValue('email'));
+    setSubmittingForgetPass(false);
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    toggleForgetPassModal();
+    message.success('Code sent, please check your email!');
   };
 
   const onSubmit = async () => {
@@ -203,29 +193,18 @@ const ForgetPasswordModal = ({
 
   const onConfirm = async () => {
     setLoading(true);
-    try {
-      const res = await forgetPassVerifyReq(
-        form2.getFieldValue('email'),
-        form2.getFieldValue('verificationCode'),
-        form2.getFieldValue('newPassword'),
-      );
-      setLoading(false);
-      console.log('forgot pass verify res: ', res);
-      const code = res.data.code;
-      if (code != 0) {
-        throw new Error(res.data.message);
-      }
-      message.success('Password reset succeeded, please relogin');
-      closeModal();
-    } catch (err) {
-      setLoading(false);
-      if (err instanceof Error) {
-        console.log('reset password err: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [res, err] = await forgetPassVerifyReq(
+      form2.getFieldValue('email'),
+      form2.getFieldValue('verificationCode'),
+      form2.getFieldValue('newPassword'),
+    );
+    setLoading(false);
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    message.success('Password reset succeeded.');
+    closeModal();
   };
 
   return (

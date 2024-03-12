@@ -17,13 +17,19 @@ import { useNavigate } from 'react-router-dom';
 import { passwordRegx } from '../../helpers';
 import {
   getCountryList,
-  getProfile,
+  getProfileReq,
+  getProfileWithMoreReq,
   logoutReq,
   resetPassReq,
-  saveProfile,
+  saveProfileReq,
 } from '../../requests';
 import { Country, IProfile } from '../../shared.types';
-import { useAppConfigStore, useProfileStore } from '../../stores';
+import {
+  useAppConfigStore,
+  useMerchantInfoStore,
+  useProfileStore,
+  useSessionStore,
+} from '../../stores';
 import { useRelogin } from '../hooks';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
@@ -33,7 +39,6 @@ const Index = () => {
   // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<IProfile | null>(null);
-  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [countryList, setCountryList] = useState<Country[]>([]);
   const [resetPasswordModal, setResetPasswordModal] = useState(false);
@@ -49,62 +54,31 @@ const Index = () => {
   const onSave = async () => {
     console.log('form: ', form.getFieldsValue());
     setLoading(true);
-    let saveProfileRes;
-    try {
-      saveProfileRes = await saveProfile(form.getFieldsValue());
-      setLoading(false);
-      console.log('save profile res: ', saveProfileRes);
-      const code = saveProfileRes.data.code;
-      if (code != 0) {
-        code == 61 && relogin();
-        throw new Error(saveProfileRes.data.message);
-      }
-      message.success('saved');
-      setProfile(saveProfileRes.data.data.user);
-      profileStore.setProfile(saveProfileRes.data.data.user);
-    } catch (err) {
-      setLoading(false);
-      if (err instanceof Error) {
-        console.log('profile update err: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [saveProfileRes, err] = await saveProfileReq(form.getFieldsValue());
+    setLoading(false);
+    if (null != err) {
+      message.error(err.message);
       return;
     }
+    const { user } = saveProfileRes;
+    message.success('saved');
+    setProfile(user);
+    profileStore.setProfile(user);
   };
 
   useEffect(() => {
-    setLoading(true);
     const fetchData = async () => {
-      let profileRes, countryListRes;
-      try {
-        const res = ([profileRes, countryListRes] = await Promise.all([
-          getProfile(),
-          getCountryList(),
-        ]));
-        setLoading(false);
-        console.log('res: ', res);
-        res.forEach((r) => {
-          const code = r.data.code;
-          code == 61 && relogin(); // TODO: redesign the relogin component(popped in current page), so users don't have to be taken to /login
-          if (code != 0) {
-            throw new Error(r.data.message);
-          }
-        });
-      } catch (err) {
-        setLoading(false);
-        if (err instanceof Error) {
-          console.log('profile update err: ', err.message);
-          message.error(err.message);
-        } else {
-          message.error('Unknown error');
-        }
+      setLoading(true);
+      const [res, err] = await getProfileWithMoreReq(fetchData);
+      setLoading(false);
+      if (err != null) {
+        message.error(err.message);
         return;
       }
-      setProfile(profileRes.data.data.user);
+      const { user, countryList } = res;
+      setProfile(user);
       setCountryList(
-        countryListRes.data.data.vatCountryList.map((c: any) => ({
+        countryList.map((c: any) => ({
           code: c.countryCode,
           name: c.countryName,
         })),
@@ -114,7 +88,6 @@ const Index = () => {
   }, []);
 
   const countryCode = Form.useWatch('countryCode', form);
-  console.log('country code watch: ', countryCode);
   useEffect(() => {
     countryCode &&
       form.setFieldValue(
@@ -329,53 +302,47 @@ interface IResetPassProps {
   closeModal: () => void;
 }
 const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
-  const relogin = useRelogin();
   const navigate = useNavigate();
+  const profile = useProfileStore();
+  const merchant = useMerchantInfoStore();
+  const appConfig = useAppConfigStore();
+  const sessionStore = useSessionStore();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
   const logout = async () => {
-    localStorage.removeItem('token');
-    try {
-      await logoutReq();
-      navigate(`${APP_PATH}login`, {
-        state: { msg: 'Password reset succeeded, please relogin.' },
-      });
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log('logout err: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [res, err] = await logoutReq();
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    profile.reset();
+    merchant.reset();
+    appConfig.reset();
+    sessionStore.reset();
+    localStorage.removeItem('appConfig');
+    localStorage.removeItem('merchantInfo');
+    localStorage.removeItem('token');
+    localStorage.removeItem('profile');
+    localStorage.removeItem('session');
+    navigate(`${APP_PATH}login`, {
+      state: { msg: 'Password reset succeeded, please relogin.' },
+    });
   };
 
   const onConfirm = async () => {
     const formValues = form.getFieldsValue();
     setLoading(true);
-    try {
-      const res = await resetPassReq(
-        formValues.oldPassword,
-        formValues.newPassword,
-      );
-      setLoading(false);
-      console.log('reset pass res: ', res);
-      const code = res.data.code;
-      code == 61 && relogin();
-      if (code != 0) {
-        throw new Error(res.data.message);
-      }
-      await logout();
-    } catch (err) {
-      setLoading(false);
-      if (err instanceof Error) {
-        console.log('reset password err: ', err.message);
-        message.error(err.message);
-      } else {
-        message.error('Unknown error');
-      }
+    const [res, err] = await resetPassReq(
+      formValues.oldPassword,
+      formValues.newPassword,
+    );
+    setLoading(false);
+    if (null != err) {
+      message.error(err.message);
+      return;
     }
+    await logout();
   };
 
   return (
