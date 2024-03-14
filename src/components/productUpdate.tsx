@@ -108,6 +108,7 @@ const Index = () => {
       // user has an active sub, but not paid, after cancel, active sub becomes null, I need to set its state back to null
       // otherwise, page still use the obsolete sub info.
       setActiveSub(null);
+      isNewUserRef.current = true;
     }
 
     // addons and other props are separated in different area in the response subscription obj, I want to combine them into one subscription obj

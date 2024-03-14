@@ -3,30 +3,51 @@ import { Radio, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { GATEWAY_TYPE } from '../constants';
 import { useAppConfigStore } from '../stores';
+import PaymentSelector from './ui/paymentSelector';
 
 const Index = ({
   selectedGateway,
   onSelect,
 }: {
   selectedGateway: null | number;
-  onSelect: (e: RadioChangeEvent) => void;
+  onSelect: (e: React.ChangeEventHandler<HTMLInputElement>) => void;
 }) => {
   const appConfig = useAppConfigStore();
   useEffect(() => {}, []);
 
-  return (
-    <div>
-      <Radio.Group onChange={onSelect} value={selectedGateway}>
-        <Space direction="vertical">
-          {appConfig.gateway.map((g) => (
-            <Radio key={g.gatewayId} value={g.gatewayId}>
-              {GATEWAY_TYPE[g.gatewayType]}
-            </Radio>
-          ))}
-        </Space>
-      </Radio.Group>
-    </div>
-  );
+  return <div></div>;
 };
 
 export default Index;
+
+/*
+<Radio.Group
+        onChange={onSelect}
+        value={selectedGateway}
+        style={{ width: '100%' }}
+        options={appConfig.gateway.map((g) => ({
+          label: (
+            <div className="flex items-center justify-between">
+              <div>{GATEWAY_TYPE[g.gatewayType]}</div>
+              <div>icon</div>
+            </div>
+          ),
+          value: g.gatewayId,
+        }))}
+      >
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {appConfig.gateway.map((g) => (
+            <Radio
+              key={g.gatewayId}
+              value={g.gatewayId}
+              style={{ width: '100%' }}
+            >
+              <div className="flex items-center justify-between">
+                <div>{GATEWAY_TYPE[g.gatewayType]}</div>
+                <div>icon</div>
+              </div>
+            </Radio>
+          ))}
+          </Space>
+      </Radio.Group>
+      */

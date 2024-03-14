@@ -20,7 +20,8 @@ import {
   vatNumberCheckReq,
 } from '../../requests';
 import { Country, IPlan, IPreview } from '../../shared.types';
-import SelectPaymentMethod from '../paymentMethod';
+// import SelectPaymentMethod from '../paymentMethod';
+import PaymentSelector from '../ui/paymentSelector';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -48,8 +49,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
   const vatChechkingRef = useRef(false);
   const [gatewayId, setGatewayId] = useState<null | number>(null);
-  const onGatewayChange = (e: RadioChangeEvent) => {
-    setGatewayId(e.target.value);
+  const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    console.log('selected value: ', e.target);
+    setGatewayId(Number(e.target.value));
   };
 
   const onVatChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -222,7 +224,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
             <Col span={6} style={{ marginLeft: '12px' }}>
               Country
             </Col>
-            <Col span={8} style={{ marginLeft: '16px' }}>
+            <Col span={8} style={{ marginLeft: '2px' }}>
               Payment method
             </Col>
           </Row>
@@ -236,7 +238,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                 placeholder="Your VAT number"
               />
             </Col>
-            <Col span={6} style={{ marginLeft: '20px' }}>
+            <Col span={6} style={{ marginLeft: '12px' }}>
               <Select
                 value={selectedCountry}
                 style={{ width: '160px' }}
@@ -252,8 +254,12 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
               />
             </Col>
             <Col span={12}>
-              <SelectPaymentMethod
+              {/* <SelectPaymentMethod
                 selectedGateway={gatewayId}
+                onSelect={onGatewayChange}
+              />*/}
+              <PaymentSelector
+                selected={gatewayId}
                 onSelect={onGatewayChange}
               />
             </Col>
