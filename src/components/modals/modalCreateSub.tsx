@@ -5,6 +5,7 @@ import {
   Divider,
   Input,
   Modal,
+  RadioChangeEvent,
   Row,
   Select,
   Spin,
@@ -19,6 +20,7 @@ import {
   vatNumberCheckReq,
 } from '../../requests';
 import { Country, IPlan, IPreview } from '../../shared.types';
+import SelectPaymentMethod from '../paymentMethod';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -45,12 +47,10 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [isVatValid, setIsVatValid] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
   const vatChechkingRef = useRef(false);
-  // const countryRef = useRef<CountryCode[]>([]);
-
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
+  const [gatewayId, setGatewayId] = useState<null | number>(null);
+  const onGatewayChange = (e: RadioChangeEvent) => {
+    setGatewayId(e.target.value);
+  };
 
   const onVatChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setVatNumber(e.target.value);
@@ -132,6 +132,11 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       return;
     }
 
+    if (null == gatewayId) {
+      message.error('Please select a payment method.');
+      return;
+    }
+
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
@@ -147,6 +152,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       preview?.currency as string,
       preview?.vatCountryCode as string,
       preview?.vatNumber as string,
+      gatewayId,
     );
     setSubmitting(false);
     if (err != null) {
@@ -179,13 +185,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       width={'720px'}
     >
       {preview == null ? (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+        <div className="flex items-center justify-center">
           <Spin
             spinning={true}
             indicator={<LoadingOutlined style={{ fontSize: 32 }} spin />}
@@ -222,6 +222,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
             <Col span={6} style={{ marginLeft: '12px' }}>
               Country
             </Col>
+            <Col span={8} style={{ marginLeft: '16px' }}>
+              Payment method
+            </Col>
           </Row>
           <Row style={{ marginBottom: '12px' }}>
             <Col span={5}>
@@ -233,7 +236,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                 placeholder="Your VAT number"
               />
             </Col>
-            <Col span={6} style={{ marginLeft: '12px' }}>
+            <Col span={6} style={{ marginLeft: '20px' }}>
               <Select
                 value={selectedCountry}
                 style={{ width: '160px' }}
@@ -246,6 +249,12 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                   label: c.name,
                   value: c.code,
                 }))}
+              />
+            </Col>
+            <Col span={12}>
+              <SelectPaymentMethod
+                selectedGateway={gatewayId}
+                onSelect={onGatewayChange}
               />
             </Col>
           </Row>
@@ -282,15 +291,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           </Row>
         </>
       )}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'end',
-          alignItems: 'center',
-          gap: '18px',
-          marginTop: '24px',
-        }}
-      >
+      <div className="mt-6 flex items-center justify-end gap-4">
         <Button onClick={closeModal} disabled={loading || submitting}>
           Cancel
         </Button>

@@ -328,12 +328,9 @@ export const createUpdatePreviewReq = async (
   addons: { quantity: number; addonPlanId: number }[],
   subscriptionId: string | null,
 ) => {
-  const appConfig = useAppConfigStore.getState();
   const urlPath = 'update_preview';
   const body = {
     subscriptionId,
-    gatewayId: appConfig.gateway[0].gatewayId,
-    // planId,
     newPlanId: planId,
     quantity: 1,
     addonParams: addons,
@@ -358,11 +355,9 @@ export const createPreviewReq = async (
   vatNumber: string | null,
   vatCountryCode: string | null,
 ) => {
-  const profile = useProfileStore.getState();
   const appConfig = useAppConfigStore.getState();
   const urlPath = 'create_preview';
   const body = {
-    userId: profile.id,
     gatewayId: appConfig.gateway[0].gatewayId,
     planId,
     newPlanId: planId,
@@ -422,14 +417,13 @@ export const createSubscriptionReq = async (
   confirmCurrency: string,
   vatCountryCode: string,
   vatNumber: string,
+  gatewayId: number,
 ) => {
-  const profile = useProfileStore.getState();
-  const appConfig = useAppConfigStore.getState();
+  // const appConfig = useAppConfigStore.getState();
   const body = {
     planId,
     quantity: 1,
-    gatewayId: appConfig.gateway[0].gatewayId,
-    UserId: profile.id,
+    gatewayId, // appConfig.gateway[0].gatewayId,
     addonParams: addons,
     confirmTotalAmount,
     confirmCurrency,

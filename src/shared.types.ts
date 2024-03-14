@@ -1,3 +1,5 @@
+import { Currency } from 'dinero.js';
+
 interface IProfile {
   address: string;
   countryName: string;
@@ -37,7 +39,12 @@ interface IAppConfig {
   isProd: boolean;
   supportTimeZone: string[];
   supportCurrency: { Currency: string; Symbol: string; Scale: number }[];
-  gateway: { gatewayId: number; gatewayName: string; gatewayLogo: string }[];
+  gateway: {
+    gatewayId: number;
+    gatewayName: string;
+    gatewayLogo: string;
+    gatewayType: number;
+  }[];
 }
 
 type Country = {
@@ -55,7 +62,7 @@ interface IPlan {
   planName: string;
   description: string;
   type: number; // 1: main plan, 2: add-on
-  currency: number;
+  currency: Currency;
   intervalCount: number;
   intervalUnit: string;
   amount: number;

@@ -479,8 +479,9 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
               <span>Subscription will end on </span>
               <span style={{ color: 'red', marginRight: '8px' }}>
                 {subInfo &&
-                  // new Date(activeSub!.trialEnd * 1000).toLocaleString()
-                  new Date(subInfo!.currentPeriodEnd * 1000).toLocaleString()}
+                  dayjs(new Date(subInfo!.currentPeriodEnd * 1000)).format(
+                    'YYYY-MMM-DD HH:mm:ss',
+                  )}
               </span>
               <Button onClick={() => openModal('RESUME')}>Resume</Button>
             </div>

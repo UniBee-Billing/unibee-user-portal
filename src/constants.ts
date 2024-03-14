@@ -20,3 +20,8 @@ export const SUBSCRIPTION_STATUS: { [key: number]: string } = {
   6: 'Suspended', // suspend for a while, might want to resume later
   7: 'Incomplete',
 };
+
+export const GATEWAY_TYPE: { [key: number]: string } = {
+  1: 'Card',
+  2: 'Crypto',
+};
