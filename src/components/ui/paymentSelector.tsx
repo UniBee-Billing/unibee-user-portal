@@ -1,3 +1,4 @@
+import React from 'react';
 import { useAppConfigStore } from '../../stores';
 import AmexIcon from './icon/amex.svg?react';
 import BitcoinIcon from './icon/bitcoin-btc-logo.svg?react';
@@ -14,14 +15,14 @@ const Index = ({
   selected,
   onSelect,
 }: {
-  selected: number | null;
+  selected: number | undefined;
   onSelect: React.ChangeEventHandler<HTMLInputElement>;
 }) => {
   const appConfig = useAppConfigStore();
   const gateways = appConfig.gateway
     .map((g) => ({
       ...g,
-      label: g.gatewayName == 'stripe' ? 'Credit Card' : 'Cryptocurrency',
+      label: g.gatewayName == 'stripe' ? 'Bank Card' : 'Cryptocurrency',
     }))
     .sort((a, b) => a.gatewayId - b.gatewayId);
 

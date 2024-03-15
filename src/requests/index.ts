@@ -354,11 +354,11 @@ export const createPreviewReq = async (
   addons: { quantity: number; addonPlanId: number }[],
   vatNumber: string | null,
   vatCountryCode: string | null,
+  gatewayId: number,
 ) => {
-  const appConfig = useAppConfigStore.getState();
   const urlPath = 'create_preview';
   const body = {
-    gatewayId: appConfig.gateway[0].gatewayId,
+    gatewayId,
     planId,
     newPlanId: planId,
     quantity: 1,
@@ -419,11 +419,10 @@ export const createSubscriptionReq = async (
   vatNumber: string,
   gatewayId: number,
 ) => {
-  // const appConfig = useAppConfigStore.getState();
   const body = {
     planId,
     quantity: 1,
-    gatewayId, // appConfig.gateway[0].gatewayId,
+    gatewayId,
     addonParams: addons,
     confirmTotalAmount,
     confirmCurrency,

@@ -5,13 +5,12 @@ import {
   Divider,
   Input,
   Modal,
-  RadioChangeEvent,
   Row,
   Select,
   Spin,
   message,
 } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showAmount } from '../../helpers';
 import {
@@ -20,7 +19,7 @@ import {
   vatNumberCheckReq,
 } from '../../requests';
 import { Country, IPlan, IPreview } from '../../shared.types';
-// import SelectPaymentMethod from '../paymentMethod';
+import { useAppConfigStore } from '../../stores';
 import PaymentSelector from '../ui/paymentSelector';
 
 const APP_PATH = import.meta.env.BASE_URL;
@@ -40,6 +39,7 @@ interface Props {
 
 const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const navigate = useNavigate();
+  const appConfig = useAppConfigStore();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
@@ -48,9 +48,11 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [isVatValid, setIsVatValid] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
   const vatChechkingRef = useRef(false);
-  const [gatewayId, setGatewayId] = useState<null | number>(null);
+  // set card payment as default gateway
+  const [gatewayId, setGatewayId] = useState<undefined | number>(
+    appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId,
+  );
   const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    console.log('selected value: ', e.target);
     setGatewayId(Number(e.target.value));
   };
 
@@ -66,6 +68,10 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
   const createPreview = async () => {
+    if (null == gatewayId) {
+      message.error('Please select your payment method.');
+      return;
+    }
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
@@ -80,6 +86,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       })),
       vatNumber,
       selectedCountry,
+      gatewayId as number,
     );
     setLoading(false);
     if (null != err) {
@@ -184,7 +191,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       open={true}
       footer={null}
       closeIcon={null}
-      width={'720px'}
+      width={'780px'}
     >
       {preview == null ? (
         <div className="flex items-center justify-center">
@@ -254,10 +261,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
               />
             </Col>
             <Col span={12}>
-              {/* <SelectPaymentMethod
-                selectedGateway={gatewayId}
-                onSelect={onGatewayChange}
-              />*/}
               <PaymentSelector
                 selected={gatewayId}
                 onSelect={onGatewayChange}
