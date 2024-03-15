@@ -50,12 +50,12 @@ const Index = ({
             <div className="flex items-center justify-center gap-2">
               {isCard
                 ? Cards.map((c, idx) => (
-                    <div key={idx} className="h-6 w-6">
-                      <div className="h-6 w-6">{c}</div>
+                    <div key={idx} className="flex h-7 w-7 items-center">
+                      {c}
                     </div>
                   ))
                 : Cryptos.map((c, idx) => (
-                    <div key={idx} className="h-4 w-4">
+                    <div key={idx} className="flex h-5 w-5 items-center">
                       {c}
                     </div>
                   ))}

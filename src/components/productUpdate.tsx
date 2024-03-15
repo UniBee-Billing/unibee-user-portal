@@ -174,7 +174,6 @@ const Index = () => {
   }, []);
 
   const onPlanConfirm = () => {
-    console.log('is new: ', isNewUserRef.current);
     if (profileStore.countryCode == '' || profileStore.countryCode == null) {
       toggleBillingModal();
       return;
