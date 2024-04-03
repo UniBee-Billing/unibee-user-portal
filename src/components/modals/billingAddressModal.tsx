@@ -115,11 +115,11 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           </Form.Item>
         ))}
         <Form.Item label="First name" name="firstName">
-          <Input disabled />
+          <Input />
         </Form.Item>
 
         <Form.Item label="Last name" name="lastName">
-          <Input disabled />
+          <Input />
         </Form.Item>
 
         <Form.Item label="Email" name="email">

@@ -51,15 +51,11 @@ const Index = ({ isOpen, closeModal, plan }: Props) => {
       message.error(err.message);
       return;
     }
-    message.success('saved');
     console.log('payment res: ', paymentRes);
+    if (paymentRes.link != null && paymentRes.link != '') {
+      window.open(paymentRes.link, '_blank');
+    }
     return;
-    /*
-    
-    message.success('saved');
-    profile.setProfile(user);
-    closeModal();
-    */
   };
 
   useEffect(() => {
