@@ -87,6 +87,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       vatNumber,
       selectedCountry,
       gatewayId as number,
+      createPreview,
     );
     setLoading(false);
     if (null != err) {

@@ -12,10 +12,11 @@ import React, { CSSProperties, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SUBSCRIPTION_STATUS } from '../../constants';
 import { daysBetweenDate, showAmount } from '../../helpers';
-import { getSublistReq } from '../../requests';
+import { getPaymentMethodListReq, getSublistReq } from '../../requests';
 import '../../shared.css';
 import { ISubscription } from '../../shared.types';
 // import { useAppConfigStore, useProfileStore } from '../../stores';
+import EditCardModal from '../modals/editCardModal';
 import CancelSubModal from '../modals/modalCancelPendingSub';
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub';
 
@@ -300,6 +301,9 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
   const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
   const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen);
 
+  const [editCardModalOpen, setEditCardModalOpen] = useState(false);
+  const toggleEditCardModal = () => setEditCardModalOpen(!editCardModalOpen);
+
   return (
     <>
       <SubReminder sub={subInfo} toggleModal={toggleCancelSubModal} />
@@ -317,6 +321,15 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         closeModal={toggleResumeOrTerminateSubModal}
         refresh={refresh}
       />
+      {editCardModalOpen && (
+        <EditCardModal
+          subscriptionId={subInfo.subscriptionId}
+          currency={subInfo.currency}
+          closeModal={toggleEditCardModal}
+          defaultPaymentId={subInfo.defaultPaymentMethodId}
+          refresh={refresh}
+        />
+      )}
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
           Plan
@@ -456,20 +469,13 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
       </Row>
 
       {subInfo && subInfo.status == 2 && (
-        <div
-          style={{
-            margin: '24px 0',
-            display: 'flex',
-            justifyContent: 'start',
-            alignItems: 'center',
-            gap: '36px',
-          }}
-        >
+        <div className="mx-0 my-6 flex items-center justify-start gap-9">
           <Button onClick={() => navigate(`${APP_PATH}products/update`)}>
             Change Plan
           </Button>
+          <Button onClick={toggleEditCardModal}>Edit payment method</Button>
           {subInfo.cancelAtPeriodEnd == 0 ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="flex items-center gap-3">
               <Button onClick={() => openModal('TERMINATE')}>
                 End Subscription
               </Button>

@@ -14,11 +14,13 @@ import BillingAddressModal from './modals/billingAddressModal';
 import CancelSubModal from './modals/modalCancelPendingSub';
 import CreateSubModal from './modals/modalCreateSub';
 import UpdatePlanModal from './modals/modalUpdateSub';
+import OTPModal from './modals/onetimePaymentModal';
 
 const Index = () => {
   const profileStore = useProfileStore();
   // const appConfigStore = useAppConfigStore();
   const [plans, setPlans] = useState<IPlan[]>([]);
+  const [otpPlans, setOtpPlans] = useState<IPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
   const [countryList, setCountryList] = useState<Country[]>([]);
   const [createModalOpen, setCreateModalOpen] = useState(false); // create subscription Modal
@@ -29,6 +31,10 @@ const Index = () => {
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
   const isNewUserRef = useRef(true); // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
   // they have different api call and Modal window
+
+  const [otpModalOpen, setOtpModalOpen] = useState(false); // one-time-payment modal
+  const toggleOTP = () => setOtpModalOpen(!otpModalOpen);
+  const [otpPlanId, setOtpPlanId] = useState<null | number>(null); // the one-time-payment addon user want to buy
 
   // new user has choosen a sub plan, but haven't paid yet, before the payment due day, they can still cancel it
   // this modal is for this purpose only.
@@ -126,10 +132,12 @@ const Index = () => {
         ? []
         : plans.map((p: any) => {
             const p2 = p.plan;
-            if (p.plan.type == 2) {
-              // addon plan
+            /*
+            if (p.plan.type == 2 || p.plan.type == 3) {
+              // addon plan || one-time-payment plan
               return null;
             }
+            */
             return {
               id: p2.id,
               planName: p2.planName,
@@ -141,9 +149,12 @@ const Index = () => {
               intervalCount: p2.intervalCount,
               status: p2.status,
               addons: p.addons,
+              onetimeAddons: p.onetimeAddons,
             };
           });
-    localPlans = localPlans.filter((p) => p != null);
+    // localPlans = localPlans.filter((p) => p != null);
+    // opt plans
+    setOtpPlans(localPlans.filter((p) => p.type == 3));
 
     if (localActiveSub != null) {
       const planIdx = plans.findIndex(
@@ -165,7 +176,10 @@ const Index = () => {
         }
       }
     }
-    setPlans(localPlans);
+
+    console.log('plans....: ', localPlans);
+    // main plans
+    setPlans(localPlans.filter((p) => p.type == 1));
   };
 
   useEffect(() => {
@@ -198,6 +212,15 @@ const Index = () => {
 
     isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal();
   };
+
+  console.log(
+    'opt planId/isOpen: ',
+    otpPlanId,
+    '//',
+    otpModalOpen,
+    '///',
+    plans.find((p) => p.id == otpPlanId),
+  );
 
   return (
     <div>
@@ -246,6 +269,13 @@ const Index = () => {
           />
         )
       }
+      {otpModalOpen && (
+        <OTPModal
+          isOpen={otpModalOpen}
+          closeModal={toggleOTP}
+          plan={otpPlans.find((p) => p.id == otpPlanId)}
+        />
+      )}
 
       <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
         {plans.length == 0 && !loading ? (
@@ -261,6 +291,9 @@ const Index = () => {
               setSelectedPlan={setSelectedPlan}
               onAddonChange={onAddonChange}
               isActive={p.id == activeSub?.planId}
+              setOtpPlanId={setOtpPlanId} // open one-time-payment modal to confirm: buy this addon?
+              toggleOtpModal={toggleOTP}
+              // subscriptionStatus={activeSub?.status}
             />
           ))
         )}

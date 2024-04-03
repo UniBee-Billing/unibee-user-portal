@@ -3,6 +3,10 @@ import { useAppConfigStore, useProfileStore, useSessionStore } from '../stores';
 import { request } from './client';
 
 const session = useSessionStore.getState();
+const appConfig = useAppConfigStore.getState();
+const stripeGatewayId = appConfig.gateway.find(
+  (g) => g.gatewayName == 'stripe',
+)?.gatewayId;
 
 // after login, we need merchantInfo, appConfig, payment gatewayInfo, etc.
 // this fn get all these data in one go.
@@ -355,6 +359,7 @@ export const createPreviewReq = async (
   vatNumber: string | null,
   vatCountryCode: string | null,
   gatewayId: number,
+  refreshCb: () => void,
 ) => {
   const urlPath = 'create_preview';
   const body = {
@@ -365,11 +370,12 @@ export const createPreviewReq = async (
     addonParams: addons,
     vatNumber,
     vatCountryCode,
+    refreshCb,
   };
   try {
     const res = await request.post(`/user/subscription/${urlPath}`, body);
     if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null });
+      session.setSession({ expired: true, refresh: refreshCb });
       throw new Error('Session expired');
     }
     return [res.data.data, null];
@@ -544,6 +550,87 @@ export const getCountryList = async () => {
       throw new ExpiredError('Session expired');
     }
     return [res.data.data.vatCountryList, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+export const getPaymentMethodListReq = async () => {
+  try {
+    const res = await request.get(
+      `/user/payment/method_list?gatewayId=${stripeGatewayId}`,
+    );
+    if (res.data.code == 61) {
+      // session.setSession({ expired: true, refresh: refreshCb });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data.methodList, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+export const addPaymentMethodReq = async ({
+  currency,
+  subscriptionId,
+}: {
+  currency: string;
+  subscriptionId: string;
+}) => {
+  const body = { currency, subscriptionId, gatewayId: stripeGatewayId };
+  try {
+    const res = await request.post('/user/payment/method_new', body);
+    if (res.data.code == 61) {
+      // session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+export const changePaymentMethodReq = async ({
+  paymentMethodId,
+  subscriptionId,
+}: {
+  paymentMethodId: string;
+  subscriptionId: string;
+}) => {
+  const body = { paymentMethodId, subscriptionId, gatewayId: stripeGatewayId };
+  try {
+    const res = await request.post('/user/subscription/change_gateway', body);
+    if (res.data.code == 61) {
+      // session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+export const onetimePaymentReq = async ({
+  userId,
+  gatewayId,
+  planId,
+}: {
+  userId: number;
+  gatewayId: number;
+  planId: number;
+}) => {
+  const body = { userId, gatewayId, planId };
+  try {
+    const res = await request.post(`/merchant/payment/new`, body);
+    if (res.data.code == 61) {
+      // session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
   } catch (err) {
     let e = err instanceof Error ? err : new Error('Unknown error');
     return [null, e];

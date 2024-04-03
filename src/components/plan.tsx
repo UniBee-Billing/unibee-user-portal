@@ -1,4 +1,4 @@
-import { Checkbox, Input } from 'antd';
+import { Button, Checkbox, Input } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import React, { useEffect, useState } from 'react';
 import { showAmount } from '../helpers';
@@ -14,6 +14,8 @@ interface IPLanProps {
     quantity: number | null,
     checked: boolean | null,
   ) => void;
+  setOtpPlanId: (id: number) => void;
+  toggleOtpModal: () => void;
 }
 
 const Index = ({
@@ -22,6 +24,8 @@ const Index = ({
   isActive,
   setSelectedPlan,
   onAddonChange,
+  setOtpPlanId,
+  toggleOtpModal,
 }: IPLanProps) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const addonCheck = (addonId: number) => (e: CheckboxChangeEvent) => {
@@ -45,6 +49,13 @@ const Index = ({
     }
     setTotalAmount(amount);
   }, [plan]);
+
+  // console.log('plan detail: ', plan);
+
+  const onOtpClick = (planId: number) => () => {
+    setOtpPlanId(planId);
+    toggleOtpModal();
+  };
 
   return (
     <div>
@@ -117,6 +128,7 @@ const Index = ({
             ))}
           </div>
         )}
+
         <div style={{ fontSize: '14px' }}>{`${showAmount(
           plan.amount,
           plan.currency,
@@ -130,6 +142,21 @@ const Index = ({
           }${plan.intervalUnit}`}
         </div>
       </div>
+      {plan.onetimeAddons != null && plan.onetimeAddons.length > 0 && (
+        <>
+          {plan.onetimeAddons.map((one) => (
+            <div
+              key={one.id}
+              className=" mt-2 flex flex-col items-center justify-center gap-2"
+            >
+              {one.planName}
+              <Button onClick={onOtpClick(one.id)} disabled={!isActive}>
+                Buy
+              </Button>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 };
