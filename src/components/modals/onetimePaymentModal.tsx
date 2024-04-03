@@ -1,11 +1,21 @@
-import { Button, Col, Form, Input, Modal, Row, Select, message } from 'antd';
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Row,
+  Select,
+  message,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showAmount } from '../../helpers';
 import {
+  addonPaymentReq,
   getCountryList,
   onetimePaymentReq,
-  saveProfileReq,
 } from '../../requests';
 import { Country, IPlan, IProfile } from '../../shared.types';
 import { useAppConfigStore, useProfileStore } from '../../stores';
@@ -14,14 +24,15 @@ import PaymentSelector from '../ui/paymentSelector';
 interface Props {
   isOpen: boolean;
   plan: IPlan | undefined;
+  subscriptionId: string;
   closeModal: () => void;
 }
-const Index = ({ isOpen, closeModal, plan }: Props) => {
+const Index = ({ isOpen, closeModal, plan, subscriptionId }: Props) => {
   const appConfig = useAppConfigStore();
-  const profile = useProfileStore.getState();
   const [form] = Form.useForm();
   const [countryList, setCountryList] = useState<Country[]>([]);
   const [loading, setLoading] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   const [gatewayId, setGatewayId] = useState<undefined | number>(
     appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId,
@@ -29,6 +40,9 @@ const Index = ({ isOpen, closeModal, plan }: Props) => {
   const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setGatewayId(Number(e.target.value));
   };
+
+  const onQuantityChange = (value: number | null) =>
+    setQuantity(value as number);
 
   const onConfirm = async () => {
     if (gatewayId == undefined) {
@@ -39,12 +53,12 @@ const Index = ({ isOpen, closeModal, plan }: Props) => {
       return;
     }
 
-    console.log('otp buy: ', profile.id, '//', plan?.id, '//', gatewayId);
     setLoading(true);
-    const [paymentRes, err] = await onetimePaymentReq({
-      userId: profile.id as number,
-      gatewayId: gatewayId,
-      planId: plan!.id,
+    const [paymentRes, err] = await addonPaymentReq({
+      addonId: plan!.id,
+      subscriptionId,
+      quantity,
+      returnUrl: `${window.location.origin}/payment-result`,
     });
     setLoading(false);
     if (null != err) {
@@ -52,9 +66,11 @@ const Index = ({ isOpen, closeModal, plan }: Props) => {
       return;
     }
     console.log('payment res: ', paymentRes);
+    /*
     if (paymentRes.link != null && paymentRes.link != '') {
       window.open(paymentRes.link, '_blank');
     }
+    */
     return;
   };
 
@@ -95,24 +111,37 @@ const Index = ({ isOpen, closeModal, plan }: Props) => {
       closeIcon={null}
     >
       <div className=" my-4 h-6">Are you sure you want to buy this addon?</div>
-      <Row>
+      <Row style={{ height: '36px' }}>
         <Col span={8}>
           <span className=" font-bold text-gray-500">Addon name</span>
         </Col>
         <Col span={16}>{plan?.planName}</Col>
       </Row>
-      <Row>
+      <Row style={{ height: '36px' }}>
         <Col span={8}>
           <span className=" font-bold text-gray-500">Addon description</span>
         </Col>
         <Col span={16}>{plan?.description}</Col>
       </Row>
-      <Row>
+      <Row style={{ height: '36px' }}>
         <Col span={8}>
           <span className=" font-bold text-gray-500">Price</span>
         </Col>
         <Col span={16}>
           {showAmount(plan?.amount as number, plan?.currency as string)}
+        </Col>
+      </Row>
+      <Row style={{ height: '36px' }}>
+        <Col span={8}>
+          <span className=" font-bold text-gray-500">Quantity</span>
+        </Col>
+        <Col span={16}>
+          <InputNumber
+            min={1}
+            max={100}
+            value={quantity}
+            onChange={onQuantityChange}
+          />
         </Col>
       </Row>
 

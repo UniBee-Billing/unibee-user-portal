@@ -274,6 +274,7 @@ const Index = () => {
           isOpen={otpModalOpen}
           closeModal={toggleOTP}
           plan={otpPlans.find((p) => p.id == otpPlanId)}
+          subscriptionId={activeSub!.subscriptionId}
         />
       )}
 

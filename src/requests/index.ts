@@ -614,6 +614,7 @@ export const changePaymentMethodReq = async ({
   }
 };
 
+// one-time-payment for addon, but the payment has nothing to do with subscription
 export const onetimePaymentReq = async ({
   userId,
   gatewayId,
@@ -626,6 +627,38 @@ export const onetimePaymentReq = async ({
   const body = { userId, gatewayId, planId };
   try {
     const res = await request.post(`/merchant/payment/new`, body);
+    if (res.data.code == 61) {
+      // session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+// similar to onetimePaymentReq, but it's linked to subscription.
+// user can see a list of addon purchase with current subscription.
+type TAddonPayment = {
+  addonId: number; // addon is technically the same as plan, so this is planId
+  /*
+  metadata?: {
+    "additionalProp1": "string",
+    "additionalProp2": "string",
+    "additionalProp3": "string"
+  },
+  */
+  quantity: number;
+  returnUrl: string;
+  subscriptionId: string;
+};
+export const addonPaymentReq = async (body: TAddonPayment) => {
+  try {
+    const res = await request.post(
+      `/user/subscription/new_onetime_addon_payment`,
+      body,
+    );
     if (res.data.code == 61) {
       // session.setSession({ expired: true, refresh: null });
       throw new ExpiredError('Session expired');
