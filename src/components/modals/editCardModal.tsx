@@ -90,7 +90,7 @@ const Index = ({
     setDefaultPaymentMethod(evt.target.value);
   };
 
-  const onPaymentMethodChange2 = (methodId: string) => (evt) => {
+  const onPaymentMethodChange2 = (methodId: string) => (evt: any) => {
     setDefaultPaymentMethod(methodId);
   };
 
