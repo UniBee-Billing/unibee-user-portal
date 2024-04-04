@@ -671,3 +671,22 @@ export const addonPaymentReq = async (body: TAddonPayment) => {
     return [null, e];
   }
 };
+
+export const onetimepaymentListReq = async (
+  subscriptionId: string,
+  refreshCb: () => void,
+) => {
+  try {
+    const res = await request.get(
+      `/user/subscription/onetime_addon_list?subscriptionId=${subscriptionId}`,
+    );
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: refreshCb });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data.subscriptionOnetimeAddons, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
