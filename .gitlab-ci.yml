@@ -42,3 +42,13 @@ deploy:
   script:
     - kubectl --kubeconfig ${KUBE_FILE} rollout restart deployment/yd-oss-unib-user-protal-prod
     # - kubectl --kubeconfig ${KUBE_FILE} rollout status deployment/yd-oss-unib-user-protal-prod
+
+hub_push:
+  only:
+    - main
+  image: docker
+  stage: hub_push
+  script:
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
+    - docker tag easzlab.io.local:5000/unibee/unibee-user-portal:daily unibee/user-portal:stage
+    - docker push unibee/user-portal:stage
