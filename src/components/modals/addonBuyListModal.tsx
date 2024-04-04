@@ -19,6 +19,7 @@ type TBuyRecord = {
     link: string;
     paidTime: number;
     totalAmount: number;
+    currency: string;
     status: 10 | 20 | 30 | 40; // 10-pending，20-success，30-failure, 40-cancel
   };
   status: 1 | 2 | 3 | 4; // 1-create, 2-paid, 3-cancel, 4-expired
@@ -53,17 +54,18 @@ const Index = ({ subscriptionId, closeModal }: Props) => {
   return (
     <Modal
       title="Addon purchase record"
-      width={'640px'}
+      width={'680px'}
       open={true}
       footer={null}
       closeIcon={null}
     >
       <div style={{ height: '24px' }}></div>
       <Row gutter={[16, 16]} style={{ fontWeight: 'bold', color: 'gray' }}>
-        <Col span={6}>Addon name</Col>
-        <Col span={4}>Price</Col>
-        <Col span={3}>Quantity</Col>
-        <Col span={6}>Created at</Col>
+        <Col span={4}>Addon name</Col>
+        <Col span={3}>Price</Col>
+        <Col span={3}>Qty</Col>
+        <Col span={4}>Total Amt</Col>
+        <Col span={5}>Created at</Col>
         <Col span={5}>Paid</Col>
       </Row>
       <div className="flex w-full flex-col">
@@ -81,10 +83,14 @@ const Index = ({ subscriptionId, closeModal }: Props) => {
                 cursor: 'pointer',
               }}
             >
-              <Col span={6}>{c.addon.planName}</Col>
-              <Col span={4}>{showAmount(c.addon.amount, c.addon.currency)}</Col>
+              <Col span={4}>{c.addon.planName}</Col>
+              <Col span={3}>{showAmount(c.addon.amount, c.addon.currency)}</Col>
               <Col span={3}>{c.quantity}</Col>
-              <Col span={6}>
+              <Col span={4}>
+                {c.payment &&
+                  showAmount(c.payment?.totalAmount, c.payment?.currency)}
+              </Col>
+              <Col span={5}>
                 {dayjs(c.createTime * 1000).format('YYYY-MMM-DD')}
               </Col>
               <Col span={5}>
