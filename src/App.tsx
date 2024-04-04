@@ -20,6 +20,7 @@ import {
   useSessionStore,
 } from './stores';
 
+import AddPaymentMethodResult from './components/addPaymentMethodResult';
 import Invoices from './components/invoices';
 import Login from './components/login';
 import LoginModal from './components/login/LoginModal';
@@ -248,6 +249,10 @@ const App: React.FC = () => {
                   <Route
                     path={`${APP_PATH}payment-result`}
                     Component={PaymentResult}
+                  />
+                  <Route
+                    path={`${APP_PATH}add-payment-method-result`}
+                    Component={AddPaymentMethodResult}
                   />
                   <Route
                     path={`${APP_PATH}session-result`}

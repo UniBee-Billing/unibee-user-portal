@@ -52,6 +52,7 @@ const Index = ({
   const [defaultPaymentMethodId, setDefaultPaymentMethod] =
     useState(defaultPaymentId);
 
+  // set default payment card
   const onConfirm = async () => {
     setLoading(true);
     const [changePaymentMethodRes, err] = await changePaymentMethodReq({
@@ -73,6 +74,7 @@ const Index = ({
     const [addCardRes, err] = await addPaymentMethodReq({
       currency,
       subscriptionId,
+      redirectUrl: `${window.location.origin}/add-payment-method-result`,
     });
     setLoading(false);
     if (null != err) {
@@ -96,7 +98,7 @@ const Index = ({
 
   const fetchCards = async () => {
     setLoading(true);
-    const [methodList, err] = await getPaymentMethodListReq();
+    const [methodList, err] = await getPaymentMethodListReq(fetchCards);
     setLoading(false);
     if (null != err) {
       message.error(err.message);
@@ -119,17 +121,17 @@ const Index = ({
   return (
     <Modal
       title="Edit your card"
-      width={'640px'}
+      width={'680px'}
       open={true}
       footer={null}
       closeIcon={null}
     >
       <div style={{ height: '24px' }}></div>
       <Row gutter={[16, 16]} style={{ fontWeight: 'bold', color: 'gray' }}>
-        <Col span={2}></Col>
+        <Col span={4}>Current</Col>
         <Col span={4}>Brand</Col>
-        <Col span={4}>Country</Col>
-        <Col span={6}>Expired at</Col>
+        <Col span={3}>Country</Col>
+        <Col span={5}>Expired at</Col>
         <Col span={4}>Last 4 digits</Col>
         <Col span={4}>
           <div className="flex justify-evenly gap-2">
@@ -152,13 +154,13 @@ const Index = ({
               gutter={[16, 16]}
               key={c.id}
               style={{
-                height: '48px',
+                height: '42px',
                 display: 'flex',
                 alignItems: 'center',
                 cursor: 'pointer',
               }}
             >
-              <Col span={2}>
+              <Col span={4}>
                 <input
                   type="radio"
                   name="payment-methods"
@@ -169,8 +171,8 @@ const Index = ({
                 />
               </Col>
               <Col span={4}>{c.brand}</Col>
-              <Col span={4}>{c.country}</Col>
-              <Col span={6}>{c.expiredAt}</Col>
+              <Col span={3}>{c.country}</Col>
+              <Col span={5}>{c.expiredAt}</Col>
               <Col span={4}>{c.last4}</Col>
             </Row>
           ))

@@ -556,13 +556,13 @@ export const getCountryList = async () => {
   }
 };
 
-export const getPaymentMethodListReq = async () => {
+export const getPaymentMethodListReq = async (refreshCb: () => void) => {
   try {
     const res = await request.get(
       `/user/payment/method_list?gatewayId=${stripeGatewayId}`,
     );
     if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: refreshCb });
+      session.setSession({ expired: true, refresh: refreshCb });
       throw new ExpiredError('Session expired');
     }
     return [res.data.data.methodList, null];
@@ -575,11 +575,13 @@ export const getPaymentMethodListReq = async () => {
 export const addPaymentMethodReq = async ({
   currency,
   subscriptionId,
+  redirectUrl,
 }: {
   currency: string;
   subscriptionId: string;
+  redirectUrl: string;
 }) => {
-  const body = { currency, subscriptionId, gatewayId: stripeGatewayId };
+  const body = { currency, redirectUrl, gatewayId: stripeGatewayId };
   try {
     const res = await request.post('/user/payment/method_new', body);
     if (res.data.code == 61) {
