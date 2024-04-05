@@ -10,6 +10,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { SUBSCRIPTION_STATUS } from '../constants';
 import { Country, IPlan, ISubscription } from '../shared.types';
 import { useAppConfigStore, useProfileStore } from '../stores';
+import OTPBuyListModal from './modals/addonBuyListModal';
 import BillingAddressModal from './modals/billingAddressModal';
 import CancelSubModal from './modals/modalCancelPendingSub';
 import CreateSubModal from './modals/modalCreateSub';
@@ -40,6 +41,9 @@ const Index = () => {
   // this modal is for this purpose only.
   // It's not the same as 'terminate an active sub'.
   const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
+
+  const [buyRecordModalOpen, setBuyRecordModalOpen] = useState(false);
+  const toggleBuyRecordModal = () => setBuyRecordModalOpen(!buyRecordModalOpen);
 
   const toggleCreateModal = () => setCreateModalOpen(!createModalOpen); // Modal for first time plan choosing
   const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen); // Modal for update plan
@@ -224,7 +228,6 @@ const Index = () => {
 
   return (
     <div>
-      <SubStatus sub={activeSub} toggleModal={toggleCancelSubModal} />
       <Spin
         spinning={loading}
         indicator={
@@ -232,6 +235,16 @@ const Index = () => {
         }
         fullscreen
       />
+      <SubStatus sub={activeSub} toggleModal={toggleCancelSubModal} />
+      <Button onClick={toggleBuyRecordModal} type="link">
+        addon purchase record
+      </Button>
+      {buyRecordModalOpen && activeSub && (
+        <OTPBuyListModal
+          subscriptionId={activeSub?.subscriptionId}
+          closeModal={toggleBuyRecordModal}
+        />
+      )}
       <BillingAddressModal
         isOpen={billingAddressModalOpen}
         closeModal={toggleBillingModal}
@@ -246,7 +259,6 @@ const Index = () => {
           refresh={fetchData}
         />
       )}
-
       {
         // update subscription
         updateModalOpen && !isNewUserRef.current && (
@@ -294,7 +306,6 @@ const Index = () => {
               isActive={p.id == activeSub?.planId}
               setOtpPlanId={setOtpPlanId} // open one-time-payment modal to confirm: buy this addon?
               toggleOtpModal={toggleOTP}
-              // subscriptionStatus={activeSub?.status}
             />
           ))
         )}
