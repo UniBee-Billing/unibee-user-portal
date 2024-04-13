@@ -94,7 +94,7 @@ interface ISubscription {
   cancelAtPeriodEnd: number; // whether this sub will end at the end of billing cycle, 0: false, 1: true
   amount: number;
   currency: string;
-  taxScale: number; // 20000 means 20%
+  taxPercentage: number; // 20000 means 20%
   plan: IPlan;
   addons: ISubAddon[];
   user: IProfile | null;
@@ -124,7 +124,7 @@ type InvoiceItem = {
   proration?: boolean;
   quantity: number;
   tax: number; // tax amount
-  taxScale: number; // tax rate
+  taxPercentage: number; // tax rate
   unitAmountExcludingTax: number;
 };
 
