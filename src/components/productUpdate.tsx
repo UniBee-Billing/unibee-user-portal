@@ -217,15 +217,6 @@ const Index = () => {
     isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal();
   };
 
-  console.log(
-    'opt planId/isOpen: ',
-    otpPlanId,
-    '//',
-    otpModalOpen,
-    '///',
-    plans.find((p) => p.id == otpPlanId),
-  );
-
   return (
     <div>
       <Spin

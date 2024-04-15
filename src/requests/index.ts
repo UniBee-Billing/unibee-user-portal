@@ -76,7 +76,7 @@ export const loginWithPasswordReq = async (body: TPassLogin) => {
 
 export const loginWithOTPReq = async (email: string) => {
   try {
-    request.post(`/user/auth/sso/loginOTP`, {
+    const res = await request.post(`/user/auth/sso/loginOTP`, {
       email,
     });
     return [null, null];
@@ -445,6 +445,32 @@ export const createSubscriptionReq = async (
     return [res.data.data, null];
   } catch (err) {
     let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+// ----------
+type TGetInvoicesReq = {
+  page: number;
+  count: number;
+  currency?: string;
+  status?: number[];
+  amountStart?: number;
+  amountEnd?: number;
+};
+export const getInvoiceListReq = async (
+  body: TGetInvoicesReq,
+  refreshCb: (() => void) | null,
+) => {
+  try {
+    const res = await request.post(`/user/invoice/list`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: refreshCb });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.invoices, null];
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error');
     return [null, e];
   }
 };

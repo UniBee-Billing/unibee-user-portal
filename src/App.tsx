@@ -21,10 +21,12 @@ import {
 } from './stores';
 
 import AddPaymentMethodResult from './components/addPaymentMethodResult';
-import Invoices from './components/invoices';
+import InvoiceList from './components/invoice/list';
+import InvoiceDetail from './components/invoices';
 import Login from './components/login';
 import LoginModal from './components/login/LoginModal';
 import NotFound from './components/notFound';
+import OutletPage from './components/outletPage';
 import PaymentResult from './components/paymentResult';
 import ProductsUpdate from './components/productUpdate';
 import ProfileBasic from './components/profile/basicInfo';
@@ -57,7 +59,7 @@ const items: MenuItem[] = [
     getItem('My Subscription', '/profile/subscription'),
     getItem('Basic Info', '/profile/basic-info'),
   ]),
-  getItem('Invoices', '/invoices', <DesktopOutlined />),
+  getItem('Invoice', '/invoice/list', <PieChartOutlined />),
 ];
 
 const noSiderRoutes = [
@@ -274,7 +276,10 @@ const App: React.FC = () => {
                     path={`${APP_PATH}products`}
                     Component={ProductsUpdate}
                   />
-                  <Route path={`${APP_PATH}invoices`} Component={Invoices} />
+                  <Route path={`${APP_PATH}invoice`} Component={OutletPage}>
+                    <Route path="list" element={<InvoiceList />} />
+                    <Route path=":invoiceId" element={<InvoiceDetail />} />
+                  </Route>
                 </Routes>
               </div>
             </Content>

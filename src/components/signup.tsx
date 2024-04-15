@@ -76,9 +76,7 @@ const Index = () => {
           marginTop: '100px',
         }}
       >
-        <h1 style={{ marginBottom: '36px', marginTop: '64px' }}>
-          Customer Sign-up
-        </h1>
+        <h1 className="mb-9 mt-16">Customer Sign-up</h1>
         <div
           style={{
             width: '640px',
@@ -173,7 +171,7 @@ const Index = () => {
                         return Promise.resolve();
                       }
                       return Promise.reject(
-                        '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * &  ^)',
+                        '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * & _ ^)',
                       );
                     },
                   }),

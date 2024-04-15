@@ -398,7 +398,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
                   return Promise.resolve();
                 }
                 return Promise.reject(
-                  '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * &  ^)',
+                  '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * & _ ^)',
                 );
               },
             }),
