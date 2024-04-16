@@ -1,4 +1,5 @@
 import { CURRENCY } from '../constants';
+import { UserInvoice } from '../shared.types';
 
 export const passwordRegx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*_^?&])[A-Za-z\d@.#$!%*_^?&]{8,15}$/;
@@ -6,9 +7,10 @@ export const passwordRegx =
 export const showAmount = (
   amount: number,
   currency: keyof typeof CURRENCY,
+  ignoreFactor?: boolean,
 ): string => {
   const c = CURRENCY[currency];
-  return `${c.symbol}${amount / c.stripe_factor}`;
+  return `${c.symbol}${amount / (ignoreFactor ? 1 : c.stripe_factor)}`;
 };
 
 export const timerBySec = (numSeconds: number, cb: (v: number) => void) => {
@@ -44,3 +46,22 @@ export const emailValidate = (email: string) =>
     .match(
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
     );
+
+export const normalizeAmt = (iv: UserInvoice[]) => {
+  iv.forEach((v) => {
+    const c = v.currency;
+    const f = CURRENCY[c].stripe_factor;
+    v.subscriptionAmount /= f;
+    v.subscriptionAmountExcludingTax /= f;
+    v.taxAmount /= f;
+    v.totalAmount /= f;
+    v.totalAmountExcludingTax /= f;
+    v.lines &&
+      v.lines.forEach((l) => {
+        (l.amount as number) /= f;
+        (l.amountExcludingTax as number) /= f;
+        (l.tax as number) /= f;
+        (l.unitAmountExcludingTax as number) /= f;
+      });
+  });
+};

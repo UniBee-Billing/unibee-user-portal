@@ -157,6 +157,7 @@ interface UserInvoice {
 }
 
 type InvoiceItem = {
+  id: string;
   amount: number;
   amountExcludingTax: number;
   currency: string;
@@ -212,6 +213,7 @@ export type {
   IPreview,
   IProfile,
   ISubscription,
+  InvoiceItem,
   InvoiceItemTotal,
   TMerchantInfo,
   UserInvoice,

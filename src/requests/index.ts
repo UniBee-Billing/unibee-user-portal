@@ -475,6 +475,26 @@ export const getInvoiceListReq = async (
   }
 };
 
+export const getInvoiceDetailReq = async (
+  invoiceId: string,
+  refreshCb: () => void,
+) => {
+  try {
+    const res = await request.get(
+      `/user/invoice/detail?invoiceId=${invoiceId}`,
+    );
+
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: refreshCb });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.invoice, null];
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
 export const vatNumberCheckReq = async (vatNumber: string) => {
   const body = { vatNumber };
   try {

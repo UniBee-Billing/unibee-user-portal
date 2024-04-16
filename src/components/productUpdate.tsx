@@ -227,9 +227,9 @@ const Index = () => {
         fullscreen
       />
       <SubStatus sub={activeSub} toggleModal={toggleCancelSubModal} />
-      <Button onClick={toggleBuyRecordModal} type="link">
+      {/* <Button onClick={toggleBuyRecordModal} type="link">
         addon purchase record
-      </Button>
+      </Button> */}
       {buyRecordModalOpen && activeSub && (
         <OTPBuyListModal
           subscriptionId={activeSub?.subscriptionId}

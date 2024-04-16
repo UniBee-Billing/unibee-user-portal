@@ -1,73 +1,52 @@
-import { LoadingOutlined } from '@ant-design/icons'
-import { Button, Col, Row, Spin, message } from 'antd'
-import React, { CSSProperties, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { INVOICE_STATUS } from '../../constants'
-import { showAmount } from '../../helpers'
-import { getInvoiceDetailReq } from '../../requests'
-import { IProfile, TInvoicePerm, UserInvoice } from '../../shared.types.d'
-import { normalizeAmt } from '../helpers'
-import InvoiceItemsModal from '../subscription/modals/newInvoice'
+import { LoadingOutlined } from '@ant-design/icons';
+import { Button, Col, Row, Spin, message } from 'antd';
+import React, { CSSProperties, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { INVOICE_STATUS } from '../../constants';
+import { normalizeAmt, showAmount } from '../../helpers';
+import { getInvoiceDetailReq } from '../../requests';
+import { IProfile, UserInvoice } from '../../shared.types';
+import InvoiceItemsModal from './invoiceModal';
 
-const invoicePerm: TInvoicePerm = {
-  editable: false,
-  savable: false,
-  creatable: false,
-  publishable: false,
-  revokable: false,
-  deletable: false,
-  refundable: false,
-  downloadable: true,
-  sendable: false
-}
-
-const APP_PATH = import.meta.env.BASE_URL // if not specified in build command, default is /
-const API_URL = import.meta.env.VITE_API_URL
+const APP_PATH = import.meta.env.BASE_URL; // if not specified in build command, default is /
 const rowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  height: '32px'
-}
-const colStyle: CSSProperties = { fontWeight: 'bold' }
+  height: '32px',
+};
+const colStyle: CSSProperties = { fontWeight: 'bold' };
 
 const Index = () => {
-  const navigate = useNavigate()
-  const [loading, setLoading] = useState(false)
-  const [invoiceDetail, setInvoiceDetail] = useState<UserInvoice | null>(null)
-  const [userProfile, setUserProfile] = useState<IProfile | null>(null)
-  const [showInvoiceItems, setShowInvoiceItems] = useState(false)
-  const toggleInvoiceItems = () => setShowInvoiceItems(!showInvoiceItems)
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [invoiceDetail, setInvoiceDetail] = useState<UserInvoice | null>(null);
+  const [showInvoiceItems, setShowInvoiceItems] = useState(false);
+  const toggleInvoiceItems = () => setShowInvoiceItems(!showInvoiceItems);
 
-  const goBack = () => navigate(`${APP_PATH}invoice/list`)
-  const goToUser = (userId: number) => () =>
-    navigate(`${APP_PATH}customer/${userId}`)
-  const goToSub = (subId: string) => () =>
-    navigate(`${APP_PATH}subscription/${subId}`)
+  const goBack = () => navigate(`${APP_PATH}invoice/list`);
 
   const fetchData = async () => {
-    const pathName = window.location.pathname.split('/')
-    console.log('path name: ', pathName)
-    const ivId = pathName.pop()
+    const pathName = window.location.pathname.split('/');
+    const ivId = pathName.pop();
     if (ivId == null) {
-      message.error('Invalid invoice')
-      return
+      message.error('Invalid invoice');
+      return;
     }
-    setLoading(true)
-    const [res, err] = await getInvoiceDetailReq(ivId)
-    console.log('get invoicde detail res: ', res)
-    setLoading(false)
+
+    setLoading(true);
+    const [invoice, err] = await getInvoiceDetailReq(ivId, fetchData);
+    setLoading(false);
     if (null != err) {
-      message.error(err.message)
-      return
+      message.error(err.message);
+      return;
     }
-    const { invoice } = res
-    normalizeAmt([invoice])
-    setInvoiceDetail(invoice)
-  }
+    normalizeAmt([invoice]);
+    setInvoiceDetail(invoice);
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   return (
     <div>
@@ -86,7 +65,6 @@ const Index = () => {
           closeModal={toggleInvoiceItems}
           refresh={() => {}}
           refundMode={false}
-          permission={invoicePerm}
         />
       )}
 
@@ -110,12 +88,12 @@ const Index = () => {
             : showAmount(
                 invoiceDetail?.totalAmount,
                 invoiceDetail?.currency,
-                true
+                true,
               )}
           <span className="text-xs text-gray-500">
             {invoiceDetail == null
               ? ''
-              : ` (${invoiceDetail.taxScale / 100}% tax incl)`}
+              : ` (${invoiceDetail.taxPercentage / 100}% tax incl)`}
           </span>
         </Col>
         <Col span={4} style={colStyle}>
@@ -141,13 +119,7 @@ const Index = () => {
           {invoiceDetail == null ||
           invoiceDetail.subscriptionId == null ||
           invoiceDetail.subscriptionId == '' ? null : (
-            <span
-              className="cursor-pointer text-blue-600"
-              onClick={goToSub(invoiceDetail.subscriptionId)}
-            >
-              {' '}
-              {invoiceDetail?.subscriptionId}
-            </span>
+            <span>{invoiceDetail?.subscriptionId}</span>
           )}
         </Col>
       </Row>
@@ -156,8 +128,8 @@ const Index = () => {
           Payment Gateway
         </Col>
         <Col span={6}>{invoiceDetail?.gateway.gatewayName}</Col>
-        <Col span={4} style={colStyle}>
-          User Id{' '}
+        {/* <Col span={4} style={colStyle}>
+          User Id
         </Col>
         <Col span={6}>
           <span
@@ -167,7 +139,7 @@ const Index = () => {
             {invoiceDetail &&
               `${invoiceDetail?.userAccount.firstName} ${invoiceDetail.userAccount.lastName}`}
           </span>
-        </Col>
+            </Col>*/}
       </Row>
 
       {/* <UserInfo user={userProfile} /> */}
@@ -179,8 +151,11 @@ const Index = () => {
         <object
           data={invoiceDetail.sendPdf}
           type="application/pdf"
-          width="100%"
-          height="100%"
+          style={{
+            height: 'calc(100vh - 460px)',
+            width: '100%',
+            marginTop: '24px',
+          }}
         >
           <p>
             <a href={invoiceDetail.sendPdf}>Download invoice</a>
@@ -191,7 +166,7 @@ const Index = () => {
         <Button onClick={goBack}>Go Back</Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Index
+export default Index;

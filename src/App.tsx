@@ -21,8 +21,8 @@ import {
 } from './stores';
 
 import AddPaymentMethodResult from './components/addPaymentMethodResult';
+import InvoiceDetail from './components/invoice/detail';
 import InvoiceList from './components/invoice/list';
-import InvoiceDetail from './components/invoices';
 import Login from './components/login';
 import LoginModal from './components/login/LoginModal';
 import NotFound from './components/notFound';

@@ -35,9 +35,9 @@ const Index = () => {
 
   const columns: ColumnsType<UserInvoice> = [
     {
-      title: 'Invoice Name',
-      dataIndex: 'invoiceName',
-      key: 'invoiceName',
+      title: 'Invoice Id',
+      dataIndex: 'invoiceId',
+      key: 'invoiceId',
       // render: (text) => <a>{text}</a>,
     },
     {
@@ -89,6 +89,7 @@ const Index = () => {
   ];
 
   const fetchData = async () => {
+    /*
     const searchTerm = form.getFieldsValue();
     let amtFrom = searchTerm.amountStart,
       amtTo = searchTerm.amountEnd;
@@ -112,13 +113,13 @@ const Index = () => {
     }
     searchTerm.amountStart = amtFrom;
     searchTerm.amountEnd = amtTo;
-
+    */
     setLoading(true);
     const [invoices, err] = await getInvoiceListReq(
       {
         page,
         count: PAGE_SIZE,
-        ...searchTerm,
+        // ...searchTerm,
       },
       fetchData,
     );
@@ -139,7 +140,7 @@ const Index = () => {
 
   return (
     <div>
-      <Search form={form} goSearch={fetchData} searching={loading} />
+      {/* <Search form={form} goSearch={fetchData} searching={loading} /> */}
       <Table
         columns={columns}
         dataSource={invoiceList}
