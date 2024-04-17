@@ -54,7 +54,7 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem('Products', '/products', <PieChartOutlined />),
+  getItem('Plans', '/plans', <PieChartOutlined />),
   getItem('Profile', '/profile', <DesktopOutlined />, [
     getItem('My Subscription', '/profile/subscription'),
     getItem('Basic Info', '/profile/basic-info'),
@@ -130,9 +130,8 @@ const App: React.FC = () => {
   // similar to onItemClick, try to refactor into one fn.
   useEffect(() => {
     const p = location.pathname;
-    console.log('location changed: ', p);
-    if (p == '/products/update') {
-      setActiveMenuItem(['/products']);
+    if (p == '/plans/update') {
+      setActiveMenuItem(['/plans']);
     } else if (p == '/profile/subscription') {
       setActiveMenuItem([p]);
     }
@@ -269,13 +268,10 @@ const App: React.FC = () => {
                     Component={ProfileSubscription}
                   />
                   <Route
-                    path={`${APP_PATH}products/update`}
+                    path={`${APP_PATH}plans/update`}
                     Component={ProductsUpdate}
                   />
-                  <Route
-                    path={`${APP_PATH}products`}
-                    Component={ProductsUpdate}
-                  />
+                  <Route path={`${APP_PATH}plans`} Component={ProductsUpdate} />
                   <Route path={`${APP_PATH}invoice`} Component={OutletPage}>
                     <Route path="list" element={<InvoiceList />} />
                     <Route path=":invoiceId" element={<InvoiceDetail />} />

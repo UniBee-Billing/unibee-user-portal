@@ -220,6 +220,20 @@ const Index = () => {
             </Col>
           </Row>
 
+          <Row className="my-5 flex items-center" gutter={[8, 8]}>
+            <Col span={4}>Payment Methods</Col>
+            <Col span={20}>
+              <Form.Item name="paymentMethod" noStyle={true}>
+                <Radio.Group>
+                  <Radio value="CreditCard">Credit Card</Radio>
+                  <Radio value="Crypto">Crypto</Radio>
+                  <Radio value="PayPal">PayPal</Radio>
+                  <Radio value="WireTransfer">Wire Transfer</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
+
           <Divider
             orientation="left"
             style={{ margin: '32px 0', color: '#757575' }}
@@ -260,20 +274,6 @@ const Index = () => {
               )}
             </Row>
           ))}
-
-          <Row className="my-4 flex items-center" gutter={[8, 8]}>
-            <Col span={4}>Payment Methods</Col>
-            <Col span={10}>
-              <Form.Item name="paymentMethod" noStyle={true}>
-                <Radio.Group>
-                  <Radio value="CreditCard">Credit Card</Radio>
-                  <Radio value="Crypto">Crypto</Radio>
-                  <Radio value="PayPal">PayPal</Radio>
-                  <Radio value="WireTransfer">Wire Transfer</Radio>
-                </Radio.Group>
-              </Form.Item>
-            </Col>
-          </Row>
 
           <div className="mx-8 my-8 flex justify-center">
             <Button onClick={togglePasswordModal}>Change Password</Button>

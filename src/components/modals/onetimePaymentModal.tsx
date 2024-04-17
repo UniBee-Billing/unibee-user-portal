@@ -104,8 +104,6 @@ const Index = ({ isOpen, closeModal, plan, subscriptionId }: Props) => {
       );
   }, [countryCode]);
 
-  console.log('otp addon detail: ', plan);
-
   return (
     <Modal
       title="Payment confirm"
