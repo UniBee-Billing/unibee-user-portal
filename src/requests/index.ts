@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { ExpiredError, IProfile } from '../shared.types';
 import { useAppConfigStore, useProfileStore, useSessionStore } from '../stores';
 import { request } from './client';
@@ -493,6 +494,26 @@ export const getInvoiceDetailReq = async (
     const e = err instanceof Error ? err : new Error('Unknown error');
     return [null, e];
   }
+};
+
+export const downloadInvoice = (url: string) => {
+  if (url == null || url == '') {
+    return;
+  }
+  axios({
+    url,
+    method: 'GET',
+    responseType: 'blob',
+  }).then((response) => {
+    const href = URL.createObjectURL(response.data);
+    const link = document.createElement('a');
+    link.href = href;
+    link.setAttribute('download', 'invoice.pdf');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(href);
+  });
 };
 
 export const vatNumberCheckReq = async (vatNumber: string) => {

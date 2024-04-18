@@ -1,7 +1,10 @@
-import { LoadingOutlined } from '@ant-design/icons';
+import {
+  DownloadOutlined,
+  EyeOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons';
 import {
   Button,
-  Checkbox,
   Col,
   Form,
   FormInstance,
@@ -9,6 +12,7 @@ import {
   Pagination,
   Row,
   Select,
+  Space,
   Table,
   message,
 } from 'antd';
@@ -18,10 +22,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CURRENCY, INVOICE_STATUS, SUBSCRIPTION_STATUS } from '../../constants';
 import { showAmount } from '../../helpers';
-import { getInvoiceListReq } from '../../requests';
+import { downloadInvoice, getInvoiceListReq } from '../../requests';
 import '../../shared.css';
 import { UserInvoice } from '../../shared.types';
 import { usePagination } from '../hooks';
+import PreviewModal from './invoicePreviewModal';
 
 const PAGE_SIZE = 10;
 const APP_PATH = import.meta.env.BASE_URL;
@@ -32,13 +37,20 @@ const Index = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [invoiceList, setInvoiceList] = useState<UserInvoice[]>([]);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const togglePreviewModal = () => setPreviewModalOpen(!previewModalOpen);
+  const [previewLink, setPreviewLink] = useState('');
+
+  const openPreview = (ivLink: string) => {
+    setPreviewLink(ivLink);
+    togglePreviewModal();
+  };
 
   const columns: ColumnsType<UserInvoice> = [
     {
       title: 'Invoice Id',
       dataIndex: 'invoiceId',
       key: 'invoiceId',
-      // render: (text) => <a>{text}</a>,
     },
     {
       title: 'Total Amount',
@@ -63,7 +75,7 @@ const Index = () => {
       ),
     },
     {
-      title: 'Start',
+      title: 'Issue date',
       dataIndex: 'periodStart',
       key: 'periodStart',
       render: (d, plan) =>
@@ -79,11 +91,28 @@ const Index = () => {
       sorter: (a, b) => a.periodEnd - b.periodEnd,
     },
     {
-      title: 'User',
-      dataIndex: 'userAccount',
-      key: 'userAccount',
-      render: (u, plan) => (
-        <span>{`${plan.userAccount.firstName} ${plan.userAccount.lastName}`}</span>
+      title: 'Actions',
+      dataIndex: 'actions',
+      key: 'actions',
+      render: (_, iv) => (
+        <Space size="middle">
+          <span className="btn-preview-download-iv">
+            <Button
+              className="btn-preview-download-iv"
+              disabled={iv.sendPdf == '' || iv.sendPdf == null}
+              onClick={() => openPreview(iv.sendPdf)}
+              icon={<EyeOutlined />}
+            ></Button>
+          </span>
+          <span className="btn-preview-download-iv">
+            <Button
+              className="btn-preview-download-iv"
+              disabled={iv.sendPdf == '' || iv.sendPdf == null}
+              onClick={() => downloadInvoice(iv.sendPdf)}
+              icon={<DownloadOutlined />}
+            ></Button>
+          </span>
+        </Space>
       ),
     },
   ];
@@ -141,6 +170,9 @@ const Index = () => {
   return (
     <div>
       {/* <Search form={form} goSearch={fetchData} searching={loading} /> */}
+      {previewModalOpen && (
+        <PreviewModal closeModal={togglePreviewModal} ivLink={previewLink} />
+      )}
       <Table
         columns={columns}
         dataSource={invoiceList}
@@ -154,6 +186,12 @@ const Index = () => {
         onRow={(iv, rowIndex) => {
           return {
             onClick: (evt) => {
+              if (
+                evt.target instanceof Element &&
+                evt.target.closest('.btn-preview-download-iv') != null
+              ) {
+                return;
+              }
               navigate(`${APP_PATH}invoice/${iv.invoiceId}`);
             },
           };

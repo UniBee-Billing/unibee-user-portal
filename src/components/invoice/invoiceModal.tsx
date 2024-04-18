@@ -7,23 +7,13 @@ import { daysBetweenDate, showAmount } from '../../helpers';
 import { IProfile, InvoiceItem, UserInvoice } from '../../shared.types';
 
 interface Props {
-  user: IProfile | null;
   isOpen: boolean;
   detail: UserInvoice;
-  refundMode: boolean;
   // items: InvoiceItem[] | null;
   closeModal: () => void;
-  refresh: () => void;
 }
 
-const Index = ({
-  user,
-  isOpen,
-  detail,
-  refundMode,
-  closeModal,
-  refresh,
-}: Props) => {
+const Index = ({ isOpen, detail, closeModal }: Props) => {
   const [loading, setLoading] = useState(false);
   const [invoiceList, setInvoiceList] = useState<InvoiceItem[]>(detail.lines);
   const defaultCurrency =
@@ -123,7 +113,7 @@ const Index = ({
       {invoiceList &&
         invoiceList.map((v, i) => (
           <Row
-            key={v.id}
+            key={i}
             style={{ margin: '8px 0', display: 'flex', alignItems: 'center' }}
           >
             <Col span={10}>{v.description}</Col>

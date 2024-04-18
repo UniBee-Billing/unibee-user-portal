@@ -59,12 +59,9 @@ const Index = () => {
       />
       {invoiceDetail && showInvoiceItems && (
         <InvoiceItemsModal
-          user={invoiceDetail.userAccount}
           isOpen={true}
           detail={invoiceDetail}
           closeModal={toggleInvoiceItems}
-          refresh={() => {}}
-          refundMode={false}
         />
       )}
 
@@ -163,7 +160,9 @@ const Index = () => {
         </object>
       )}
       <div className="m-8 flex justify-center">
-        <Button onClick={goBack}>Go Back</Button>
+        <Button type="primary" onClick={goBack}>
+          Go Back
+        </Button>
       </div>
     </div>
   );
