@@ -147,9 +147,9 @@ const Index = ({ isOpen, detail, closeModal }: Props) => {
         </Col>
       </Row>
 
-      <div className="mt-6 flex items-center justify-between gap-4">
+      <div className="mt-6 flex items-center justify-end">
         <div style={{ display: 'flex', gap: '16px' }}>
-          <Button onClick={closeModal} disabled={loading}>
+          <Button type="primary" onClick={closeModal} disabled={loading}>
             Close
           </Button>
         </div>

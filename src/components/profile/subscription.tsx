@@ -292,8 +292,8 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
   const [resumeOrTerminateModal, setResumeOrTerminateModal] = useState(false);
   const toggleResumeOrTerminateSubModal = () =>
     setResumeOrTerminateModal(!resumeOrTerminateModal);
-  const [action, setAction] = useState<'TERMINATE' | 'RESUME'>('TERMINATE');
-  const openModal = (action: 'TERMINATE' | 'RESUME') => {
+  const [action, setAction] = useState<'CANCEL' | 'UN-CANCEL'>('CANCEL');
+  const openModal = (action: 'CANCEL' | 'UN-CANCEL') => {
     setAction(action);
     toggleResumeOrTerminateSubModal();
   };
@@ -476,7 +476,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           <Button onClick={toggleEditCardModal}>Edit payment method</Button>
           {subInfo.cancelAtPeriodEnd == 0 ? (
             <div className="flex items-center gap-3">
-              <Button onClick={() => openModal('TERMINATE')}>
+              <Button onClick={() => openModal('CANCEL')}>
                 End Subscription
               </Button>
             </div>
@@ -486,10 +486,10 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
               <span style={{ color: 'red', marginRight: '8px' }}>
                 {subInfo &&
                   dayjs(new Date(subInfo!.currentPeriodEnd * 1000)).format(
-                    'YYYY-MMM-DD HH:mm:ss',
+                    'YYYY-MMM-DD, HH:mm:ss',
                   )}
               </span>
-              <Button onClick={() => openModal('RESUME')}>Resume</Button>
+              <Button onClick={() => openModal('UN-CANCEL')}>Un-cancel</Button>
             </div>
           )}
         </div>

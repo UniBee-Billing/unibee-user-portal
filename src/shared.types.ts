@@ -181,6 +181,21 @@ type InvoiceItemTotal = {
   lines: InvoiceItem[];
 };
 
+type PaymentItem = {
+  id: number;
+  merchantId: number;
+  userId: number;
+  subscriptionId: string;
+  invoiceId: string;
+  currency: string;
+  totalAmount: number;
+  gatewayId: number;
+  paymentId: string;
+  status: number;
+  timelineType: number;
+  createTime: number;
+};
+
 interface IPreview {
   totalAmount: number; // these 3 fields need to be resent to backend when submitting createSub/updateSub
   prorationDate?: number; // ditto
@@ -215,6 +230,7 @@ export type {
   ISubscription,
   InvoiceItem,
   InvoiceItemTotal,
+  PaymentItem,
   TMerchantInfo,
   UserInvoice,
 };

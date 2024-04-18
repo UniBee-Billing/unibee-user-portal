@@ -531,6 +531,25 @@ export const vatNumberCheckReq = async (vatNumber: string) => {
   }
 };
 
+export const getPaymentListReq = async (
+  { page, count }: { page: number; count: number },
+  refreshCb: () => void,
+) => {
+  try {
+    const res = await request.get(
+      `/user/payment/payment_timeline_list?page=${page}&count=${count}`,
+    );
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: refreshCb });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.paymentTimeline, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
 // check payment result
 export const checkPaymentReq = async (subscriptionId: string) => {
   const body = { subscriptionId };
@@ -567,11 +586,11 @@ export const terminateOrResumeSubReq = async ({
   action,
 }: {
   subscriptionId: string;
-  action: 'TERMINATE' | 'RESUME';
+  action: 'CANCEL' | 'UN-CANCEL';
 }) => {
   let URL = `/user/subscription/`;
   URL +=
-    action == 'TERMINATE'
+    action == 'CANCEL'
       ? 'cancel_at_period_end'
       : 'cancel_last_cancel_at_period_end';
   const body = {

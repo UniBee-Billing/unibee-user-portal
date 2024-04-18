@@ -83,12 +83,14 @@ const Index = () => {
       sorter: (a, b) => a.periodStart - b.periodStart,
     },
     {
+      /*
       title: 'End',
       dataIndex: 'periodEnd',
       key: 'periodEnd',
       render: (d, plan) =>
         d == 0 ? '' : dayjs(d * 1000).format('YYYY-MMM-DD'),
       sorter: (a, b) => a.periodEnd - b.periodEnd,
+*/
     },
     {
       title: 'Actions',

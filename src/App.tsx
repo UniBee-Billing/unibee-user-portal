@@ -27,6 +27,7 @@ import Login from './components/login';
 import LoginModal from './components/login/LoginModal';
 import NotFound from './components/notFound';
 import OutletPage from './components/outletPage';
+import PaymentList from './components/payment/list';
 import PaymentResult from './components/paymentResult';
 import ProductsUpdate from './components/productUpdate';
 import ProfileBasic from './components/profile/basicInfo';
@@ -60,6 +61,7 @@ const items: MenuItem[] = [
     getItem('Basic Info', '/profile/basic-info'),
   ]),
   getItem('Invoice', '/invoice/list', <PieChartOutlined />),
+  getItem('Payment', '/payment/list', <PieChartOutlined />),
 ];
 
 const noSiderRoutes = [
@@ -123,17 +125,22 @@ const App: React.FC = () => {
   useEffect(() => {
     // when user refresh or enter URL then ENTER, call this fn to highlight the active menu
     // since we are already in the current path, there is no need to navigate
-    console.log('app mounted, pathname: ', window.location.pathname);
+    // console.log('app mounted, pathname: ', window.location.pathname);
     onItemClick({ key: window.location.pathname, needNavigate: false });
   }, []);
 
   // similar to onItemClick, try to refactor into one fn.
   useEffect(() => {
     const p = location.pathname;
+    console.log('path name: ', p);
     if (p == '/plans/update') {
       setActiveMenuItem(['/plans']);
     } else if (p == '/profile/subscription') {
       setActiveMenuItem([p]);
+    } else if (p.startsWith('/invoice/')) {
+      setActiveMenuItem(['/invoice/list']);
+    } else if (p.startsWith('/payment/')) {
+      setActiveMenuItem(['/payment/list']);
     }
 
     if (location) {
@@ -275,6 +282,10 @@ const App: React.FC = () => {
                   <Route path={`${APP_PATH}invoice`} Component={OutletPage}>
                     <Route path="list" element={<InvoiceList />} />
                     <Route path=":invoiceId" element={<InvoiceDetail />} />
+                  </Route>
+                  <Route path={`${APP_PATH}payment`} Component={OutletPage}>
+                    <Route path="list" element={<PaymentList />} />
+                    {/* <Route path=":invoiceId" element={<InvoiceDetail />} /> */}
                   </Route>
                 </Routes>
               </div>

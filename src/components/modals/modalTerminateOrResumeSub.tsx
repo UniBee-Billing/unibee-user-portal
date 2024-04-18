@@ -1,4 +1,5 @@
 import { Button, Col, Modal, Row, message } from 'antd';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showAmount } from '../../helpers';
@@ -10,7 +11,7 @@ const APP_PATH = import.meta.env.BASE_URL;
 interface Props {
   isOpen: boolean;
   subInfo: ISubscription | null;
-  action: 'TERMINATE' | 'RESUME';
+  action: 'CANCEL' | 'UN-CANCEL';
   closeModal: () => void;
   refresh: () => void;
 }
@@ -30,7 +31,9 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
     }
     message.success(
       `Subscription ${
-        action == 'RESUME' ? 'resumed' : 'terminated at the next billing cycle'
+        action == 'UN-CANCEL'
+          ? 'resumed'
+          : 'cancelled at the end of this billing cycle.'
       }`,
     );
     closeModal();
@@ -39,22 +42,28 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
 
   return (
     <Modal
-      title={`${action == 'RESUME' ? 'Resume' : 'Terminate'} Subscription`}
+      title={`${action == 'UN-CANCEL' ? 'Un-cancel' : 'Cancel'} Subscription`}
       width={'780px'}
       open={isOpen}
       footer={null}
       closeIcon={null}
     >
       <div style={{ margin: '16px 0' }}>
-        {`Are you sure you want to ${action.toLowerCase()} this subscription?`}
-        {action == 'TERMINATE' && (
-          <span>
-            {' '}
-            at the end of this billing cycle current period end*****`
-          </span>
+        {`Are you sure you want to ${action.toLowerCase()} this subscription `}
+        {action == 'UN-CANCEL' && '?'}
+        {action == 'CANCEL' && (
+          <>
+            <span>at the end of this billing cycle </span>
+            <span className=" text-red-500">
+              {dayjs((subInfo?.currentPeriodEnd as number) * 1000).format(
+                'YYYY-MMM-DD',
+              )}
+            </span>
+            &nbsp;?
+          </>
         )}
       </div>
-      <Row>
+      <Row style={{ marginBottom: '12px' }}>
         <Col span={6}>
           <span style={{ fontWeight: 'bold' }}>First name</span>
         </Col>
@@ -64,7 +73,7 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
         </Col>
         <Col span={6}>{subInfo?.user?.lastName}</Col>
       </Row>
-      <Row>
+      <Row style={{ marginBottom: '12px' }}>
         <Col span={6}>
           <span style={{ fontWeight: 'bold' }}>Plan</span>
         </Col>
@@ -77,14 +86,14 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
             showAmount(subInfo?.plan?.amount, subInfo?.plan?.currency)}
         </Col>
       </Row>
-      <Row>
+      <Row style={{ marginBottom: '12px' }}>
         <Col span={6}>
           <span style={{ fontWeight: 'bold' }}>Current due date</span>
         </Col>
         <Col span={6}>
-          {new Date(
-            (subInfo?.currentPeriodEnd as number) * 1000,
-          ).toDateString()}
+          {dayjs((subInfo?.currentPeriodEnd as number) * 1000).format(
+            'YYYY-MMM-DD',
+          )}
         </Col>
       </Row>
       <div

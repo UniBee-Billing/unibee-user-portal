@@ -6,6 +6,7 @@ export const CURRENCY: {
   USD: { symbol: '$', stripe_factor: 100 },
   JPY: { symbol: '¥', stripe_factor: 1 },
   EUR: { symbol: '€', stripe_factor: 100 },
+  USDT: { symbol: '₮', stripe_factor: 100 },
 };
 
 export const SUBSCRIPTION_STATUS: { [key: number]: string } = {
@@ -34,4 +35,15 @@ export const INVOICE_STATUS: { [key: number]: string } = {
   3: 'Paid', // user paid the invoice
   4: 'Failed', // user not pay the invoice before it get expired
   5: 'Cancelled', // admin cancel the invoice after publishing, only if user hasn't paid yet. If user has paid, admin cannot cancel it.
+};
+
+export const PAYMENT_STATUS: { [key: number]: string } = {
+  0: 'Pending',
+  1: 'Succeeded',
+  2: 'Failed',
+};
+
+export const PAYMENT_TYPE: { [key: number]: string } = {
+  0: 'Payment',
+  1: 'Refund',
 };
