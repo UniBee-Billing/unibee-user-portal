@@ -361,6 +361,7 @@ export const createPreviewReq = async (
   vatCountryCode: string | null,
   gatewayId: number,
   refreshCb: () => void,
+  discountCode?: string,
 ) => {
   const urlPath = 'create_preview';
   const body = {
@@ -372,6 +373,7 @@ export const createPreviewReq = async (
     vatNumber,
     vatCountryCode,
     refreshCb,
+    discountCode,
   };
   try {
     const res = await request.post(`/user/subscription/${urlPath}`, body);

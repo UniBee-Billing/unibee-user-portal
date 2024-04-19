@@ -46,8 +46,10 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [vatNumber, setVatNumber] = useState('');
   const [vatDetail, setVatDetail] = useState<null | TVATDetail>(null);
   const [isVatValid, setIsVatValid] = useState(false);
+  const [discountCode, setDiscountCode] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
   const vatChechkingRef = useRef(false);
+  const discountChkingRef = useRef(false);
   // set card payment as default gateway
   const [gatewayId, setGatewayId] = useState<undefined | number>(
     appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId,
@@ -88,6 +90,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       selectedCountry,
       gatewayId as number,
       createPreview,
+      discountCode,
     );
     setLoading(false);
     if (null != err) {
@@ -96,6 +99,15 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     }
     setPreview(previewRes);
     return true;
+  };
+
+  const onDiscountChecking = async (evt: React.FocusEvent<HTMLElement>) => {
+    if (evt.relatedTarget?.classList.contains('confirm-btn-wrapper')) {
+      vatChechkingRef.current = true;
+    }
+    await createPreview();
+    vatChechkingRef.current = false;
+    setSubmitting(false);
   };
 
   const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
@@ -288,6 +300,19 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
               </Row>
             </>
           )}
+          <Row>
+            <Col span={4}>Discount code</Col>
+          </Row>
+          <Row>
+            <Col span={6}>
+              <Input
+                value={discountCode}
+                onBlur={onDiscountChecking}
+                onChange={(evt) => setDiscountCode(evt.target.value)}
+              />
+            </Col>
+          </Row>
+
           <Row>
             <Col span={20}>
               <span style={{ fontSize: '18px' }}>Total</span>
