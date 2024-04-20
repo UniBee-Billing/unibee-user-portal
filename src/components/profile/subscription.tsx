@@ -101,7 +101,7 @@ const Index = () => {
     // if user enter this route from login and has no subscription(new user or current sub expired/cancelled)
     // they'll be redirected to /product, otherwise, stay.
     if (location.state != null && location.state.from == 'login') {
-      navigate(`${APP_PATH}products/update`);
+      navigate(`${APP_PATH}plans`);
     }
   };
 
@@ -470,7 +470,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
 
       {subInfo && subInfo.status == 2 && (
         <div className="mx-0 my-6 flex items-center justify-start gap-9">
-          <Button onClick={() => navigate(`${APP_PATH}products/update`)}>
+          <Button onClick={() => navigate(`${APP_PATH}plans`)}>
             Change Plan
           </Button>
           <Button onClick={toggleEditCardModal}>Edit payment method</Button>

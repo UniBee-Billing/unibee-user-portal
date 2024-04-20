@@ -133,7 +133,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const p = location.pathname;
     console.log('path name: ', p);
-    if (p == '/plans/update') {
+    if (p == '/plans') {
       setActiveMenuItem(['/plans']);
     } else if (p == '/profile/subscription') {
       setActiveMenuItem([p]);
