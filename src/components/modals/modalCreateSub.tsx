@@ -250,7 +250,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   */
 
   useEffect(() => {
-    console.log('country changed, calling preview');
+    // console.log('country changed, calling preview');
     createPreview();
   }, [selectedCountry]);
 

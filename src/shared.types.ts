@@ -225,6 +225,7 @@ interface IPreview {
   currency: string; // ditto
   discount: DiscountCode | null;
   discountAmount: number;
+  taxPercentage: number;
   vatCountryCode?: string;
   vatCountryName?: string;
   vatNumber?: string;
