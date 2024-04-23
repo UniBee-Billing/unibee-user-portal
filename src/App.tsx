@@ -61,7 +61,7 @@ const items: MenuItem[] = [
     getItem('Basic Info', '/profile/basic-info'),
   ]),
   getItem('Invoice', '/invoice/list', <PieChartOutlined />),
-  getItem('Payment', '/payment/list', <PieChartOutlined />),
+  getItem('Transaction', '/transaction/list', <PieChartOutlined />),
 ];
 
 const noSiderRoutes = [
@@ -139,8 +139,8 @@ const App: React.FC = () => {
       setActiveMenuItem([p]);
     } else if (p.startsWith('/invoice/')) {
       setActiveMenuItem(['/invoice/list']);
-    } else if (p.startsWith('/payment/')) {
-      setActiveMenuItem(['/payment/list']);
+    } else if (p.startsWith('/transaction/')) {
+      setActiveMenuItem(['/transaction/list']);
     }
 
     if (location) {
@@ -283,7 +283,7 @@ const App: React.FC = () => {
                     <Route path="list" element={<InvoiceList />} />
                     <Route path=":invoiceId" element={<InvoiceDetail />} />
                   </Route>
-                  <Route path={`${APP_PATH}payment`} Component={OutletPage}>
+                  <Route path={`${APP_PATH}transaction`} Component={OutletPage}>
                     <Route path="list" element={<PaymentList />} />
                     {/* <Route path=":invoiceId" element={<InvoiceDetail />} /> */}
                   </Route>

@@ -1,3 +1,4 @@
+import { Dayjs } from 'dayjs';
 import { Currency } from 'dinero.js';
 
 interface IProfile {
@@ -196,10 +197,34 @@ type PaymentItem = {
   createTime: number;
 };
 
+type DiscountCode = {
+  id?: number;
+  merchantId: number;
+  name: string;
+  code: string;
+  status?: number;
+  billingType: number;
+  discountType: number;
+  discountAmount: number;
+  discountPercentage: number;
+  currency: string;
+  cycleLimit: number;
+  startTime: number;
+  endTime: number;
+  validityRange: [Dayjs | null, Dayjs | null];
+  createTime?: number;
+  metadata?: {
+    [key: string]: string;
+  };
+};
+
 interface IPreview {
+  originAmount: number; // total amt is the one after applying the discount code, this is the amt before discount
   totalAmount: number; // these 3 fields need to be resent to backend when submitting createSub/updateSub
   prorationDate?: number; // ditto
   currency: string; // ditto
+  discount: DiscountCode | null;
+  discountAmount: number;
   vatCountryCode?: string;
   vatCountryName?: string;
   vatNumber?: string;

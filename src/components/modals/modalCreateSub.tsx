@@ -12,6 +12,7 @@ import {
 } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CURRENCY } from '../../constants';
 import { showAmount } from '../../helpers';
 import {
   createPreviewReq,
@@ -38,6 +39,7 @@ interface Props {
 }
 
 const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
+  console.log('countr code: ', userCountryCode);
   const navigate = useNavigate();
   const appConfig = useAppConfigStore();
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
   const vatChechkingRef = useRef(false);
   const discountChkingRef = useRef(false);
+  const [discountChecking, setDiscountChecking] = useState(false);
+  const [vatChecking, setVatChecking] = useState(false);
+
   // set card payment as default gateway
   const [gatewayId, setGatewayId] = useState<undefined | number>(
     appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId,
@@ -68,6 +73,21 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     input: string,
     option?: { label: string; value: string },
   ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+
+  const getDiscountDesc = () => {
+    if (preview == null || preview.discount == null) {
+      return '';
+    }
+    const code = preview.discount;
+    console.log('code det: ', code);
+    // return '';
+    let amt =
+      code.discountType == 1 // 1: percentage, 2: fixed amt
+        ? String(code.discountPercentage / 100) + '% off'
+        : showAmount(code.discountAmount, code.currency) + ' off';
+
+    return `${amt}`;
+  };
 
   const createPreview = async () => {
     if (null == gatewayId) {
@@ -93,6 +113,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       discountCode,
     );
     setLoading(false);
+    console.log('previewRes: ', previewRes);
     if (null != err) {
       message.error(err.message);
       return false;
@@ -102,21 +123,50 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   };
 
   const onDiscountChecking = async (evt: React.FocusEvent<HTMLElement>) => {
-    if (evt.relatedTarget?.classList.contains('confirm-btn-wrapper')) {
-      vatChechkingRef.current = true;
+    console.log('discount blur ele: ', evt);
+    if (evt.relatedTarget?.classList.contains('cancel-btn-wrapper')) {
+      // closeModal();
+      return;
     }
-    await createPreview();
-    vatChechkingRef.current = false;
+
+    setDiscountChecking(true);
+    if (evt.relatedTarget?.classList.contains('confirm-btn-wrapper')) {
+      discountChkingRef.current = true;
+    }
+    await createPreview(); // I should insert **ref.current = true/false into createPreview
+    discountChkingRef.current = false;
+    setDiscountChecking(false);
     setSubmitting(false);
   };
 
+  const onCodeEnter = async () => {
+    discountChkingRef.current = true;
+    setDiscountChecking(true);
+    await createPreview(); // I should insert **ref.current = true/false into createPreview
+    discountChkingRef.current = false;
+    setDiscountChecking(false);
+  };
+
+  const onDiscountCodeChange: React.ChangeEventHandler<HTMLInputElement> = (
+    evt,
+  ) => {
+    setDiscountCode(evt.target.value);
+  };
+
   const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
+    if (evt.relatedTarget?.classList.contains('cancel-btn-wrapper')) {
+      closeModal();
+      return;
+    }
+
+    setVatChecking(true);
     if (evt.relatedTarget?.classList.contains('confirm-btn-wrapper')) {
       vatChechkingRef.current = true;
     }
 
     setSubmitting(true);
     const [vatNumberValidate, err] = await vatNumberCheckReq(vatNumber);
+    setVatChecking(false);
     if (null != err) {
       message.error(err.message);
       setSubmitting(false);
@@ -145,7 +195,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   };
 
   const onConfirm = async () => {
-    if (vatChechkingRef.current) {
+    if (vatChechkingRef.current || discountChkingRef.current) {
       return;
     }
 
@@ -189,14 +239,19 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     navigate(`${APP_PATH}profile/subscription`);
   };
 
+  /*
   useEffect(() => {
+    console.log('did mount, calling preview');
     createPreview();
   }, []);
+  */
 
   useEffect(() => {
+    console.log('country changed, calling preview');
     createPreview();
   }, [selectedCountry]);
 
+  // console.log('discount/vat checking: ', discountChecking, '//', vatChecking);
   return (
     <Modal
       title="Order Preview"
@@ -226,7 +281,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
             <div key={idx}>
               <Row>
                 <Col span={8}>{i.description}</Col>
-                <Col span={4}>{i.quantity}</Col>
+                <Col span={4}>
+                  <div style={{ marginLeft: '12px' }}>{i.quantity}</div>
+                </Col>
                 <Col span={4}>
                   {showAmount(i.amountExcludingTax, i.currency)}
                 </Col>
@@ -308,37 +365,67 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
               <Input
                 value={discountCode}
                 onBlur={onDiscountChecking}
-                onChange={(evt) => setDiscountCode(evt.target.value)}
+                onPressEnter={onCodeEnter}
+                onChange={onDiscountCodeChange}
               />
+              <div className=" text-xs text-gray-500">
+                {discountChecking ? 'calculating...' : getDiscountDesc()}
+              </div>
             </Col>
-          </Row>
-
-          <Row>
-            <Col span={20}>
-              <span style={{ fontSize: '18px' }}>Total</span>
+            <Col span={14}>
+              <div className="mr-8 flex h-full items-end justify-end text-xl">
+                Total
+              </div>
             </Col>
             <Col span={4}>
-              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                {' '}
-                {`${showAmount(preview.totalAmount, preview.currency)}`}
-              </span>
+              <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                {preview && preview.discount != null && (
+                  <>
+                    <div className=" text-gray-400 line-through">{`${showAmount(preview.originAmount, preview.currency)}`}</div>
+                    <div style={{ marginLeft: '-12px' }}>
+                      -{' '}
+                      {`${showAmount(preview.discountAmount, preview.currency)}`}
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  {`${showAmount(preview.totalAmount, preview.currency)}`}
+                </div>
+              </div>
             </Col>
           </Row>
+          <Row>
+            <Col span={8}></Col>
+          </Row>
+
+          <Row style={{ marginTop: '12px' }}></Row>
         </>
       )}
       <div className="mt-6 flex items-center justify-end gap-4">
-        <Button onClick={closeModal} disabled={loading || submitting}>
-          Cancel
-        </Button>
+        <button style={{ opacity: 0 }}>ee</button>
         <Button
-          type="primary"
-          className="confirm-btn-wrapper"
-          onClick={onConfirm}
-          loading={loading || submitting}
+          className="cancel-btn-wrapper"
+          onClick={closeModal}
           disabled={loading || submitting}
         >
-          OK
+          Cancel
         </Button>
+        <div className="confirm-btn-wrapper">
+          <Button
+            type="primary"
+            className="confirm-btn-wrapper"
+            onClick={onConfirm}
+            loading={loading || submitting}
+            disabled={loading || submitting}
+          >
+            {discountChecking
+              ? 'Discount checking'
+              : vatChecking
+                ? 'VAT checking'
+                : 'OK'}
+          </Button>
+        </div>
       </div>
     </Modal>
   );
