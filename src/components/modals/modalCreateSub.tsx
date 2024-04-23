@@ -1,4 +1,4 @@
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Col,
@@ -78,17 +78,23 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
   const getDiscountDesc = () => {
-    if (preview == null || preview.discount == null) {
+    if (preview == null) {
+      return '';
+    }
+    console.log('preview: ', preview);
+    if (preview.discountMessage != '') {
+      return <span className=" text-red-700">{preview.discountMessage}</span>;
+    }
+    // return '';
+    if (preview.discount == null) {
       return '';
     }
     const code = preview.discount;
-    console.log('code det: ', code);
-    // return '';
     let amt =
       code.discountType == 1 // 1: percentage, 2: fixed amt
         ? String(code.discountPercentage / 100) + '% off'
         : showAmount(code.discountAmount, code.currency) + ' off';
-
+    amt += `, number of billing cycles you can use this code: ${code.cycleLimit == 0 ? 'unlimited' : code.cycleLimit}`;
     return `${amt}`;
   };
 
@@ -121,6 +127,8 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       message.error(err.message);
       return false;
     }
+
+    setDiscountChecking(previewRes.discountMessage);
     setPreview(previewRes);
     return true;
   };
@@ -141,6 +149,20 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     setDiscountChecking(false);
     setSubmitting(false);
   };
+
+  // refactor this with the above into one
+  const onDiscountChecking2: React.MouseEventHandler<HTMLElement> = async (
+    evt,
+  ) => {
+    setDiscountChecking(true);
+    discountChkingRef.current = true;
+    await createPreview(); // I should insert **ref.current = true/false into createPreview
+    discountChkingRef.current = false;
+    setDiscountChecking(false);
+    setSubmitting(false);
+  };
+
+  const clearDiscountCode = () => {};
 
   const onCodeEnter = async () => {
     discountChkingRef.current = true;
@@ -262,7 +284,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       open={true}
       footer={null}
       closeIcon={null}
-      width={'780px'}
+      width={'820px'}
     >
       {preview == null ? (
         <div className="flex items-center justify-center">
@@ -368,14 +390,34 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
               <Row>
                 <Col span={24}>
                   <Input
-                    style={{ width: '240px' }}
+                    disabled={discountChecking}
+                    style={{ width: '200px' }}
                     value={discountCode}
                     onBlur={onDiscountChecking}
                     onPressEnter={onCodeEnter}
                     onChange={onDiscountCodeChange}
                   />
-                  <div className=" text-xs text-gray-500">
-                    {discountChecking ? 'calculating...' : getDiscountDesc()}
+                  <span>
+                    <Button
+                      size="small"
+                      type="text"
+                      onClick={onDiscountChecking2}
+                      loading={discountChecking}
+                      disabled={discountCode == '' || discountChecking}
+                    >
+                      Apply
+                    </Button>
+                    <Button
+                      size="small"
+                      onClick={() => setDiscountCode('')}
+                      type="text"
+                      disabled={discountCode == '' || discountChecking}
+                    >
+                      Clear
+                    </Button>
+                  </span>
+                  <div className=" mt-1 text-xs text-gray-500">
+                    {discountChecking ? 'checking...' : getDiscountDesc()}
                   </div>
                 </Col>
               </Row>
@@ -388,7 +430,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                   style={{ fontSize: '18px' }}
                   className=" text-gray-700"
                 >
-                  Original Price
+                  Original Amount
                 </Col>
                 <Col
                   span={8}
@@ -408,7 +450,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                   span={8}
                 >{`${showAmount(preview.discountAmount, preview.currency)}`}</Col>
               </Row>
-              <Row>
+              {/* <Row>
                 <Col
                   span={16}
                   style={{ fontSize: '18px' }}
@@ -419,7 +461,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                 <Col span={8} className=" text-gray-700">
                   $90
                 </Col>
-              </Row>
+        </Row> */}
               <Row>
                 <Col
                   span={16}

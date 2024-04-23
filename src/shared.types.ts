@@ -225,6 +225,7 @@ interface IPreview {
   currency: string; // ditto
   discount: DiscountCode | null;
   discountAmount: number;
+  discountMessage: string;
   taxPercentage: number;
   vatCountryCode?: string;
   vatCountryName?: string;
@@ -237,6 +238,7 @@ interface IPreview {
     companyAddress: string;
     validateMessage: string;
   };
+  vatNumberValidateMessage: string;
   invoice: InvoiceItemTotal;
   nextPeriodInvoice?: InvoiceItemTotal; // same as above invoice obj, only optional, used when downgrading.
 }
