@@ -53,6 +53,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const vatChechkingRef = useRef(false);
   const discountChkingRef = useRef(false);
   const [discountChecking, setDiscountChecking] = useState(false);
+  const [discountErr, setDiscountErr] = useState('');
+  const [VATErr, setVatErr] = useState('');
+
   const [vatChecking, setVatChecking] = useState(false);
 
   // set card payment as default gateway
@@ -273,7 +276,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
             <Col span={8}>Description</Col>
             <Col span={4}>Quantity</Col>
-            <Col span={4}>Amt(Exc Tax)</Col>
+            <Col span={4}>Amt(Excl Tax)</Col>
             <Col span={4}>Tax</Col>
             <Col span={4}>Amt</Col>
           </Row>
@@ -291,7 +294,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                 <Col span={4}>{showAmount(i.amount, i.currency)}</Col>
               </Row>
               {idx != preview.invoice.lines.length - 1 && (
-                <Divider style={{ margin: '8px 0' }} />
+                <Divider style={{ margin: '8px 0', background: 'gray' }} />
               )}
             </div>
           ))}
@@ -357,21 +360,99 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
               </Row>
             </>
           )}
-          <Row>
-            <Col span={4}>Discount code</Col>
-          </Row>
-          <Row>
-            <Col span={6}>
-              <Input
-                value={discountCode}
-                onBlur={onDiscountChecking}
-                onPressEnter={onCodeEnter}
-                onChange={onDiscountCodeChange}
-              />
-              <div className=" text-xs text-gray-500">
-                {discountChecking ? 'calculating...' : getDiscountDesc()}
-              </div>
-            </Col>
+          <div className=" mt-6 flex w-full pr-4">
+            <div className="w-3/5">
+              <Row>
+                <Col span={24}>Discount code</Col>
+              </Row>
+              <Row>
+                <Col span={24}>
+                  <Input
+                    style={{ width: '240px' }}
+                    value={discountCode}
+                    onBlur={onDiscountChecking}
+                    onPressEnter={onCodeEnter}
+                    onChange={onDiscountCodeChange}
+                  />
+                  <div className=" text-xs text-gray-500">
+                    {discountChecking ? 'calculating...' : getDiscountDesc()}
+                  </div>
+                </Col>
+              </Row>
+            </div>
+
+            <div className="w-2/5">
+              <Row>
+                <Col
+                  span={16}
+                  style={{ fontSize: '18px' }}
+                  className=" text-gray-700"
+                >
+                  Original Price
+                </Col>
+                <Col
+                  span={8}
+                  className=" text-gray-700"
+                >{`${showAmount(preview.originAmount, preview.currency)}`}</Col>
+              </Row>
+              <Row>
+                <Col
+                  span={16}
+                  style={{ fontSize: '18px' }}
+                  className=" text-red-800"
+                >
+                  Saved
+                </Col>
+                <Col
+                  className=" text-red-800"
+                  span={8}
+                >{`${showAmount(preview.discountAmount, preview.currency)}`}</Col>
+              </Row>
+              <Row>
+                <Col
+                  span={16}
+                  style={{ fontSize: '18px' }}
+                  className=" text-gray-700"
+                >
+                  Subtotal
+                </Col>
+                <Col span={8} className=" text-gray-700">
+                  $90
+                </Col>
+              </Row>
+              <Row>
+                <Col
+                  span={16}
+                  style={{ fontSize: '18px' }}
+                  className=" text-gray-700"
+                >
+                  Tax
+                </Col>
+                <Col
+                  span={8}
+                  className=" text-gray-700"
+                >{`${preview.taxPercentage} %`}</Col>
+              </Row>
+              <Divider style={{ margin: '4px 0' }} />
+              <Row>
+                <Col
+                  span={16}
+                  style={{ fontSize: '18px', fontWeight: 'bold' }}
+                  className=" text-gray-600"
+                >
+                  Order Total
+                </Col>
+                <Col
+                  style={{ fontSize: '18px', fontWeight: 'bold' }}
+                  className=" text-gray-600"
+                  span={8}
+                >{`${showAmount(preview.totalAmount, preview.currency)}`}</Col>
+              </Row>
+            </div>
+          </div>
+
+          {/* <Row>
+            
             <Col span={14}>
               <div className="mr-8 flex h-full items-end justify-end text-xl">
                 Total
@@ -397,7 +478,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           </Row>
           <Row>
             <Col span={8}></Col>
-          </Row>
+              </Row>*/}
 
           <Row style={{ marginTop: '12px' }}></Row>
         </>
