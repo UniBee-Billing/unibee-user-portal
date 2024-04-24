@@ -20,10 +20,6 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
   const [loading, setLoading] = useState(false); // when the Modal is loading, preview is null, Modal has no content, but a loading spinner
   const [submitting, setSubmitting] = useState(false); // when user click submit, preview is not null, Modal has content.
   const [preview, setPreview] = useState<IPreview | null>(null);
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
 
   const onConfirm = async () => {
     setSubmitting(true);
@@ -58,7 +54,7 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       closeModal();
       return;
     }
-    navigate(`${APP_PATH}profile/subscription`, {
+    navigate(`${APP_PATH}my-subscription`, {
       // receiving route hasn't read this msg yet.
       state: { msg: 'Subscription updated' },
     });

@@ -261,7 +261,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     if (link != '' || link != null) {
       window.open(link, '_blank');
     }
-    navigate(`${APP_PATH}profile/subscription`);
+    navigate(`${APP_PATH}my-subscription`);
   };
 
   /*

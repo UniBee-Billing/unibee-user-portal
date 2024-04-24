@@ -333,7 +333,7 @@ const Index = () => {
         >
           Terminate Subscription
         </Button>
-        this feature has been moved to profile/subscription page.
+        this feature has been moved to /my-subscription page.
         */}
       </div>
     </div>

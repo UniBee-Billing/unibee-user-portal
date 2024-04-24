@@ -92,7 +92,7 @@ const Index = ({
       sessionStore.refresh && sessionStore.refresh();
       message.success('Login succeeded');
     } else {
-      navigate(`${APP_PATH}profile/subscription`, {
+      navigate(`${APP_PATH}my-subscription`, {
         state: { from: 'login' },
       });
     }

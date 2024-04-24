@@ -56,11 +56,9 @@ function getItem(
 
 const items: MenuItem[] = [
   getItem('Plans', '/plans', <PieChartOutlined />),
-  getItem('Profile', '/profile', <DesktopOutlined />, [
-    getItem('My Subscription', '/profile/subscription'),
-    getItem('Basic Info', '/profile/basic-info'),
-  ]),
+  getItem('My Subscription', '/my-subscription', <PieChartOutlined />),
   getItem('Invoice', '/invoice/list', <PieChartOutlined />),
+  getItem('My Account', '/my-account'),
   getItem('Transaction', '/transaction/list', <PieChartOutlined />),
 ];
 
@@ -131,27 +129,15 @@ const App: React.FC = () => {
 
   // similar to onItemClick, try to refactor into one fn.
   useEffect(() => {
-    const p = location.pathname;
-    console.log('path name: ', p);
-    if (p == '/plans') {
-      setActiveMenuItem(['/plans']);
-    } else if (p == '/profile/subscription') {
-      setActiveMenuItem([p]);
-    } else if (p.startsWith('/invoice/')) {
+    const pathItems = location.pathname.split('/').filter((p) => p != '');
+    if (pathItems[0] == 'invoice') {
       setActiveMenuItem(['/invoice/list']);
-    } else if (p.startsWith('/transaction/')) {
+    } else if (pathItems[0] == 'transaction') {
       setActiveMenuItem(['/transaction/list']);
+    } else {
+      setActiveMenuItem(['/' + pathItems[0]]);
     }
-
-    if (location) {
-      const pathItems = location.pathname.split('/').filter((p) => p != '');
-      const keys = ['/' + pathItems[0]];
-      if (pathItems.length > 1) {
-        keys.push('/' + pathItems.join('/'));
-      }
-      setOpenKeys(['/profile', location.pathname]);
-    }
-  }, [location]);
+  }, [location, location.pathname]);
 
   useEffect(() => {
     if (sessionStore.expired) {
@@ -250,9 +236,7 @@ const App: React.FC = () => {
                   <Route path="*" Component={NotFound} />
                   <Route
                     path={APP_PATH}
-                    element={
-                      <Navigate to={`${APP_PATH}profile/subscription`} />
-                    }
+                    element={<Navigate to={`${APP_PATH}my-subscription`} />}
                   />
                   <Route
                     path={`${APP_PATH}payment-result`}
@@ -267,11 +251,11 @@ const App: React.FC = () => {
                     Component={SessionResult}
                   />
                   <Route
-                    path={`${APP_PATH}profile/basic-info`}
+                    path={`${APP_PATH}my-account`}
                     Component={ProfileBasic}
                   />
                   <Route
-                    path={`${APP_PATH}profile/subscription`}
+                    path={`${APP_PATH}my-subscription`}
                     Component={ProfileSubscription}
                   />
                   <Route
