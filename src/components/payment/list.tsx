@@ -23,8 +23,8 @@ const Index = () => {
   const columns: ColumnsType<PaymentItem> = [
     {
       title: 'Transaction Id',
-      dataIndex: 'paymentId',
-      key: 'paymentId',
+      dataIndex: 'transactionId',
+      key: 'transactionId',
     },
     {
       title: 'Total Amount',
@@ -46,7 +46,7 @@ const Index = () => {
       ),
     },
     {
-      title: 'Transaction for',
+      title: 'Type',
       dataIndex: 'timelineType',
       key: 'timelineType',
       render: (s) => (
