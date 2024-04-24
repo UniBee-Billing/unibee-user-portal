@@ -1,4 +1,5 @@
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons';
+import type { InputRef } from 'antd';
 import {
   Button,
   Col,
@@ -39,7 +40,6 @@ interface Props {
 }
 
 const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
-  console.log('countr code: ', userCountryCode);
   const navigate = useNavigate();
   const appConfig = useAppConfigStore();
   const [loading, setLoading] = useState(false);
@@ -48,10 +48,11 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [vatNumber, setVatNumber] = useState('');
   const [vatDetail, setVatDetail] = useState<null | TVATDetail>(null);
   const [isVatValid, setIsVatValid] = useState(false);
-  const [discountCode, setDiscountCode] = useState('');
+  // const [discountCode, setDiscountCode] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
   const vatChechkingRef = useRef(false);
   const discountChkingRef = useRef(false);
+  const discountInputRef = useRef<InputRef>(null);
   const [discountChecking, setDiscountChecking] = useState(false);
   const [discountErr, setDiscountErr] = useState('');
   const [VATErr, setVatErr] = useState('');
@@ -81,7 +82,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     if (preview == null) {
       return '';
     }
-    console.log('preview: ', preview);
     if (preview.discountMessage != '') {
       return <span className=" text-red-700">{preview.discountMessage}</span>;
     }
@@ -108,6 +108,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
         ? plan.addons.filter((a) => a.checked)
         : [];
 
+    // return;
     setLoading(true);
     const [previewRes, err] = await createPreviewReq(
       plan.id,
@@ -119,7 +120,8 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       selectedCountry,
       gatewayId as number,
       createPreview,
-      discountCode,
+      // discountCode,
+      discountInputRef.current?.input?.value,
     );
     setLoading(false);
     console.log('previewRes: ', previewRes);
@@ -133,10 +135,18 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     return true;
   };
 
+  // although we have a Apply button to check discount code, but users might not click it,
+  // so onBlur is used to force check.
+  // discount <input /> onBlur handler
   const onDiscountChecking = async (evt: React.FocusEvent<HTMLElement>) => {
-    console.log('discount blur ele: ', evt);
+    // console.log('discount blur ele: ', evt);
+    // if onBlur is happening on Cancel button, that means users want to close the Modal
+    // then, we don't need to createPreview
     if (evt.relatedTarget?.classList.contains('cancel-btn-wrapper')) {
-      // closeModal();
+      return;
+    }
+    // Apply button's job is also to createPreview, it's duplicate onblur's job
+    if (evt.relatedTarget?.classList.contains('apply-btn-wrapper')) {
       return;
     }
 
@@ -150,6 +160,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     setSubmitting(false);
   };
 
+  // discount's Apply button onClick handler
   // refactor this with the above into one
   const onDiscountChecking2: React.MouseEventHandler<HTMLElement> = async (
     evt,
@@ -162,8 +173,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     setSubmitting(false);
   };
 
-  const clearDiscountCode = () => {};
-
   const onCodeEnter = async () => {
     discountChkingRef.current = true;
     setDiscountChecking(true);
@@ -172,10 +181,8 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     setDiscountChecking(false);
   };
 
-  const onDiscountCodeChange: React.ChangeEventHandler<HTMLInputElement> = (
-    evt,
-  ) => {
-    setDiscountCode(evt.target.value);
+  const clearDiscount: React.MouseEventHandler<HTMLElement> = async (evt) => {
+    // discountInputRef.current?.input.value = '';
   };
 
   const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
@@ -390,31 +397,34 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
               <Row>
                 <Col span={24}>
                   <Input
+                    ref={discountInputRef}
+                    allowClear
                     disabled={discountChecking}
                     style={{ width: '200px' }}
-                    value={discountCode}
+                    // value={discountCode}
                     onBlur={onDiscountChecking}
                     onPressEnter={onCodeEnter}
-                    onChange={onDiscountCodeChange}
+                    // onChange={onDiscountCodeChange}
                   />
                   <span>
                     <Button
+                      className="apply-btn-wrapper"
                       size="small"
                       type="text"
                       onClick={onDiscountChecking2}
                       loading={discountChecking}
-                      disabled={discountCode == '' || discountChecking}
+                      disabled={discountChecking}
                     >
                       Apply
                     </Button>
-                    <Button
+                    {/* <Button
                       size="small"
-                      onClick={() => setDiscountCode('')}
+                      onClick={onDiscountChecking2}
                       type="text"
-                      disabled={discountCode == '' || discountChecking}
+                      disabled={discountChecking}
                     >
                       Clear
-                    </Button>
+        </Button> */}
                   </span>
                   <div className=" mt-1 text-xs text-gray-500">
                     {discountChecking ? 'checking...' : getDiscountDesc()}

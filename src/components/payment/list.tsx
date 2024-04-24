@@ -9,6 +9,7 @@ import { showAmount } from '../../helpers';
 import { getPaymentListReq } from '../../requests';
 import '../../shared.css';
 import { PaymentItem } from '../../shared.types';
+import { useAppConfigStore } from '../../stores';
 import { usePagination } from '../hooks';
 
 const PAGE_SIZE = 10;
@@ -16,6 +17,7 @@ const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = () => {
   const { page, onPageChange } = usePagination();
+  const appConfig = useAppConfigStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [paymentList, setPaymentList] = useState<PaymentItem[]>([]);
@@ -23,8 +25,8 @@ const Index = () => {
   const columns: ColumnsType<PaymentItem> = [
     {
       title: 'Transaction Id',
-      dataIndex: 'transactionId',
-      key: 'transactionId',
+      dataIndex: 'paymentId',
+      key: 'paymentId',
     },
     {
       title: 'Total Amount',
@@ -51,6 +53,16 @@ const Index = () => {
       key: 'timelineType',
       render: (s) => (
         <span>{PAYMENT_TYPE[s as keyof typeof PAYMENT_TYPE]}</span>
+      ),
+    },
+    {
+      title: 'Payment Gateway',
+      dataIndex: 'gatewayId',
+      key: 'gatewayId',
+      render: (gatewayId) => (
+        <span>
+          {appConfig.gateway.find((g) => g.gatewayId == gatewayId)?.gatewayName}
+        </span>
       ),
     },
     {
