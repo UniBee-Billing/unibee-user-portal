@@ -58,8 +58,8 @@ const items: MenuItem[] = [
   getItem('Plans', '/plans', <PieChartOutlined />),
   getItem('My Subscription', '/my-subscription', <PieChartOutlined />),
   getItem('Invoice', '/invoice/list', <PieChartOutlined />),
-  getItem('My Account', '/my-account'),
   getItem('Transaction', '/transaction/list', <PieChartOutlined />),
+  getItem('My Account', '/my-account'),
 ];
 
 const noSiderRoutes = [
