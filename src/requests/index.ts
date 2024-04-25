@@ -427,6 +427,7 @@ export const createSubscriptionReq = async (
   vatCountryCode: string,
   vatNumber: string,
   gatewayId: number,
+  discountCode?: string,
 ) => {
   const body = {
     planId,
@@ -438,6 +439,7 @@ export const createSubscriptionReq = async (
     returnUrl: `${window.location.origin}/payment-result`, // .origin doesn't work on IE
     vatCountryCode,
     vatNumber,
+    discountCode,
   };
   try {
     const res = await request.post(`/user/subscription/create_submit`, body);

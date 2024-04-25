@@ -181,10 +181,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     setDiscountChecking(false);
   };
 
-  const clearDiscount: React.MouseEventHandler<HTMLElement> = async (evt) => {
-    // discountInputRef.current?.input.value = '';
-  };
-
   const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
     if (evt.relatedTarget?.classList.contains('cancel-btn-wrapper')) {
       closeModal();
@@ -257,6 +253,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       preview?.vatCountryCode as string,
       preview?.vatNumber as string,
       gatewayId,
+      discountInputRef.current?.input?.value,
     );
     setSubmitting(false);
     if (err != null) {
@@ -279,7 +276,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   */
 
   useEffect(() => {
-    // console.log('country changed, calling preview');
     createPreview();
   }, [selectedCountry]);
 
@@ -303,24 +299,24 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       ) : (
         <>
           <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
-            <Col span={8}>Description</Col>
+            <Col span={16}>Description</Col>
             <Col span={4}>Quantity</Col>
             <Col span={4}>Amt(Excl Tax)</Col>
-            <Col span={4}>Tax</Col>
-            <Col span={4}>Amt</Col>
+            {/* <Col span={4}>Tax</Col>
+            <Col span={4}>Amt</Col> */}
           </Row>
           {preview.invoice.lines.map((i, idx) => (
             <div key={idx}>
               <Row>
-                <Col span={8}>{i.description}</Col>
+                <Col span={16}>{i.description}</Col>
                 <Col span={4}>
                   <div style={{ marginLeft: '12px' }}>{i.quantity}</div>
                 </Col>
                 <Col span={4}>
                   {showAmount(i.amountExcludingTax, i.currency)}
                 </Col>
-                <Col span={4}>{showAmount(i.tax, i.currency)}</Col>
-                <Col span={4}>{showAmount(i.amount, i.currency)}</Col>
+                {/* <Col span={4}>{showAmount(i.tax, i.currency)}</Col>
+                <Col span={4}>{showAmount(i.amount, i.currency)}</Col> */}
               </Row>
               {idx != preview.invoice.lines.length - 1 && (
                 <Divider style={{ margin: '8px 0', background: 'gray' }} />
@@ -417,14 +413,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                     >
                       Apply
                     </Button>
-                    {/* <Button
-                      size="small"
-                      onClick={onDiscountChecking2}
-                      type="text"
-                      disabled={discountChecking}
-                    >
-                      Clear
-        </Button> */}
                   </span>
                   <div className=" mt-1 text-xs text-gray-500">
                     {discountChecking ? 'checking...' : getDiscountDesc()}
@@ -434,7 +422,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
             </div>
 
             <div className="w-2/5">
-              <Row>
+              {/* <Row>
                 <Col
                   span={16}
                   style={{ fontSize: '18px' }}
@@ -446,7 +434,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                   span={8}
                   className=" text-gray-700"
                 >{`${showAmount(preview.originAmount, preview.currency)}`}</Col>
-              </Row>
+        </Row> */}
               <Row>
                 <Col
                   span={16}
@@ -483,7 +471,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                 <Col
                   span={8}
                   className=" text-gray-700"
-                >{`${preview.taxPercentage} %`}</Col>
+                >{`${preview.taxPercentage / 100} %`}</Col>
               </Row>
               <Divider style={{ margin: '4px 0' }} />
               <Row>
