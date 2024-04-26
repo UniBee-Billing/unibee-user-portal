@@ -437,19 +437,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
             </div>
 
             <div className="w-2/5">
-              {/* <Row>
-                <Col
-                  span={16}
-                  style={{ fontSize: '18px' }}
-                  className=" text-gray-700"
-                >
-                  Original Amount
-                </Col>
-                <Col
-                  span={8}
-                  className=" text-gray-700"
-                >{`${showAmount(preview.originAmount, preview.currency)}`}</Col>
-        </Row> */}
               <Row>
                 <Col
                   span={16}
@@ -463,18 +450,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                   span={8}
                 >{`${showAmount(preview.discountAmount, preview.currency)}`}</Col>
               </Row>
-              {/* <Row>
-                <Col
-                  span={16}
-                  style={{ fontSize: '18px' }}
-                  className=" text-gray-700"
-                >
-                  Subtotal
-                </Col>
-                <Col span={8} className=" text-gray-700">
-                  $90
-                </Col>
-        </Row> */}
               <Row>
                 <Col
                   span={16}
