@@ -69,7 +69,7 @@ export default function PaymentResult() {
         <Result
           status="success"
           title="Payment succeeded!"
-          subTitle="Order number: 2017182818828182881."
+          // subTitle="Order number: 2017182818828182881."
         />
       )}
     </div>

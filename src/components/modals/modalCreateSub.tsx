@@ -71,6 +71,8 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     setVatNumber(e.target.value);
 
   const onCountryChange = (value: string) => {
+    setVatDetail(null); // vat number and vatCountry are exclusive to each other,
+    setIsVatValid(false); // when one is selected/input, the other need to be disabled(or cleared)
     setSelectedCountry(value);
   };
   const filterOption = (
@@ -192,6 +194,15 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       vatChechkingRef.current = true;
     }
 
+    if (vatNumber == '') {
+      setVatDetail(null);
+      setIsVatValid(false);
+      setVatChecking(false);
+      vatChechkingRef.current = false;
+      await createPreview();
+      return;
+    }
+
     setSubmitting(true);
     const [vatNumberValidate, err] = await vatNumberCheckReq(vatNumber);
     setVatChecking(false);
@@ -301,7 +312,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
             <Col span={16}>Description</Col>
             <Col span={4}>Quantity</Col>
-            <Col span={4}>Amt(Excl Tax)</Col>
+            <Col span={4}>Amount(excl tax)</Col>
             {/* <Col span={4}>Tax</Col>
             <Col span={4}>Amt</Col> */}
           </Row>
@@ -336,15 +347,18 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           <Row style={{ marginBottom: '12px' }}>
             <Col span={5}>
               <Input
+                disabled={loading || submitting}
                 value={vatNumber}
                 style={{ width: '100%' }}
                 onChange={onVatChange}
                 onBlur={onVATCheck}
+                // onPressEnter={onVATCheck}
                 placeholder="Your VAT number"
               />
             </Col>
             <Col span={6} style={{ marginLeft: '12px' }}>
               <Select
+                disabled={loading || submitting}
                 value={selectedCountry}
                 style={{ width: '160px' }}
                 onChange={onCountryChange}
@@ -395,21 +409,22 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                   <Input
                     ref={discountInputRef}
                     allowClear
-                    disabled={discountChecking}
+                    // disabled={discountChecking || vatChecking}
+                    disabled={loading || submitting}
                     style={{ width: '200px' }}
                     // value={discountCode}
                     onBlur={onDiscountChecking}
                     onPressEnter={onCodeEnter}
                     // onChange={onDiscountCodeChange}
                   />
-                  <span>
+                  <span className=" ml-1">
                     <Button
                       className="apply-btn-wrapper"
                       size="small"
                       type="text"
                       onClick={onDiscountChecking2}
                       loading={discountChecking}
-                      disabled={discountChecking}
+                      disabled={loading || submitting}
                     >
                       Apply
                     </Button>
