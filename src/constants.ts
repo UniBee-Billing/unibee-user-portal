@@ -9,6 +9,13 @@ export const CURRENCY: {
   USDT: { symbol: '₮', stripe_factor: 100 },
 };
 
+export const REFUND_STATUS: { [key: number]: string } = {
+  10: 'Pending',
+  20: 'Succeeded',
+  30: 'Failed',
+  40: 'Cancelled',
+};
+
 export const SUBSCRIPTION_STATUS: { [key: number]: string } = {
   0: 'Initiating', // used when creating the sub, it only exist for a very short time, user might not realize it exists
   1: 'Pending', // when sub is created, but user hasn't paid yet,

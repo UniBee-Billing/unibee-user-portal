@@ -6,7 +6,9 @@ import { INVOICE_STATUS } from '../../constants';
 import { normalizeAmt, showAmount } from '../../helpers';
 import { getInvoiceDetailReq } from '../../requests';
 import { IProfile, UserInvoice } from '../../shared.types';
-import InvoiceItemsModal from './invoiceModal';
+import { useProfileStore } from '../../stores';
+import InvoiceItemDetailModal from '../modals/invoiceDetailModal';
+// import InvoiceItemsModal from './invoiceModal'; // to be revmoed, not used anymore
 
 const APP_PATH = import.meta.env.BASE_URL; // if not specified in build command, default is /
 const rowStyle: CSSProperties = {
@@ -17,6 +19,7 @@ const rowStyle: CSSProperties = {
 const colStyle: CSSProperties = { fontWeight: 'bold' };
 
 const Index = () => {
+  const userProfle = useProfileStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [invoiceDetail, setInvoiceDetail] = useState<UserInvoice | null>(null);
@@ -58,8 +61,8 @@ const Index = () => {
         fullscreen
       />
       {invoiceDetail && showInvoiceItems && (
-        <InvoiceItemsModal
-          isOpen={true}
+        <InvoiceItemDetailModal
+          user={userProfle}
           detail={invoiceDetail}
           closeModal={toggleInvoiceItems}
         />

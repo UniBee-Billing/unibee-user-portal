@@ -13,6 +13,20 @@ export const showAmount = (
   return `${c.symbol}${amount / (ignoreFactor ? 1 : c.stripe_factor)}`;
 };
 
+export const ramdonString = (length: number | null) => {
+  if (length == null || length <= 0) {
+    length = 8;
+  }
+  const chars =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+  const charLength = chars.length;
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * charLength));
+  }
+  return result;
+};
+
 export const timerBySec = (numSeconds: number, cb: (v: number) => void) => {
   let lastTime = new Date().getTime();
   (function timer() {
@@ -56,12 +70,27 @@ export const normalizeAmt = (iv: UserInvoice[]) => {
     v.taxAmount /= f;
     v.totalAmount /= f;
     v.totalAmountExcludingTax /= f;
+    if (v.refund != null) {
+      v.refund.refundAmount /= f;
+    }
+    if (v.discountAmount != null) {
+      v.discountAmount /= f;
+    }
+    if (v.originAmount != null) {
+      v.originAmount /= f;
+    }
     v.lines &&
       v.lines.forEach((l) => {
         (l.amount as number) /= f;
         (l.amountExcludingTax as number) /= f;
         (l.tax as number) /= f;
         (l.unitAmountExcludingTax as number) /= f;
+        if (l.originAmount != null) {
+          l.originAmount /= f;
+        }
+        if (l.discountAmount != null) {
+          l.discountAmount /= f;
+        }
       });
   });
 };
