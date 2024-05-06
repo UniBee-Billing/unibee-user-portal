@@ -9,8 +9,12 @@ export const showAmount = (
   currency: keyof typeof CURRENCY,
   ignoreFactor?: boolean,
 ): string => {
+  const isNegative = amount < 0;
+  if (isNegative) {
+    amount *= -1;
+  }
   const c = CURRENCY[currency];
-  return `${c.symbol}${amount / (ignoreFactor ? 1 : c.stripe_factor)}`;
+  return `${isNegative ? '-' : ''}${c.symbol}${amount / (ignoreFactor ? 1 : c.stripe_factor)}`;
 };
 
 export const ramdonString = (length: number | null) => {

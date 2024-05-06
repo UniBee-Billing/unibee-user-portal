@@ -312,9 +312,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
             <Col span={16}>Description</Col>
             <Col span={4}>Quantity</Col>
-            <Col span={4}>Amount(excl tax)</Col>
-            {/* <Col span={4}>Tax</Col>
-            <Col span={4}>Amt</Col> */}
+            <Col span={4}>Amount</Col>
           </Row>
           {preview.invoice.lines.map((i, idx) => (
             <div key={idx}>
@@ -326,8 +324,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                 <Col span={4}>
                   {showAmount(i.amountExcludingTax, i.currency)}
                 </Col>
-                {/* <Col span={4}>{showAmount(i.tax, i.currency)}</Col>
-                <Col span={4}>{showAmount(i.amount, i.currency)}</Col> */}
               </Row>
               {idx != preview.invoice.lines.length - 1 && (
                 <Divider style={{ margin: '8px 0', background: 'gray' }} />
