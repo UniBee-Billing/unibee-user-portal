@@ -272,8 +272,9 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       return;
     }
 
-    const { link } = createSubRes;
-    if (link != '' || link != null) {
+    const { link, paid } = createSubRes;
+    console.log('create sub res: ', createSubRes);
+    if (link != '' && link != null) {
       window.open(link, '_blank');
     }
     navigate(`${APP_PATH}my-subscription`);
