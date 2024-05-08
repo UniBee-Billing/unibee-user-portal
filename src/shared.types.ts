@@ -70,6 +70,10 @@ interface IPlan {
   status: number;
   addons?: IAddon[];
   onetimeAddons?: IAddon[];
+  cancelAtTrialEnd: number;
+  trialAmount: number;
+  trialDemand: string;
+  trialDurationTime: number;
 }
 
 interface ISubAddon extends IPlan {

@@ -105,6 +105,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       message.error('Please select your payment method.');
       return;
     }
+
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
@@ -246,6 +247,18 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     if (null == gatewayId) {
       message.error('Please select a payment method.');
       return;
+    }
+
+    if (plan.trialDurationTime > 0 && plan.trialDemand != '') {
+      if (
+        appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId !=
+        gatewayId
+      ) {
+        message.error(
+          'This payment method is not supported to enable the trial.',
+        );
+        return;
+      }
     }
 
     const addons =

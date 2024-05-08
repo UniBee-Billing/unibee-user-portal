@@ -135,7 +135,7 @@ const Index = () => {
       plans == null
         ? []
         : plans.map((p: any) => {
-            const p2 = p.plan;
+            // const p2 = p.plan;
             /*
             if (p.plan.type == 2 || p.plan.type == 3) {
               // addon plan || one-time-payment plan
@@ -143,15 +143,7 @@ const Index = () => {
             }
             */
             return {
-              id: p2.id,
-              planName: p2.planName,
-              description: p2.description,
-              type: p2.type,
-              amount: p2.amount,
-              currency: p2.currency,
-              intervalUnit: p2.intervalUnit,
-              intervalCount: p2.intervalCount,
-              status: p2.status,
+              ...p.plan,
               addons: p.addons,
               onetimeAddons: p.onetimeAddons,
             };
