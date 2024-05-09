@@ -248,6 +248,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       closeModal();
       message.success('Subscription created.');
       navigate(`${APP_PATH}my-subscription`);
+      return;
     }
 
     if (vatChechkingRef.current || discountChkingRef.current) {
