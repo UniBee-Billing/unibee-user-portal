@@ -1,6 +1,7 @@
 import { Button, Checkbox, Input } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import React, { useEffect, useState } from 'react';
+import { CURRENCY } from '../constants';
 import { showAmount } from '../helpers';
 import { IPlan } from '../shared.types';
 
@@ -18,6 +19,26 @@ interface IPLanProps {
   toggleOtpModal: () => void;
 }
 
+const TIME_UNITS = [
+  // in seconds
+  { label: 'hours', value: 60 * 60 },
+  { label: 'days', value: 60 * 60 * 24 },
+  { label: 'weeks', value: 60 * 60 * 24 * 7 },
+  { label: 'months(30days)', value: 60 * 60 * 24 * 30 },
+];
+
+const getAmount = (amt: number, currency: string) =>
+  amt / CURRENCY[currency].stripe_factor;
+const secondsToUnit = (sec: number) => {
+  const units = [...TIME_UNITS].sort((a, b) => b.value - a.value);
+  for (let i = 0; i < units.length; i++) {
+    if (sec % units[i].value === 0) {
+      return [sec / units[i].value, units[i].value]; // if sec is 60 * 60 * 24 * 30 * 3, then return [3, 60 * 60 * 24 * 30 * 3]
+    }
+  }
+  throw Error('Invalid time unit');
+};
+
 const Index = ({
   plan,
   selectedPlan,
@@ -33,6 +54,44 @@ const Index = ({
   };
   const addonQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onAddonChange(Number(e.target.id), Number(e.target.value), null);
+  };
+
+  const trialInfo = () => {
+    let enabled = false;
+    const { trialAmount, trialDurationTime, trialDemand, cancelAtTrialEnd } =
+      plan;
+    let amount = Number(trialAmount);
+    let durationTime = Number(trialDurationTime);
+    let requireCardInfo = false;
+    let autoRenew = false;
+    let lengthUnit = 0;
+    if (!isNaN(durationTime) && durationTime > 0) {
+      enabled = true;
+      // amount = getAmount(trialAmount, plan.currency);
+      const [val, unit] = secondsToUnit(durationTime);
+      lengthUnit = unit;
+      durationTime = val;
+      // setTrialLengthUnit(unit)
+      //  trialDemand?: 'paymentMethod' | '' | boolean // backe
+      requireCardInfo = trialDemand == 'paymentMethod' ? true : false;
+      //   cancelAtTrialEnd?: 0 | 1 | boolean // backend requires this field to be a number of 1 | 0, but to ease the UX, front-end use <Switch />
+      autoRenew = cancelAtTrialEnd == 1 ? false : true;
+    }
+    if (!enabled) {
+      return null;
+    }
+    return (
+      <div className=" text-sm text-gray-500">
+        <div>Trial Price: {showAmount(amount, plan.currency)}</div>
+        <div>
+          Trial lengh:
+          {durationTime}
+          {TIME_UNITS.find((u) => u.value == lengthUnit)?.label}
+        </div>
+        <div>{requireCardInfo && 'Require bank card'}</div>
+        <div>{autoRenew && 'Auto renew'}</div>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -141,6 +200,7 @@ const Index = ({
             plan.intervalCount == 1 ? '' : plan.intervalCount
           }${plan.intervalUnit}`}
         </div>
+        <div>{trialInfo()}</div>
       </div>
       {plan.onetimeAddons != null && plan.onetimeAddons.length > 0 && (
         <>
