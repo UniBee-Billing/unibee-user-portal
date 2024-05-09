@@ -283,9 +283,10 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       const wire = appConfig.gateway.find(
         (g) => g.gatewayName == 'wire_transfer',
       );
-      console.log('total amt/wire-mim amt: ', wire, '//', preview?.totalAmount);
+      // console.log('total amt/wire-mim amt: ', wire, '//', preview?.totalAmount);
       if (wire?.currency != preview?.currency) {
         message.error(`Wire transfer currency is ${wire?.currency}`);
+        return;
       }
       if (wire!.minimumAmount! > preview!.totalAmount) {
         message.error(

@@ -125,6 +125,7 @@ interface ISubscription {
     updateCurrency: string;
     updateAddons: ISubAddon[];
   };
+  gatewayId: number;
 }
 
 type TRefund = {

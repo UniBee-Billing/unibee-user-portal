@@ -20,7 +20,7 @@ import { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CURRENCY, INVOICE_STATUS, SUBSCRIPTION_STATUS } from '../../constants';
+import { CURRENCY, INVOICE_STATUS } from '../../constants';
 import { showAmount } from '../../helpers';
 import { downloadInvoice, getInvoiceListReq } from '../../requests';
 import '../../shared.css';

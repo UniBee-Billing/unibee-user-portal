@@ -10,15 +10,15 @@ import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { CSSProperties, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SUBSCRIPTION_STATUS } from '../../constants';
 import { daysBetweenDate, showAmount } from '../../helpers';
 import { getPaymentMethodListReq, getSublistReq } from '../../requests';
 import '../../shared.css';
 import { ISubscription } from '../../shared.types';
-// import { useAppConfigStore, useProfileStore } from '../../stores';
+import { useAppConfigStore } from '../../stores';
 import EditCardModal from '../modals/editCardModal';
 import CancelSubModal from '../modals/modalCancelPendingSub';
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub';
+import { SubscriptionStatus } from '../ui/statusTag';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 
@@ -288,6 +288,7 @@ interface ISubSectionProps {
   refresh: () => void;
 }
 const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
+  const appConfigStore = useAppConfigStore();
   const navigate = useNavigate();
   const [resumeOrTerminateModal, setResumeOrTerminateModal] = useState(false);
   const toggleResumeOrTerminateSubModal = () =>
@@ -345,7 +346,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           Status
         </Col>
         <Col span={6}>
-          {subInfo && SUBSCRIPTION_STATUS[subInfo.status]}
+          {subInfo && SubscriptionStatus(subInfo.status)}
           <span
             style={{ cursor: 'pointer', marginLeft: '8px' }}
             onClick={refresh}
@@ -468,6 +469,20 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         </Col>
       </Row>
 
+      <Row style={rowStyle}>
+        <Col span={4} style={colStyle}>
+          Payment Gateway
+        </Col>
+        <Col span={6}>
+          {subInfo &&
+            appConfigStore.gateway.find(
+              (g) => g.gatewayId == subInfo?.gatewayId,
+            )?.gatewayName}
+        </Col>
+        <Col span={4} style={colStyle}></Col>
+        <Col span={10}></Col>
+      </Row>
+
       {subInfo && subInfo.status == 2 && (
         <div className="mx-0 my-6 flex items-center justify-start gap-9">
           <Button onClick={() => navigate(`${APP_PATH}plans`)}>
@@ -506,6 +521,15 @@ const SubReminder = ({
   sub: ISubscription | null;
   toggleModal: () => void;
 }) => {
+  const appConfigStore = useAppConfigStore();
+  const wireSetup = appConfigStore.gateway.find(
+    (g) => g.gatewayName == 'wire_transfer',
+  );
+  let isWire = false;
+  if (wireSetup != null && sub?.gatewayId == wireSetup.gatewayId) {
+    isWire = true;
+  }
+
   const getReminder = () => {
     let n;
     switch (sub!.status) {
@@ -513,30 +537,105 @@ const SubReminder = ({
         n = 'Your subscription is initializing, please wait a few moment.';
         break;
       case 1:
-        n = (
-          <div
-            style={{
-              color: '#757575',
-              fontSize: '12px',
-              background: '#fbe9e7',
-              borderRadius: '4px',
-              padding: '6px',
-              marginBottom: '12px',
-            }}
-          >
-            Your subscription has been created, but not activated, please go to{' '}
-            <a href={sub!.link} target="_blank">
-              checkout page
-            </a>{' '}
-            to finish the payment within 3 days. If you haven't finished the
-            payment within 3 days, your subscription will be cancelled, or you
-            can{' '}
-            <Button type="link" style={{ padding: '0' }} onClick={toggleModal}>
-              Cancel
-            </Button>{' '}
-            this subscription immediately.
-          </div>
-        );
+        if (isWire) {
+          n = (
+            <div
+              style={{
+                color: '#757575',
+                fontSize: '12px',
+                background: '#fbe9e7',
+                borderRadius: '4px',
+                padding: '6px',
+                marginBottom: '12px',
+              }}
+            >
+              Your subscription has been created, but not activated, please wire
+              your payment to
+              <Popover
+                placement="bottom"
+                title="Account Detail"
+                content={
+                  <div style={{ width: '520px' }}>
+                    <Row style={{ marginBottom: '6px' }}>
+                      <Col span={8} className="text-lg font-bold text-gray-500">
+                        Account Holder
+                      </Col>
+                      <Col span={16}>{wireSetup!.bank?.accountHolder}</Col>
+                    </Row>
+                    <Row style={{ marginBottom: '6px' }}>
+                      <Col span={8} className="text-lg font-bold text-gray-500">
+                        Minimum Amount
+                      </Col>
+                      <Col span={16}>
+                        {showAmount(
+                          wireSetup!.minimumAmount as number,
+                          wireSetup!.currency as string,
+                        )}
+                      </Col>
+                    </Row>
+                    <Row style={{ marginBottom: '6px' }}>
+                      <Col span={8} className="text-lg font-bold text-gray-500">
+                        BIC
+                      </Col>
+                      <Col span={16}>{wireSetup!.bank?.bic}</Col>
+                    </Row>
+                    <Row style={{ marginBottom: '6px' }}>
+                      <Col span={8} className="text-lg font-bold text-gray-500">
+                        IBAN
+                      </Col>
+                      <Col span={16}>{wireSetup!.bank?.iban}</Col>
+                    </Row>
+                  </div>
+                }
+              >
+                <span className=" cursor-pointer text-blue-600">
+                  &nbsp;this account&nbsp;
+                </span>
+              </Popover>
+              in 5 days. If we haven't received your payment within 5 days, your
+              subscription will be cancelled, or you can{' '}
+              <Button
+                type="link"
+                style={{ padding: '0' }}
+                onClick={toggleModal}
+              >
+                CANCEL
+              </Button>{' '}
+              this subscription immediately.
+            </div>
+          );
+        } else {
+          n = (
+            <div
+              style={{
+                color: '#757575',
+                fontSize: '12px',
+                background: '#fbe9e7',
+                borderRadius: '4px',
+                padding: '6px',
+                marginBottom: '12px',
+              }}
+            >
+              Your subscription has been created, but not activated, please go
+              to{' '}
+              <a href={sub!.link} target="_blank">
+                checkout page
+              </a>{' '}
+              to finish the payment within 3 days. If you haven't finished the
+              payment within 3 days, your subscription will be cancelled, or you
+              can{' '}
+              <Button
+                type="link"
+                style={{ padding: '0' }}
+                onClick={toggleModal}
+              >
+                Cancel
+              </Button>{' '}
+              this subscription immediately.
+            </div>
+          );
+        }
+
         break;
       case 3:
         n = 'Your subscription is in pending status, please wait';
