@@ -23,6 +23,7 @@ import {
 import { Country, IPlan, IPreview } from '../../shared.types';
 import { useAppConfigStore } from '../../stores';
 import PaymentSelector from '../ui/paymentSelector';
+import './modalCreateSub.css';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
@@ -56,7 +57,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [discountChecking, setDiscountChecking] = useState(false);
   const [discountErr, setDiscountErr] = useState('');
   const [VATErr, setVatErr] = useState('');
-
   const [vatChecking, setVatChecking] = useState(false);
 
   // set card payment as default gateway
@@ -66,6 +66,13 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setGatewayId(Number(e.target.value));
   };
+
+  // is wire transfer selected. Yes, then need extra step is needed
+  const [wireConfirmStep, setWireConfirmStep] = useState(false);
+  const wireSetup = appConfig.gateway.find(
+    (g) => g.gatewayName == 'wire_transfer',
+  );
+  const isWireSelected = wireSetup != null && wireSetup.gatewayId == gatewayId;
 
   const onVatChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setVatNumber(e.target.value);
@@ -234,7 +241,15 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     setSubmitting(false);
   };
 
+  const onWireConfirm = async () => {};
+
   const onConfirm = async () => {
+    if (wireConfirmStep) {
+      closeModal();
+      message.success('Subscription created.');
+      navigate(`${APP_PATH}my-subscription`);
+    }
+
     if (vatChechkingRef.current || discountChkingRef.current) {
       return;
     }
@@ -249,6 +264,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       return;
     }
 
+    // this is a trial-enabled plan, and requires billing info, card info
     if (plan.trialDurationTime > 0 && plan.trialDemand != '') {
       if (
         appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId !=
@@ -261,6 +277,29 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       }
     }
 
+    console.log('wire selected...');
+    if (isWireSelected) {
+      const wire = appConfig.gateway.find(
+        (g) => g.gatewayName == 'wire_transfer',
+      );
+      console.log('total amt/wire-mim amt: ', wire, '//', preview?.totalAmount);
+      if (wire?.currency != preview?.currency) {
+        message.error(`Wire transfer currency is ${wire?.currency}`);
+      }
+      if (wire!.minimumAmount! > preview!.totalAmount) {
+        message.error(
+          `Minimum amount of wire transfer is: ,
+          ${showAmount(
+            wire!.minimumAmount as number,
+            wire!.currency as string,
+            false,
+          )}`,
+        );
+        return;
+      }
+    }
+
+    // return;
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
@@ -285,6 +324,11 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       return;
     }
 
+    if (isWireSelected) {
+      setWireConfirmStep(!wireConfirmStep);
+      return;
+    }
+
     const { link, paid } = createSubRes;
     console.log('create sub res: ', createSubRes);
     if (link != '' && link != null) {
@@ -300,6 +344,14 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   }, []);
   */
 
+  const onClose = () => {
+    closeModal();
+    if (wireConfirmStep) {
+      message.success('Subscription created.');
+      navigate(`${APP_PATH}my-subscription`);
+    }
+  };
+
   useEffect(() => {
     createPreview();
   }, [selectedCountry]);
@@ -313,6 +365,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       footer={null}
       closeIcon={null}
       width={'820px'}
+      style={{ overflow: 'hidden' }}
     >
       {preview == null ? (
         <div className="flex items-center justify-center">
@@ -322,176 +375,180 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           />
         </div>
       ) : (
-        <>
-          <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
-            <Col span={16}>Description</Col>
-            <Col span={4}>Quantity</Col>
-            <Col span={4}>Amount</Col>
-          </Row>
-          {preview.invoice.lines.map((i, idx) => (
-            <div key={idx}>
-              <Row>
-                <Col span={16}>{i.description}</Col>
-                <Col span={4}>
-                  <div style={{ marginLeft: '12px' }}>{i.quantity}</div>
-                </Col>
-                <Col span={4}>
-                  {showAmount(i.amountExcludingTax, i.currency)}
-                </Col>
-              </Row>
-              {idx != preview.invoice.lines.length - 1 && (
-                <Divider style={{ margin: '8px 0', background: 'gray' }} />
-              )}
-            </div>
-          ))}
-          <Divider />
-          <Row>
-            <Col span={5}>VAT number</Col>
-            <Col span={6} style={{ marginLeft: '12px' }}>
-              Country
-            </Col>
-            <Col span={8} style={{ marginLeft: '2px' }}>
-              Payment method
-            </Col>
-          </Row>
-          <Row style={{ marginBottom: '12px' }}>
-            <Col span={5}>
-              <Input
-                disabled={loading || submitting}
-                value={vatNumber}
-                style={{ width: '100%' }}
-                onChange={onVatChange}
-                onBlur={onVATCheck}
-                // onPressEnter={onVATCheck}
-                placeholder="Your VAT number"
-              />
-            </Col>
-            <Col span={6} style={{ marginLeft: '12px' }}>
-              <Select
-                disabled={loading || submitting}
-                value={selectedCountry}
-                style={{ width: '160px' }}
-                onChange={onCountryChange}
-                showSearch
-                placeholder="Type to search"
-                optionFilterProp="children"
-                filterOption={filterOption}
-                options={countryList.map((c) => ({
-                  label: c.name,
-                  value: c.code,
-                }))}
-              />
-            </Col>
-            <Col span={12}>
-              <PaymentSelector
-                selected={gatewayId}
-                onSelect={onGatewayChange}
-              />
-            </Col>
-          </Row>
-          {isVatValid && (
-            <>
-              <Row style={{ fontWeight: 'bold' }}>
-                <Col span={6}>Company Address</Col>
-                <Col span={6}>Company Name</Col>
-                <Col span={6}>Country Code</Col>
-              </Row>
-              <Row style={{ marginBottom: '12px' }}>
-                <Col span={6} style={{ fontSize: '11px' }}>
-                  {vatDetail?.companyAddress}
-                </Col>
-                <Col span={6} style={{ fontSize: '11px' }}>
-                  {vatDetail?.companyName}
-                </Col>
-                <Col span={6} style={{ fontSize: '11px' }}>
-                  {vatDetail?.countryCode}
-                </Col>
-              </Row>
-            </>
-          )}
-          <div className=" mt-6 flex w-full pr-4">
-            <div className="w-3/5">
-              <Row>
-                <Col span={24}>Discount code</Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <Input
-                    ref={discountInputRef}
-                    allowClear
-                    // disabled={discountChecking || vatChecking}
-                    disabled={loading || submitting}
-                    style={{ width: '200px' }}
-                    // value={discountCode}
-                    onBlur={onDiscountChecking}
-                    onPressEnter={onCodeEnter}
-                    // onChange={onDiscountCodeChange}
-                  />
-                  <span className=" ml-1">
-                    <Button
-                      className="apply-btn-wrapper"
-                      size="small"
-                      type="text"
-                      onClick={onDiscountChecking2}
-                      loading={discountChecking}
+        <div
+          className="order-preview-wrapper relative flex"
+          style={{ width: '1590px', left: wireConfirmStep ? '-800px' : 0 }}
+        >
+          <div className="relative w-3/6">
+            <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
+              <Col span={16}>Description</Col>
+              <Col span={4}>Quantity</Col>
+              <Col span={4}>Amount</Col>
+            </Row>
+            {preview.invoice.lines.map((i, idx) => (
+              <div key={idx}>
+                <Row>
+                  <Col span={16}>{i.description}</Col>
+                  <Col span={4}>
+                    <div style={{ marginLeft: '12px' }}>{i.quantity}</div>
+                  </Col>
+                  <Col span={4}>
+                    {showAmount(i.amountExcludingTax, i.currency)}
+                  </Col>
+                </Row>
+                {idx != preview.invoice.lines.length - 1 && (
+                  <Divider style={{ margin: '8px 0', background: 'gray' }} />
+                )}
+              </div>
+            ))}
+            <Divider />
+            <Row>
+              <Col span={5}>VAT number</Col>
+              <Col span={6} style={{ marginLeft: '12px' }}>
+                Country
+              </Col>
+              <Col span={8} style={{ marginLeft: '2px' }}>
+                Payment method
+              </Col>
+            </Row>
+            <Row style={{ marginBottom: '12px' }}>
+              <Col span={5}>
+                <Input
+                  disabled={loading || submitting}
+                  value={vatNumber}
+                  style={{ width: '100%' }}
+                  onChange={onVatChange}
+                  onBlur={onVATCheck}
+                  // onPressEnter={onVATCheck}
+                  placeholder="Your VAT number"
+                />
+              </Col>
+              <Col span={6} style={{ marginLeft: '12px' }}>
+                <Select
+                  disabled={loading || submitting}
+                  value={selectedCountry}
+                  style={{ width: '160px' }}
+                  onChange={onCountryChange}
+                  showSearch
+                  placeholder="Type to search"
+                  optionFilterProp="children"
+                  filterOption={filterOption}
+                  options={countryList.map((c) => ({
+                    label: c.name,
+                    value: c.code,
+                  }))}
+                />
+              </Col>
+              <Col span={12}>
+                <PaymentSelector
+                  selected={gatewayId}
+                  onSelect={onGatewayChange}
+                />
+              </Col>
+            </Row>
+            {isVatValid && (
+              <>
+                <Row style={{ fontWeight: 'bold' }}>
+                  <Col span={6}>Company Address</Col>
+                  <Col span={6}>Company Name</Col>
+                  <Col span={6}>Country Code</Col>
+                </Row>
+                <Row style={{ marginBottom: '12px' }}>
+                  <Col span={6} style={{ fontSize: '11px' }}>
+                    {vatDetail?.companyAddress}
+                  </Col>
+                  <Col span={6} style={{ fontSize: '11px' }}>
+                    {vatDetail?.companyName}
+                  </Col>
+                  <Col span={6} style={{ fontSize: '11px' }}>
+                    {vatDetail?.countryCode}
+                  </Col>
+                </Row>
+              </>
+            )}
+            <div className=" mt-6 flex w-full pr-4">
+              <div className="w-3/5">
+                <Row>
+                  <Col span={24}>Discount code</Col>
+                </Row>
+                <Row>
+                  <Col span={24}>
+                    <Input
+                      ref={discountInputRef}
+                      allowClear
+                      // disabled={discountChecking || vatChecking}
                       disabled={loading || submitting}
-                    >
-                      Apply
-                    </Button>
-                  </span>
-                  <div className=" mt-1 text-xs text-gray-500">
-                    {discountChecking ? 'checking...' : getDiscountDesc()}
-                  </div>
-                </Col>
-              </Row>
+                      style={{ width: '200px' }}
+                      // value={discountCode}
+                      onBlur={onDiscountChecking}
+                      onPressEnter={onCodeEnter}
+                      // onChange={onDiscountCodeChange}
+                    />
+                    <span className=" ml-1">
+                      <Button
+                        className="apply-btn-wrapper"
+                        size="small"
+                        type="text"
+                        onClick={onDiscountChecking2}
+                        loading={discountChecking}
+                        disabled={loading || submitting}
+                      >
+                        Apply
+                      </Button>
+                    </span>
+                    <div className=" mt-1 text-xs text-gray-500">
+                      {discountChecking ? 'checking...' : getDiscountDesc()}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              <div className="w-2/5">
+                <Row>
+                  <Col
+                    span={16}
+                    style={{ fontSize: '18px' }}
+                    className=" text-red-800"
+                  >
+                    Saved
+                  </Col>
+                  <Col
+                    className=" text-red-800"
+                    span={8}
+                  >{`${showAmount(preview.discountAmount, preview.currency)}`}</Col>
+                </Row>
+                <Row>
+                  <Col
+                    span={16}
+                    style={{ fontSize: '18px' }}
+                    className=" text-gray-700"
+                  >
+                    Tax
+                  </Col>
+                  <Col
+                    span={8}
+                    className=" text-gray-700"
+                  >{`${preview.taxPercentage / 100} %`}</Col>
+                </Row>
+                <Divider style={{ margin: '4px 0' }} />
+                <Row>
+                  <Col
+                    span={16}
+                    style={{ fontSize: '18px', fontWeight: 'bold' }}
+                    className=" text-gray-600"
+                  >
+                    Order Total
+                  </Col>
+                  <Col
+                    style={{ fontSize: '18px', fontWeight: 'bold' }}
+                    className=" text-gray-600"
+                    span={8}
+                  >{`${showAmount(preview.totalAmount, preview.currency)}`}</Col>
+                </Row>
+              </div>
             </div>
 
-            <div className="w-2/5">
-              <Row>
-                <Col
-                  span={16}
-                  style={{ fontSize: '18px' }}
-                  className=" text-red-800"
-                >
-                  Saved
-                </Col>
-                <Col
-                  className=" text-red-800"
-                  span={8}
-                >{`${showAmount(preview.discountAmount, preview.currency)}`}</Col>
-              </Row>
-              <Row>
-                <Col
-                  span={16}
-                  style={{ fontSize: '18px' }}
-                  className=" text-gray-700"
-                >
-                  Tax
-                </Col>
-                <Col
-                  span={8}
-                  className=" text-gray-700"
-                >{`${preview.taxPercentage / 100} %`}</Col>
-              </Row>
-              <Divider style={{ margin: '4px 0' }} />
-              <Row>
-                <Col
-                  span={16}
-                  style={{ fontSize: '18px', fontWeight: 'bold' }}
-                  className=" text-gray-600"
-                >
-                  Order Total
-                </Col>
-                <Col
-                  style={{ fontSize: '18px', fontWeight: 'bold' }}
-                  className=" text-gray-600"
-                  span={8}
-                >{`${showAmount(preview.totalAmount, preview.currency)}`}</Col>
-              </Row>
-            </div>
-          </div>
-
-          {/* <Row>
+            {/* <Row>
             
             <Col span={14}>
               <div className="mr-8 flex h-full items-end justify-end text-xl">
@@ -520,17 +577,59 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
             <Col span={8}></Col>
               </Row>*/}
 
-          <Row style={{ marginTop: '12px' }}></Row>
-        </>
+            <Row style={{ marginTop: '12px' }}></Row>
+          </div>
+          <div className="relative w-3/6">
+            {wireSetup && (
+              <>
+                <h3 className="my-4">
+                  Please wire transfer your payment to the following account:
+                </h3>
+                <Row style={{ marginBottom: '6px' }}>
+                  <Col span={8} className="text-lg font-bold text-gray-500">
+                    Account Holder
+                  </Col>
+                  <Col span={16}>{wireSetup.bank?.accountHolder}</Col>
+                </Row>
+                <Row style={{ marginBottom: '6px' }}>
+                  <Col span={8} className="text-lg font-bold text-gray-500">
+                    Minimum Amount
+                  </Col>
+                  <Col span={16}>
+                    {showAmount(
+                      wireSetup.minimumAmount as number,
+                      wireSetup.currency as string,
+                    )}
+                  </Col>
+                </Row>
+                <Row style={{ marginBottom: '6px' }}>
+                  <Col span={8} className="text-lg font-bold text-gray-500">
+                    BIC
+                  </Col>
+                  <Col span={16}>{wireSetup.bank?.bic}</Col>
+                </Row>
+                <Row style={{ marginBottom: '6px' }}>
+                  <Col span={8} className="text-lg font-bold text-gray-500">
+                    IBAN
+                  </Col>
+                  <Col span={16}>{wireSetup.bank?.iban}</Col>
+                </Row>
+              </>
+            )}
+          </div>
+        </div>
       )}
       <div className="mt-6 flex items-center justify-end gap-4">
         <button style={{ opacity: 0 }}>ee</button>
+        {/* <Button onClick={() => setWireConfirmStep(!wireConfirmStep)}>
+          push
+    </Button> */}
         <Button
           className="cancel-btn-wrapper"
-          onClick={closeModal}
+          onClick={onClose}
           disabled={loading || submitting}
         >
-          Cancel
+          {wireConfirmStep ? "No I'll finish the transfer later" : 'Cancel'}
         </Button>
         <div className="confirm-btn-wrapper">
           <Button
@@ -540,11 +639,13 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
             loading={loading || submitting}
             disabled={loading || submitting}
           >
-            {discountChecking
-              ? 'Discount checking'
-              : vatChecking
-                ? 'VAT checking'
-                : 'OK'}
+            {wireConfirmStep
+              ? "Yes I've finished the transfer"
+              : discountChecking
+                ? 'Discount checking'
+                : vatChecking
+                  ? 'VAT checking'
+                  : 'OK'}
           </Button>
         </div>
       </div>

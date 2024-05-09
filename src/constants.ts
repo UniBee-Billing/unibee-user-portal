@@ -27,6 +27,7 @@ export const SUBSCRIPTION_STATUS: { [key: number]: string } = {
   5: 'Expired', // sub ended.
   6: 'Suspended', // suspend for a while, might want to resume later
   7: 'Incomplete',
+  8: 'Processing',
 };
 
 export const GATEWAY_TYPE: { [key: number]: string } = {

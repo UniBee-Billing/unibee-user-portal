@@ -45,6 +45,14 @@ interface IAppConfig {
     gatewayName: string;
     gatewayLogo: string;
     gatewayType: number;
+    minimumAmount?: number;
+    currency?: string;
+    bank?: {
+      accountHolder: string;
+      address: string;
+      bic: string;
+      iban: string;
+    };
   }[];
 }
 
