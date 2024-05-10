@@ -25,9 +25,9 @@ export const SUBSCRIPTION_STATUS: { [key: number]: string } = {
   // coz payment is not synchronous, so we have to wait, in status 3: no action can be taken on UI.
   4: 'Cancelled', // users(or admin) cancelled the sub(immediately or automatically at the end of billing cycle). It's triggered by human.
   5: 'Expired', // sub ended.
-  6: 'Suspended', // suspend for a while, might want to resume later
-  7: 'Incomplete',
-  8: 'Processing',
+  6: 'Suspended', // suspend for a while, might want to resume later. Not yet used.
+  7: 'Incomplete', // you claimed you've finished the payment, and want to use our service immiedately.
+  8: 'Processing', // you claimed you've finished the payment, but admin need to verify it.
 };
 
 export const GATEWAY_TYPE: { [key: number]: string } = {

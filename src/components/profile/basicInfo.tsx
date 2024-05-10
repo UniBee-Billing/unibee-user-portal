@@ -28,10 +28,8 @@ import {
   useProfileStore,
   useSessionStore,
 } from '../../stores';
-import { useRelogin } from '../hooks';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
-const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
   // const appConfigStore = useAppConfigStore();
@@ -42,7 +40,6 @@ const Index = () => {
   const [resetPasswordModal, setResetPasswordModal] = useState(false);
   const togglePasswordModal = () => setResetPasswordModal(!resetPasswordModal);
   const profileStore = useProfileStore();
-  const relogin = useRelogin();
 
   const filterOption = (
     input: string,

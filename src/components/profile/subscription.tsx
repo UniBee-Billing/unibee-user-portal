@@ -5,13 +5,28 @@ import {
   MinusOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
-import { Button, Col, Divider, Popover, Row, Table, message } from 'antd';
+import {
+  Button,
+  Col,
+  Divider,
+  Empty,
+  Popover,
+  Row,
+  Spin,
+  Table,
+  message,
+} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { CSSProperties, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { SUBSCRIPTION_STATUS } from '../../constants';
 import { daysBetweenDate, showAmount } from '../../helpers';
-import { getPaymentMethodListReq, getSublistReq } from '../../requests';
+import {
+  getActiveSubReq,
+  getPaymentMethodListReq,
+  getSublistReq,
+} from '../../requests';
 import '../../shared.css';
 import { ISubscription } from '../../shared.types';
 import { useAppConfigStore } from '../../stores';
@@ -62,48 +77,48 @@ const Index = () => {
   const location = useLocation();
   // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false);
-  const [subscriptions, setSubscriptions] = useState<ISubscription[]>([]);
+  const [subscription, setSubscription] = useState<ISubscription | null>(null);
   const navigate = useNavigate();
 
   const fetchData = async () => {
     setLoading(true);
-    const [subList, err] = await getSublistReq(fetchData);
+    const [s, err] = await getActiveSubReq(fetchData);
     setLoading(false);
-    console.log('user sub list: ', subList);
+    console.log('active sub: ', s);
     if (null != err) {
       message.error(err.message);
       return;
     }
 
-    const sub: ISubscription[] =
-      subList == null
-        ? []
-        : subList.map((s: any) => {
-            return {
-              ...s.subscription,
-              plan: s.plan,
-              addons:
-                s.addons == null
-                  ? []
-                  : s.addons.map((a: any) => ({
-                      ...a.addonPlan,
-                      quantity: a.quantity,
-                    })),
-              user: s.user,
-            };
-          });
-    console.log('final sub: ', sub);
-    setSubscriptions(sub);
-    if (sub.length > 0) {
+    if (null == s) {
+      // if user enter this route from login and has no subscription(new user or current sub expired/cancelled)
+      // they'll be redirected to /product, otherwise, stay.
+      if (location.state != null && location.state.from == 'login') {
+        navigate(`${APP_PATH}plans`);
+      } else {
+        // user might cancel a pending sub, after refresh, backend returns a null, I need to set to null
+        // thus, page will show 'no subscription'
+        setSubscription(null);
+      }
       return;
     }
 
-    // if user enter this route from login and has no subscription(new user or current sub expired/cancelled)
-    // they'll be redirected to /product, otherwise, stay.
-    if (location.state != null && location.state.from == 'login') {
-      navigate(`${APP_PATH}plans`);
-    }
+    const sub = {
+      ...s.subscription,
+      plan: s.plan,
+      addons:
+        s.addons == null
+          ? []
+          : s.addons.map((a: any) => ({
+              ...a.addonPlan,
+              quantity: a.quantity,
+            })),
+      user: s.user,
+    };
+    setSubscription(sub);
   };
+
+  const goToChoosePlan = () => navigate(`${APP_PATH}plans`);
 
   useEffect(() => {
     fetchData();
@@ -117,29 +132,46 @@ const Index = () => {
 
   return (
     <div>
+      <Spin
+        spinning={loading}
+        indicator={
+          <LoadingOutlined style={{ fontSize: 32, color: '#FFF' }} spin />
+        }
+        fullscreen
+      />
       <Divider
         orientation="left"
         style={{ margin: '32px 0', color: '#757575' }}
       >
         Current Subscription
       </Divider>
-      {subscriptions.length > 0 && (
-        <SubscriptionInfoSection
-          subInfo={subscriptions[0]}
-          refresh={fetchData}
-        />
+      {loading ? null : subscription == null ? (
+        <div className="flex flex-col items-center justify-center">
+          <Empty
+            description="No Subscription"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+          <Button onClick={goToChoosePlan} type="link">
+            Go to choose one
+          </Button>
+        </div>
+      ) : (
+        <>
+          <SubscriptionInfoSection subInfo={subscription} refresh={fetchData} />
+
+          {subscription.unfinishedSubscriptionPendingUpdate && (
+            <PendingUpdateSection subInfo={subscription} />
+          )}
+        </>
       )}
-      {subscriptions.length > 0 &&
-        subscriptions[0].unfinishedSubscriptionPendingUpdate && (
-          <PendingUpdateSection subInfo={subscriptions[0]} />
-        )}
+
       <Divider
         orientation="left"
         style={{ margin: '32px 0', color: '#757575' }}
       >
         Subscription Log
       </Divider>
-      <Table
+      {/* <Table
         columns={columns}
         dataSource={subscriptions}
         rowKey={'id'}
@@ -149,7 +181,7 @@ const Index = () => {
           spinning: loading,
           indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />,
         }}
-      />
+      /> */}
     </div>
   );
 };
@@ -564,17 +596,6 @@ const SubReminder = ({
                     </Row>
                     <Row style={{ marginBottom: '6px' }}>
                       <Col span={8} className="text-lg font-bold text-gray-500">
-                        Minimum Amount
-                      </Col>
-                      <Col span={16}>
-                        {showAmount(
-                          wireSetup!.minimumAmount as number,
-                          wireSetup!.currency as string,
-                        )}
-                      </Col>
-                    </Row>
-                    <Row style={{ marginBottom: '6px' }}>
-                      <Col span={8} className="text-lg font-bold text-gray-500">
                         BIC
                       </Col>
                       <Col span={16}>{wireSetup!.bank?.bic}</Col>
@@ -638,7 +659,24 @@ const SubReminder = ({
 
         break;
       case 3:
-        n = 'Your subscription is in pending status, please wait';
+        n = `Your subscription is in ${SUBSCRIPTION_STATUS[3]} status, please wait`;
+        break;
+      case 7:
+      case 8:
+        n = (
+          <div
+            style={{
+              color: '#757575',
+              fontSize: '12px',
+              background: '#fbe9e7',
+              borderRadius: '4px',
+              padding: '6px',
+              marginBottom: '12px',
+            }}
+          >
+            We are checking your payment, please be patient.
+          </div>
+        );
         break;
       default:
         n = '';

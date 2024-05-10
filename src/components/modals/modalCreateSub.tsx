@@ -18,6 +18,7 @@ import { showAmount } from '../../helpers';
 import {
   createPreviewReq,
   createSubscriptionReq,
+  markWireCompleteReq,
   vatNumberCheckReq,
 } from '../../requests';
 import { Country, IPlan, IPreview } from '../../shared.types';
@@ -58,6 +59,8 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   const [discountErr, setDiscountErr] = useState('');
   const [VATErr, setVatErr] = useState('');
   const [vatChecking, setVatChecking] = useState(false);
+
+  const subscriptionId = useRef(''); // fore wire transfer, we need this Id(after creating sub) to mark transfer as complete
 
   // set card payment as default gateway
   const [gatewayId, setGatewayId] = useState<undefined | number>(
@@ -241,10 +244,16 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     setSubmitting(false);
   };
 
-  const onWireConfirm = async () => {};
-
   const onConfirm = async () => {
     if (wireConfirmStep) {
+      setLoading(true);
+      const [res, err] = await markWireCompleteReq(subscriptionId.current);
+      setLoading(false);
+      if (null != err) {
+        message.error(err.message);
+        return;
+      }
+      console.log('mark wire complete res: ', res);
       closeModal();
       message.success('Subscription created.');
       navigate(`${APP_PATH}my-subscription`);
@@ -320,6 +329,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       gatewayId,
       discountInputRef.current?.input?.value,
     );
+    console.log('create sub res: ', createSubRes);
     setSubmitting(false);
     if (err != null) {
       message.error(err.message);
@@ -327,12 +337,16 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
     }
 
     if (isWireSelected) {
+      console.log(
+        'setting sub id after creaaet sub: ',
+        createSubRes.subscription.subscriptionId,
+      );
+      subscriptionId.current = createSubRes.subscription.subscriptionId;
       setWireConfirmStep(!wireConfirmStep);
       return;
     }
 
     const { link, paid } = createSubRes;
-    console.log('create sub res: ', createSubRes);
     if (link != '' && link != null) {
       window.open(link, '_blank');
     }
@@ -361,7 +375,7 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
   // console.log('discount/vat checking: ', discountChecking, '//', vatChecking);
   return (
     <Modal
-      title="Order Preview"
+      title={wireConfirmStep ? 'Wire Transfer Account' : 'Order Preview'}
       maskClosable={false}
       open={true}
       footer={null}
@@ -584,17 +598,22 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
           <div className="relative w-3/6">
             {wireSetup && (
               <>
-                <h3 className="my-4">
-                  Please wire transfer your payment to the following account:
-                </h3>
+                <div className="my-4">
+                  Your subscription has been created, please wire transfer your
+                  payment(
+                  <span className=" font-bold text-red-500">
+                    {showAmount(preview.totalAmount, preview.currency)}
+                  </span>
+                  ) to the following account within 5 days:
+                </div>
                 <Row style={{ marginBottom: '6px' }}>
-                  <Col span={8} className="text-lg font-bold text-gray-500">
+                  <Col span={8} className="text-lg text-gray-500">
                     Account Holder
                   </Col>
                   <Col span={16}>{wireSetup.bank?.accountHolder}</Col>
                 </Row>
-                <Row style={{ marginBottom: '6px' }}>
-                  <Col span={8} className="text-lg font-bold text-gray-500">
+                {/* <Row style={{ marginBottom: '6px' }}>
+                  <Col span={8} className="text-lg text-gray-500">
                     Minimum Amount
                   </Col>
                   <Col span={16}>
@@ -603,15 +622,15 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
                       wireSetup.currency as string,
                     )}
                   </Col>
-                </Row>
+                  </Row>*/}
                 <Row style={{ marginBottom: '6px' }}>
-                  <Col span={8} className="text-lg font-bold text-gray-500">
+                  <Col span={8} className="text-lg text-gray-500">
                     BIC
                   </Col>
                   <Col span={16}>{wireSetup.bank?.bic}</Col>
                 </Row>
                 <Row style={{ marginBottom: '6px' }}>
-                  <Col span={8} className="text-lg font-bold text-gray-500">
+                  <Col span={8} className="text-lg  text-gray-500">
                     IBAN
                   </Col>
                   <Col span={16}>{wireSetup.bank?.iban}</Col>
@@ -623,9 +642,6 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
       )}
       <div className="mt-6 flex items-center justify-end gap-4">
         <button style={{ opacity: 0 }}>ee</button>
-        {/* <Button onClick={() => setWireConfirmStep(!wireConfirmStep)}>
-          push
-    </Button> */}
         <Button
           className="cancel-btn-wrapper"
           onClick={onClose}

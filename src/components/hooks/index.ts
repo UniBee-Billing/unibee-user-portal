@@ -38,15 +38,6 @@ const useCountdown = (
   return [currentVal, counting, start, stop];
 };
 
-const useRelogin = () => {
-  const navigate = useNavigate();
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
-  return relogin;
-};
-
 const usePagination = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageNum = parseInt(searchParams.get('page') ?? '0');
@@ -64,4 +55,4 @@ const usePagination = () => {
   return { page, onPageChange };
 };
 
-export { useCountdown, usePagination, useRelogin };
+export { useCountdown, usePagination };

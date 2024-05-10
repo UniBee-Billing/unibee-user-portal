@@ -1,11 +1,7 @@
-import { Button, Col, Modal, Row, message } from 'antd';
+import { Button, Modal, message } from 'antd';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-// import { showAmount } from '../../helpers';
 import { cancelSubReq } from '../../requests';
 import { ISubscription } from '../../shared.types';
-
-const APP_PATH = import.meta.env.BASE_URL;
 
 interface Props {
   subInfo: ISubscription | null;
@@ -13,13 +9,7 @@ interface Props {
   refresh: () => void;
 }
 const Index = ({ subInfo, closeModal, refresh }: Props) => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
 
   const onConfirm = async () => {
     setLoading(true);
@@ -32,7 +22,6 @@ const Index = ({ subInfo, closeModal, refresh }: Props) => {
     message.success(`Subscription cancelled`);
     closeModal();
     refresh();
-    // setTimeout(refresh, 2000);
   };
 
   return (

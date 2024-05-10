@@ -20,11 +20,6 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
   const [countryList, setCountryList] = useState<Country[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const relogin = () =>
-    navigate(`${APP_PATH}login`, {
-      state: { msg: 'session expired, please re-login' },
-    });
-
   const hiddenFields = [
     'id',
     'countryName',

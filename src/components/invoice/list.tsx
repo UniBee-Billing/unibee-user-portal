@@ -162,9 +162,12 @@ const Index = () => {
     setInvoiceList(invoices || []);
   };
 
+  /*
   useEffect(() => {
     fetchData();
   }, []);
+  */
+
   useEffect(() => {
     fetchData();
   }, [page]);

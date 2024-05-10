@@ -255,6 +255,7 @@ export const getGatewayListReq = async () => {
   }
 };
 
+// to be depreicated
 export const getSublistReq = async (refreshCb: () => void) => {
   const profile = useProfileStore.getState();
   const body = {
@@ -276,6 +277,7 @@ export const getSublistReq = async (refreshCb: () => void) => {
   }
 };
 
+// to be depreicated
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState();
   try {
@@ -290,6 +292,21 @@ export const getActiveSub = async () => {
       throw new ExpiredError('Session expired');
     }
     return [res.data.data.subscriptions, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+// this also imcludes pending sub (we think Pending is a weak version of active)
+export const getActiveSubReq = async (refreshCb: () => void) => {
+  try {
+    const res = await request.get(`/user/subscription/current/detail`);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: refreshCb });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
   } catch (err) {
     let e = err instanceof Error ? err : new Error('Unknown error');
     return [null, e];
@@ -443,6 +460,24 @@ export const createSubscriptionReq = async (
   };
   try {
     const res = await request.post(`/user/subscription/create_submit`, body);
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+// mark wire transfer as complete
+export const markWireCompleteReq = async (subscriptionId: string) => {
+  try {
+    const res = await request.post(
+      `/user/subscription/mark_wire_transfer_paid`,
+      { subscriptionId },
+    );
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null });
       throw new Error('Session expired');
