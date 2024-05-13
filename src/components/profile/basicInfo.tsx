@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { passwordRegx } from '../../helpers';
+import { passwordSchema } from '../../helpers';
 import {
   getProfileWithMoreReq,
   logoutReq,
@@ -364,6 +364,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
         <Form.Item
           label="Old Password"
           name="oldPassword"
+          dependencies={['newPassword']}
           rules={[
             {
               required: true,
@@ -379,6 +380,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
         <Form.Item
           label="New Password"
           name="newPassword"
+          dependencies={['newPassword2', 'oldPassword']}
           rules={[
             {
               required: true,
@@ -391,12 +393,12 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
                     'New password should not be the same as old password.',
                   );
                 }
-                if (passwordRegx.test(value)) {
-                  return Promise.resolve();
+                if (!passwordSchema.validate(value)) {
+                  return Promise.reject(
+                    'At least 8 characters containing lowercase, uppercase, number and special character.',
+                  );
                 }
-                return Promise.reject(
-                  '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * & _ ^)',
-                );
+                return Promise.resolve();
               },
             }),
           ]}
@@ -407,6 +409,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
         <Form.Item
           label="New Password Confirm"
           name="newPassword2"
+          dependencies={['newPassword']}
           rules={[
             {
               required: true,

@@ -1,9 +1,8 @@
 import { Button, Form, Input, message } from 'antd';
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import OtpInput from 'react-otp-input';
 import { useNavigate } from 'react-router-dom';
-import { emailValidate, passwordRegx } from '../helpers';
+import { emailValidate, passwordSchema } from '../helpers';
 import { signUpReq, signUpVerifyReq } from '../requests';
 import AppFooter from './appFooter';
 import AppHeader from './appHeader';
@@ -160,6 +159,7 @@ const Index = () => {
               <Form.Item
                 label="Password"
                 name="password"
+                dependencies={['password2']}
                 rules={[
                   {
                     required: true,
@@ -167,12 +167,12 @@ const Index = () => {
                   },
                   ({ getFieldValue }) => ({
                     validator(rule, value) {
-                      if (passwordRegx.test(value)) {
-                        return Promise.resolve();
+                      if (!passwordSchema.validate(value)) {
+                        return Promise.reject(
+                          'At least 8 characters containing lowercase, uppercase, number and special character.',
+                        );
                       }
-                      return Promise.reject(
-                        '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * & _ ^)',
-                      );
+                      return Promise.resolve();
                     },
                   }),
                 ]}
@@ -183,6 +183,7 @@ const Index = () => {
               <Form.Item
                 label="Password Confirm"
                 name="password2"
+                dependencies={['password']}
                 rules={[
                   {
                     required: true,

@@ -2,7 +2,7 @@ import type { InputRef } from 'antd';
 import { Button, Form, Input, Modal, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { emailValidate, passwordRegx } from '../../helpers';
+import { emailValidate, passwordRegx, passwordSchema } from '../../helpers';
 import {
   forgetPassReq,
   forgetPassVerifyReq,
@@ -256,7 +256,7 @@ const ForgetPasswordModal = ({
           rules={[
             {
               required: true,
-              message: 'Please input your old password!',
+              message: 'Please input your email!',
             },
           ]}
         >
@@ -269,7 +269,7 @@ const ForgetPasswordModal = ({
           rules={[
             {
               required: true,
-              message: 'Please input your old password!',
+              message: 'Please input your verification code!',
             },
           ]}
         >
@@ -281,6 +281,7 @@ const ForgetPasswordModal = ({
         <Form.Item
           label="New Password"
           name="newPassword"
+          dependencies={['newPassword2']}
           rules={[
             {
               required: true,
@@ -288,12 +289,12 @@ const ForgetPasswordModal = ({
             },
             ({ getFieldValue }) => ({
               validator(rule, value) {
-                if (passwordRegx.test(value)) {
-                  return Promise.resolve();
+                if (!passwordSchema.validate(value)) {
+                  return Promise.reject(
+                    'At least 8 characters containing lowercase, uppercase, number and special character.',
+                  );
                 }
-                return Promise.reject(
-                  '8-15 characters with lowercase, uppercase, numeric and special character(@ $ # ! % ? * & _ ^)',
-                );
+                return Promise.resolve();
               },
             }),
           ]}
@@ -304,6 +305,7 @@ const ForgetPasswordModal = ({
         <Form.Item
           label="New Password Confirm"
           name="newPassword2"
+          dependencies={['newPassword']}
           rules={[
             {
               required: true,
