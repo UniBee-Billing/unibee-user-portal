@@ -4,13 +4,14 @@ import { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PAYMENT_STATUS, PAYMENT_TYPE } from '../../constants';
+import { PAYMENT_TYPE } from '../../constants';
 import { showAmount } from '../../helpers';
 import { getPaymentListReq } from '../../requests';
 import '../../shared.css';
 import { PaymentItem } from '../../shared.types';
 import { useAppConfigStore } from '../../stores';
 import { usePagination } from '../hooks';
+import { PaymentStatus } from '../ui/statusTag';
 
 const PAGE_SIZE = 10;
 const APP_PATH = import.meta.env.BASE_URL;
@@ -43,17 +44,35 @@ const Index = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (s) => (
-        <span>{PAYMENT_STATUS[s as keyof typeof PAYMENT_STATUS]}</span>
-      ),
+      render: (s) => PaymentStatus(s),
     },
     {
       title: 'Type',
       dataIndex: 'timelineType',
       key: 'timelineType',
-      render: (s) => (
-        <span>{PAYMENT_TYPE[s as keyof typeof PAYMENT_TYPE]}</span>
-      ),
+      render: (s) => {
+        const title = PAYMENT_TYPE[s as keyof typeof PAYMENT_TYPE];
+        if (s == 1) {
+          // refund
+          return (
+            <Button
+              type="link"
+              style={{ padding: 0 }}
+              className="btn-refunded-payment"
+            >
+              {title}
+            </Button>
+          );
+        } else if (s == 0) {
+          // regular payment
+          return title;
+        }
+      },
+    },
+    {
+      title: 'Sub Id',
+      dataIndex: 'subscriptionId',
+      key: 'subscriptionId',
     },
     {
       title: 'Payment Gateway',
@@ -64,11 +83,6 @@ const Index = () => {
           {appConfig.gateway.find((g) => g.gatewayId == gatewayId)?.gatewayName}
         </span>
       ),
-    },
-    {
-      title: 'Sub Id',
-      dataIndex: 'subscriptionId',
-      key: 'subscriptionId',
     },
     {
       title: 'Invoice Id',

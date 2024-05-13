@@ -674,7 +674,44 @@ const SubReminder = ({
               marginBottom: '12px',
             }}
           >
-            We are checking your payment, please be patient.
+            We are checking your payment, please be patient. Make sure you have
+            sent the payment to
+            <Popover
+              placement="bottom"
+              title="Account Detail"
+              content={
+                <div style={{ width: '520px' }}>
+                  <Row style={{ marginBottom: '6px' }}>
+                    <Col span={8} className="text-lg  text-gray-500">
+                      Account Holder
+                    </Col>
+                    <Col span={16}>{wireSetup!.bank?.accountHolder}</Col>
+                  </Row>
+                  <Row style={{ marginBottom: '6px' }}>
+                    <Col span={8} className="text-lg text-gray-500">
+                      BIC
+                    </Col>
+                    <Col span={16}>{wireSetup!.bank?.bic}</Col>
+                  </Row>
+                  <Row style={{ marginBottom: '6px' }}>
+                    <Col span={8} className="text-lg  text-gray-500">
+                      IBAN
+                    </Col>
+                    <Col span={16}>{wireSetup!.bank?.iban}</Col>
+                  </Row>
+                </div>
+              }
+            >
+              <span className=" cursor-pointer text-blue-600">
+                &nbsp;this account&nbsp;
+              </span>
+            </Popover>
+            in 5 days. If we haven't received your payment within 5 days, your
+            subscription will be cancelled, or you can{' '}
+            <Button type="link" style={{ padding: '0' }} onClick={toggleModal}>
+              CANCEL
+            </Button>{' '}
+            this subscription immediately.
           </div>
         );
         break;
