@@ -2,11 +2,10 @@ import type { InputRef } from 'antd';
 import { Button, Form, Input, Modal, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { emailValidate, passwordRegx, passwordSchema } from '../../helpers';
+import { emailValidate, passwordSchema } from '../../helpers';
 import {
   forgetPassReq,
   forgetPassVerifyReq,
-  getAppConfigReq,
   initializeReq,
   loginWithPasswordReq,
 } from '../../requests';

@@ -2,9 +2,6 @@ import passwordValidator from 'password-validator';
 import { CURRENCY } from '../constants';
 import { UserInvoice } from '../shared.types';
 
-export const passwordRegx =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*_\-\+=()^?&])[A-Za-z\d@.#$!%*_\-\+=()^?&]{8,16}$/;
-
 export const passwordSchema = new passwordValidator();
 passwordSchema
   .is()
