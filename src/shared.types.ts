@@ -215,6 +215,8 @@ type InvoiceItemTotal = {
 
 type PaymentItem = {
   id: number;
+  transactionId: string;
+  externalTransactionId: string;
   merchantId: number;
   userId: number;
   subscriptionId: string;
