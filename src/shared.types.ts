@@ -126,6 +126,7 @@ interface ISubscription {
     updateAddons: ISubAddon[];
   };
   gatewayId: number;
+  latestInvoice?: UserInvoice;
 }
 
 type TRefund = {
@@ -151,6 +152,7 @@ interface UserInvoice {
   createTime: number;
   originAmount?: number;
   discountAmount?: number;
+  discount?: DiscountCode;
   totalAmount: number;
   taxAmount: number;
   taxScale: number;
@@ -197,8 +199,8 @@ type InvoiceItem = {
   tax: number; // tax amount
   taxPercentage: number; // tax rate
   unitAmountExcludingTax: number;
-  discountAmount?: number;
-  originAmount?: number;
+  discountAmount: number;
+  originAmount: number;
 };
 
 type InvoiceItemTotal = {
@@ -280,6 +282,7 @@ export class ExpiredError extends Error {
 
 export type {
   Country,
+  DiscountCode,
   IAppConfig,
   IPlan,
   IPreview,

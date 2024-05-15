@@ -397,23 +397,32 @@ const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
         >
           <div className="relative w-3/6">
             <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
-              <Col span={16}>Description</Col>
+              <Col span={10}>Description</Col>
+              <Col span={6}>Price</Col>
               <Col span={4}>Quantity</Col>
               <Col span={4}>Amount</Col>
             </Row>
             {preview.invoice.lines.map((i, idx) => (
               <div key={idx}>
                 <Row>
-                  <Col span={16}>{i.description}</Col>
+                  <Col span={10}>{i.description}</Col>
+                  <Col span={6}>
+                    <div style={{ marginLeft: '12px' }}>
+                      {showAmount(i.unitAmountExcludingTax, i.currency)}
+                    </div>
+                  </Col>
                   <Col span={4}>
                     <div style={{ marginLeft: '12px' }}>{i.quantity}</div>
                   </Col>
                   <Col span={4}>
-                    {showAmount(i.amountExcludingTax, i.currency)}
+                    {showAmount(
+                      i.unitAmountExcludingTax * i.quantity,
+                      i.currency,
+                    )}
                   </Col>
                 </Row>
                 {idx != preview.invoice.lines.length - 1 && (
-                  <Divider style={{ margin: '8px 0', background: 'gray' }} />
+                  <Divider style={{ margin: '8px 0', background: '#eee' }} />
                 )}
               </div>
             ))}

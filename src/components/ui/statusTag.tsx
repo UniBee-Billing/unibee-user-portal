@@ -1,6 +1,11 @@
 import { Pagination, Spin, Table, Tag, message } from 'antd';
 import React, { ReactElement, useEffect, useState } from 'react';
-import { CURRENCY, PAYMENT_STATUS, SUBSCRIPTION_STATUS } from '../../constants';
+import {
+  CURRENCY,
+  DISCOUNT_CODE_STATUS,
+  PAYMENT_STATUS,
+  SUBSCRIPTION_STATUS,
+} from '../../constants';
 
 const SUB_STATUS: { [key: number]: ReactElement } = {
   1: <Tag color="magenta">{SUBSCRIPTION_STATUS[1]}</Tag>, // 1: pending
@@ -19,4 +24,13 @@ const PAYMENT_STATUS_TAG: { [key: number]: ReactElement } = {
 };
 const PaymentStatus = (statusId: number) => PAYMENT_STATUS_TAG[statusId];
 
-export { PaymentStatus, SubscriptionStatus };
+const DISCOUNT_CODE_STATUS_TAG: { [key: number]: ReactElement } = {
+  1: <Tag color="blue">{DISCOUNT_CODE_STATUS[1]}</Tag>,
+  2: <Tag color="#87d068">{DISCOUNT_CODE_STATUS[2]}</Tag>,
+  3: <Tag color="purple">{DISCOUNT_CODE_STATUS[3]}</Tag>,
+  4: <Tag color="red">{DISCOUNT_CODE_STATUS[4]}</Tag>,
+};
+const DiscountCodeStatus = (statusId: number) =>
+  DISCOUNT_CODE_STATUS_TAG[statusId];
+
+export { DiscountCodeStatus, PaymentStatus, SubscriptionStatus };

@@ -55,3 +55,10 @@ export const PAYMENT_TYPE: { [key: number]: string } = {
   0: 'Payment',
   1: 'Refund',
 };
+
+export const DISCOUNT_CODE_STATUS: { [key: number]: string } = {
+  1: 'Editing',
+  2: 'Active',
+  3: 'Inactive',
+  4: 'Expired',
+};

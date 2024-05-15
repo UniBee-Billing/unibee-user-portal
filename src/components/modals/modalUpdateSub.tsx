@@ -81,7 +81,7 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
         message.error(err.message);
         return;
       }
-
+      console.log('update preview res: ', previewRes);
       setPreview(previewRes);
     };
     fetchPreview();
@@ -120,22 +120,14 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
           </>
         )
       )}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'end',
-          alignItems: 'center',
-          gap: '18px',
-          marginTop: '24px',
-        }}
-      >
+      <div className="mt-6 flex items-center justify-end gap-4">
         <Button onClick={closeModal} disabled={loading || submitting}>
           Cancel
         </Button>
         <Button
           type="primary"
           onClick={onConfirm}
-          loading={submitting}
+          loading={loading || submitting}
           disabled={loading || submitting}
         >
           OK

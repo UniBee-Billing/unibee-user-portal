@@ -5,35 +5,21 @@ import {
   MinusOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  Col,
-  Divider,
-  Empty,
-  Popover,
-  Row,
-  Spin,
-  Table,
-  message,
-} from 'antd';
+import { Button, Col, Divider, Empty, Popover, Row, Spin, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { CSSProperties, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SUBSCRIPTION_STATUS } from '../../constants';
 import { daysBetweenDate, showAmount } from '../../helpers';
-import {
-  getActiveSubReq,
-  getPaymentMethodListReq,
-  getSublistReq,
-} from '../../requests';
+import { getActiveSubReq } from '../../requests';
 import '../../shared.css';
-import { ISubscription } from '../../shared.types';
+import { DiscountCode, ISubscription } from '../../shared.types';
 import { useAppConfigStore } from '../../stores';
 import EditCardModal from '../modals/editCardModal';
 import CancelSubModal from '../modals/modalCancelPendingSub';
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub';
-import { SubscriptionStatus } from '../ui/statusTag';
+import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 
@@ -106,6 +92,7 @@ const Index = () => {
     const sub = {
       ...s.subscription,
       plan: s.plan,
+      latestInvoice: s.latestInvoice,
       addons:
         s.addons == null
           ? []
@@ -114,7 +101,23 @@ const Index = () => {
               quantity: a.quantity,
             })),
       user: s.user,
+      unfinishedSubscriptionPendingUpdate:
+        s.unfinishedSubscriptionPendingUpdate,
     };
+    if (sub.unfinishedSubscriptionPendingUpdate != null) {
+      if (sub.unfinishedSubscriptionPendingUpdate.updateAddons != null) {
+        sub.unfinishedSubscriptionPendingUpdate.updateAddons =
+          sub.unfinishedSubscriptionPendingUpdate.updateAddons.map(
+            (a: any) => ({
+              ...a.addonPlan,
+              quantity: a.quantity,
+              addonPlanId: a.addonPlan.id,
+            }),
+          );
+      }
+    }
+
+    console.log('sub: ', sub);
     setSubscription(sub);
   };
 
@@ -158,7 +161,6 @@ const Index = () => {
       ) : (
         <>
           <SubscriptionInfoSection subInfo={subscription} refresh={fetchData} />
-
           {subscription.unfinishedSubscriptionPendingUpdate && (
             <PendingUpdateSection subInfo={subscription} />
           )}
@@ -192,7 +194,10 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
   const i = subInfo.unfinishedSubscriptionPendingUpdate;
   return (
     <>
-      <Divider orientation="left" style={{ margin: '32px 0' }}>
+      <Divider
+        orientation="left"
+        style={{ margin: '32px 0', color: '#757575' }}
+      >
         Pending Update
       </Divider>
       <Row style={rowStyle}>
@@ -300,9 +305,7 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
         <Col span={4} style={colStyle}>
           Effective Date
         </Col>
-        <Col span={6}>
-          {new Date(i!.effectTime * 1000).toLocaleDateString()}
-        </Col>
+        <Col span={6}>{dayjs(i!.effectTime * 1000).format('YYYY-MMM-DD')}</Col>
       </Row>
     </>
   );
@@ -336,6 +339,18 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
 
   const [editCardModalOpen, setEditCardModalOpen] = useState(false);
   const toggleEditCardModal = () => setEditCardModalOpen(!editCardModalOpen);
+
+  const discountAmt = (code: DiscountCode) => {
+    if (code.discountType == 1) {
+      // percentage
+      return `${code.discountPercentage / 100} %`;
+    } else if (code.discountType == 2) {
+      // fixed amt
+      return showAmount(code.discountAmount, code.currency);
+    } else {
+      return '';
+    }
+  };
 
   return (
     <>
@@ -443,6 +458,94 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
       </Row>
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
+          Discount Amount
+        </Col>
+        <Col span={6}>
+          {subInfo &&
+            subInfo.latestInvoice &&
+            showAmount(
+              subInfo.latestInvoice.discountAmount as number,
+              subInfo.latestInvoice.currency,
+            )}
+
+          {subInfo &&
+            subInfo.latestInvoice &&
+            subInfo.latestInvoice.discount && (
+              <Popover
+                placement="top"
+                title="Discount code info"
+                content={
+                  <div style={{ width: '320px' }}>
+                    <Row>
+                      <Col span={10} className=" font-bold text-gray-500">
+                        Code
+                      </Col>
+                      <Col span={14}>{subInfo.latestInvoice.discount.code}</Col>
+                    </Row>
+                    <Row>
+                      <Col span={10} className=" font-bold text-gray-500">
+                        Name
+                      </Col>
+                      <Col span={14}>{subInfo.latestInvoice.discount.name}</Col>
+                    </Row>
+                    <Row>
+                      <Col span={10} className=" font-bold text-gray-500">
+                        Status
+                      </Col>
+                      <Col span={14}>
+                        {DiscountCodeStatus(
+                          subInfo.latestInvoice.discount.status as number,
+                        )}
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col span={10} className=" font-bold text-gray-500">
+                        Billing Type
+                      </Col>
+                      <Col span={14}>
+                        {subInfo.latestInvoice.discount.billingType === 1
+                          ? 'One-time use'
+                          : 'Recurring'}
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col span={10} className=" font-bold text-gray-500">
+                        Discount Amt
+                      </Col>
+                      <Col span={14}>
+                        {discountAmt(subInfo.latestInvoice.discount)}
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col span={10} className=" font-bold text-gray-500">
+                        Cycle limit
+                      </Col>
+                      <Col span={14}>
+                        {subInfo.latestInvoice.discount.cycleLimit}
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col span={10} className=" font-bold text-gray-500">
+                        Valid range
+                      </Col>
+                      <Col span={14}>
+                        {`${dayjs(
+                          subInfo.latestInvoice.discount.startTime * 1000,
+                        ).format(
+                          'YYYY-MMM-DD',
+                        )} ~ ${dayjs(subInfo.latestInvoice.discount.endTime * 1000).format('YYYY-MMM-DD')} `}
+                      </Col>
+                    </Row>
+                  </div>
+                }
+              >
+                <span style={{ marginLeft: '8px', cursor: 'pointer' }}>
+                  <InfoCircleOutlined />
+                </span>
+              </Popover>
+            )}
+        </Col>
+        <Col span={4} style={colStyle}>
           Total Amount
         </Col>
         <Col span={6}>
@@ -455,7 +558,8 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
             </span>
           ) : null}
         </Col>
-
+      </Row>
+      <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
           Bill Period
         </Col>
@@ -463,16 +567,6 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           {subInfo != null && subInfo.plan != null
             ? `${subInfo.plan.intervalCount} ${subInfo.plan.intervalUnit}`
             : ''}
-        </Col>
-      </Row>
-      <Row style={rowStyle}>
-        <Col span={4} style={colStyle}>
-          First Pay
-        </Col>
-        <Col span={6}>
-          {subInfo.firstPaidTime == null || subInfo.firstPaidTime == 0
-            ? 'N/A'
-            : dayjs(subInfo.firstPaidTime * 1000).format('YYYY-MMM-DD')}
         </Col>
         <Col span={4} style={colStyle}>
           Next Due Date
@@ -503,16 +597,23 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
 
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
-          Payment Gateway
+          First Pay
         </Col>
         <Col span={6}>
+          {subInfo.firstPaidTime == null || subInfo.firstPaidTime == 0
+            ? 'N/A'
+            : dayjs(subInfo.firstPaidTime * 1000).format('YYYY-MMM-DD')}
+        </Col>
+        <Col span={4} style={colStyle}>
+          Payment Gateway
+        </Col>
+        <Col span={10}>
+          {' '}
           {subInfo &&
             appConfigStore.gateway.find(
               (g) => g.gatewayId == subInfo?.gatewayId,
             )?.gatewayName}
         </Col>
-        <Col span={4} style={colStyle}></Col>
-        <Col span={10}></Col>
       </Row>
 
       {subInfo && subInfo.status == 2 && (
