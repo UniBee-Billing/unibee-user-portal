@@ -225,6 +225,7 @@ type PaymentItem = {
   totalAmount: number;
   gatewayId: number;
   paymentId: string;
+  refund?: TRefund;
   status: number;
   timelineType: number;
   createTime: number;
@@ -294,5 +295,6 @@ export type {
   InvoiceItemTotal,
   PaymentItem,
   TMerchantInfo,
+  TRefund,
   UserInvoice,
 };

@@ -87,7 +87,7 @@ const Index = ({ user, detail, closeModal }: Props) => {
             </Col>
             <Col span={8}>{detail.refund.refundComment}</Col>
             <Col span={8}>
-              {dayjs(detail.refund.refundTime * 1000).format('YYYY-MMM-DD')}
+              {dayjs(detail.refund.createTime * 1000).format('YYYY-MMM-DD')}
             </Col>
             <Col span={4}>{REFUND_STATUS[detail.refund.status]}</Col>
           </Row>

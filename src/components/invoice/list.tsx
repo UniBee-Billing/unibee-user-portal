@@ -26,6 +26,7 @@ import { downloadInvoice, getInvoiceListReq } from '../../requests';
 import '../../shared.css';
 import { UserInvoice } from '../../shared.types';
 import { usePagination } from '../hooks';
+import RefundModal from '../payment/refundModal';
 import PreviewModal from './invoicePreviewModal';
 
 const PAGE_SIZE = 10;
@@ -40,6 +41,9 @@ const Index = () => {
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const togglePreviewModal = () => setPreviewModalOpen(!previewModalOpen);
   const [previewLink, setPreviewLink] = useState('');
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [invoiceIdx, setInvoiceIdx] = useState(-1);
+  const toggleRefundModal = () => setRefundModalOpen(!refundModalOpen);
 
   const openPreview = (ivLink: string) => {
     setPreviewLink(ivLink);
@@ -73,6 +77,24 @@ const Index = () => {
       render: (s, iv) => (
         <span>{INVOICE_STATUS[s as keyof typeof INVOICE_STATUS]}</span>
       ),
+    },
+    {
+      title: 'Is refund',
+      dataIndex: 'refund',
+      key: 'refund',
+      render: (refund, iv) =>
+        refund == null ? (
+          'No'
+        ) : (
+          <Button
+            type="link"
+            size="small"
+            className="btn-refund-modal-wrapper"
+            style={{ padding: 0 }}
+          >
+            Yes
+          </Button>
+        ),
     },
     {
       title: 'Issue date',
@@ -178,6 +200,13 @@ const Index = () => {
       {previewModalOpen && (
         <PreviewModal closeModal={togglePreviewModal} ivLink={previewLink} />
       )}
+      {refundModalOpen && invoiceList[invoiceIdx].refund != null && (
+        <RefundModal
+          detail={invoiceList[invoiceIdx].refund!}
+          closeModal={toggleRefundModal}
+          ignoreAmtFactor={false}
+        />
+      )}
       <Table
         columns={columns}
         dataSource={invoiceList}
@@ -195,6 +224,14 @@ const Index = () => {
                 evt.target instanceof Element &&
                 evt.target.closest('.btn-preview-download-iv') != null
               ) {
+                return;
+              }
+              if (
+                evt.target instanceof Element &&
+                evt.target.closest('.btn-refund-modal-wrapper') != null
+              ) {
+                setInvoiceIdx(rowIndex as number);
+                toggleRefundModal();
                 return;
               }
               navigate(`${APP_PATH}invoice/${iv.invoiceId}`);
