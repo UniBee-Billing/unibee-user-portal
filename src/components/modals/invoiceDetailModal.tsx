@@ -126,7 +126,11 @@ const Index = ({ user, detail, closeModal }: Props) => {
             <Col span={3}>{v.quantity}</Col>
             {/* <Col span={2}>tax</Col> */}
             <Col span={4}>
-              {showAmount(v.amountExcludingTax as number, v.currency, true)}
+              {showAmount(
+                (v.unitAmountExcludingTax as number) * v.quantity,
+                v.currency,
+                true,
+              )}
             </Col>
           </Row>
         ))}
@@ -137,10 +141,9 @@ const Index = ({ user, detail, closeModal }: Props) => {
         <Col span={6} style={{ fontSize: '18px' }} className=" text-red-800">
           Total Discounted
         </Col>
-        <Col
-          className=" text-red-800"
-          span={4}
-        >{`${showAmount(detail.discountAmount || 0, detail.currency, true)}`}</Col>
+        <Col className=" text-red-800" span={4}>
+          {`${detail.discountAmount != null && detail.discountAmount > 0 ? showAmount(-1 * detail.discountAmount, detail.currency, true) : showAmount(0, detail.currency)}`}
+        </Col>
       </Row>
       <Row>
         <Col span={14}> </Col>
