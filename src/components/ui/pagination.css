@@ -1,0 +1,14 @@
+.pagination-next,
+.pagination-prev {
+  height: 24px;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+}
+
+.pagination-next:hover,
+.pagination-prev:hover {
+  background-color: #f5f5f5;
+}

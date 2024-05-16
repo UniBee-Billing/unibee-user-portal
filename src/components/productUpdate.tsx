@@ -1,14 +1,9 @@
+import { LoadingOutlined } from '@ant-design/icons';
 import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd';
 import update from 'immutability-helper';
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getActiveSubWithMore, getCountryList } from '../requests';
-import Plan from './plan';
-// import { CURRENCY } from "../constants";
-// import { showAmount } from "../helpers";
-import { LoadingOutlined } from '@ant-design/icons';
-import { SUBSCRIPTION_STATUS } from '../constants';
 import { showAmount } from '../helpers';
+import { getActiveSubWithMore, getCountryList } from '../requests';
 import { Country, IPlan, ISubscription } from '../shared.types';
 import { useAppConfigStore, useProfileStore } from '../stores';
 import OTPBuyListModal from './modals/addonBuyListModal';
@@ -17,6 +12,7 @@ import CancelSubModal from './modals/modalCancelPendingSub';
 import CreateSubModal from './modals/modalCreateSub';
 import UpdatePlanModal from './modals/modalUpdateSub';
 import OTPModal from './modals/onetimePaymentModal';
+import Plan from './plan';
 
 const Index = () => {
   const profileStore = useProfileStore();

@@ -1,9 +1,7 @@
 import type { RadioChangeEvent } from 'antd';
-import { Button, Radio, message } from 'antd';
-import React, { ChangeEvent, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import AppFooter from '../appFooter';
-import AppHeader from '../appHeader';
+import { Button, Radio } from 'antd';
+import React, { ChangeEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import OTPLogin from './otpLogin';
 import PasswordLogin from './passwordLogin';
 
@@ -17,7 +15,6 @@ const Index = ({
   initialEmail: string;
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [email, setEmail] = useState(initialEmail); // email need to be shared on passwordLogin and OtpLogin, so it has to be defined in parent.
   const onEmailChange = (evt: ChangeEvent<HTMLInputElement> | string) => {
     typeof evt == 'string' ? setEmail(evt) : setEmail(evt.target.value);
@@ -28,12 +25,6 @@ const Index = ({
   const onLoginTypeChange = (e: RadioChangeEvent) =>
     setLoginType(e.target.value);
   const goSignup = () => navigate(`${APP_PATH}signup`);
-
-  useEffect(() => {
-    if (location.state && location.state.msg) {
-      message.info(location.state.msg);
-    }
-  }, []);
 
   return (
     <div className="flex h-full items-center justify-center ">
