@@ -73,7 +73,7 @@ interface IPlan {
   type: number; // 1: main plan, 2: add-on
   currency: Currency;
   intervalCount: number;
-  intervalUnit: string;
+  intervalUnit: 'day' | 'week' | 'month' | 'year'; //string;
   amount: number;
   status: number;
   addons?: IAddon[];

@@ -29,7 +29,6 @@ const Index = () => {
   const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
   const isNewUserRef = useRef(true); // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
   // they have different api call and Modal window
-
   const [otpModalOpen, setOtpModalOpen] = useState(false); // one-time-payment modal
   const toggleOTP = () => setOtpModalOpen(!otpModalOpen);
   const [otpPlanId, setOtpPlanId] = useState<null | number>(null); // the one-time-payment addon user want to buy
@@ -132,13 +131,6 @@ const Index = () => {
       plans == null
         ? []
         : plans.map((p: any) => {
-            // const p2 = p.plan;
-            /*
-            if (p.plan.type == 2 || p.plan.type == 3) {
-              // addon plan || one-time-payment plan
-              return null;
-            }
-            */
             return {
               ...p.plan,
               addons: p.addons,
@@ -175,12 +167,62 @@ const Index = () => {
     setPlans(localPlans.filter((p) => p.type == 1));
   };
 
-  useEffect(() => {
-    fetchData();
-    fetchCountry();
-  }, []);
+  const upgradeCheck = () => {
+    if (isNewUserRef.current) {
+      // user has no active sub, this is first-time purchase, not a upgrade
+      return true;
+    }
+    const currentPlan = plans.find((p) => p.id == activeSub?.planId);
+    const upgradePlan = plans.find((p) => p.id == selectedPlan);
+    console.log(
+      'current/upgrade: ',
+      currentPlan,
+      '//',
+      upgradePlan,
+      '/active sub: ',
+      activeSub,
+    );
+
+    if (currentPlan?.currency != upgradePlan?.currency) {
+      message.error(
+        'Upgrade to a plan with different currency is not supported.',
+      );
+      return false;
+    }
+    if (currentPlan?.intervalUnit == upgradePlan?.intervalUnit) {
+      if (currentPlan?.intervalCount! > upgradePlan?.intervalCount!) {
+        // we are selecting plan, itvCount always exist
+        message.error(
+          `Upgrade from a ${currentPlan?.intervalCount}/${currentPlan?.intervalUnit} plan to a ${upgradePlan?.intervalCount}/${upgradePlan?.intervalUnit} is not supported.`,
+        );
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    const units: { [key: string]: number } = {
+      day: 24 * 60 * 60,
+      week: 7 * 24 * 60 * 60,
+      month: 30 * 24 * 60 * 60,
+      year: 365 * 24 * 60 * 60,
+    };
+
+    if (units[currentPlan!.intervalUnit] > units[upgradePlan!.intervalUnit]) {
+      message.error(
+        `Upgrade from a ${currentPlan?.intervalCount}/${currentPlan?.intervalUnit} plan to a ${upgradePlan?.intervalCount}/${upgradePlan?.intervalUnit} is not supported.`,
+      );
+      return false;
+    }
+
+    return true;
+  };
 
   const onPlanConfirm = () => {
+    if (!upgradeCheck()) {
+      return;
+    }
+
     if (profileStore.countryCode == '' || profileStore.countryCode == null) {
       toggleBillingModal();
       return;
@@ -205,6 +247,11 @@ const Index = () => {
 
     isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal();
   };
+
+  useEffect(() => {
+    fetchData();
+    fetchCountry();
+  }, []);
 
   return (
     <div>

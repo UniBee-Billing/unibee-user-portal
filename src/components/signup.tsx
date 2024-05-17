@@ -1,5 +1,5 @@
 import { Button, Form, Input, message } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import OtpInput from 'react-otp-input';
 import { useNavigate } from 'react-router-dom';
 import { emailValidate, passwordSchema } from '../helpers';
