@@ -303,6 +303,7 @@ const Index = () => {
           <CreateSubModal
             plan={plans.find((p) => p.id == selectedPlan) as IPlan}
             countryList={countryList}
+            defaultVatNumber={profileStore.vATNumber}
             closeModal={toggleCreateModal}
             userCountryCode={profileStore.countryCode}
           />

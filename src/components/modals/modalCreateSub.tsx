@@ -38,16 +38,23 @@ interface Props {
   plan: IPlan;
   countryList: Country[];
   userCountryCode: string;
+  defaultVatNumber: string;
   closeModal: () => void;
 }
 
-const Index = ({ plan, countryList, userCountryCode, closeModal }: Props) => {
+const Index = ({
+  plan,
+  countryList,
+  userCountryCode,
+  defaultVatNumber,
+  closeModal,
+}: Props) => {
   const navigate = useNavigate();
   const appConfig = useAppConfigStore();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
-  const [vatNumber, setVatNumber] = useState('');
+  const [vatNumber, setVatNumber] = useState(defaultVatNumber);
   const [vatDetail, setVatDetail] = useState<null | TVATDetail>(null);
   const [isVatValid, setIsVatValid] = useState(false);
   // const [discountCode, setDiscountCode] = useState('');

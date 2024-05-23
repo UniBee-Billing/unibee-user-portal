@@ -47,7 +47,6 @@ const Index = () => {
   ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
   const onSave = async () => {
-    console.log('form: ', form.getFieldsValue());
     setLoading(true);
     const [saveProfileRes, err] = await saveProfileReq(form.getFieldsValue());
     setLoading(false);
@@ -55,30 +54,31 @@ const Index = () => {
       message.error(err.message);
       return;
     }
-    const { user } = saveProfileRes;
     message.success('saved');
+    const { user } = saveProfileRes;
     setProfile(user);
     profileStore.setProfile(user);
   };
 
+  const fetchData = async () => {
+    setLoading(true);
+    const [res, err] = await getProfileWithMoreReq(fetchData);
+    setLoading(false);
+    if (err != null) {
+      message.error(err.message);
+      return;
+    }
+    const { user, countryList } = res;
+    setProfile(user);
+    setCountryList(
+      countryList.map((c: any) => ({
+        code: c.countryCode,
+        name: c.countryName,
+      })),
+    );
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const [res, err] = await getProfileWithMoreReq(fetchData);
-      setLoading(false);
-      if (err != null) {
-        message.error(err.message);
-        return;
-      }
-      const { user, countryList } = res;
-      setProfile(user);
-      setCountryList(
-        countryList.map((c: any) => ({
-          code: c.countryCode,
-          name: c.countryName,
-        })),
-      );
-    };
     fetchData();
   }, []);
 
@@ -107,15 +107,7 @@ const Index = () => {
         fullscreen
       />
       {loading ? null : (
-        <Form
-          form={form}
-          // labelCol={{ span: 6 }}
-          // wrapperCol={{ span: 24 }}
-          // layout="horizontal"
-          // disabled={componentDisabled}
-          // style={{ maxWidth: 600 }}
-          initialValues={profile ?? {}}
-        >
+        <Form form={form} initialValues={profile ?? {}}>
           <Form.Item label="ID" name="id" hidden>
             <Input disabled />
           </Form.Item>
