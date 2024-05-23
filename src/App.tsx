@@ -34,7 +34,7 @@ import ProfileBasic from './components/profile/basicInfo';
 import ProfileSubscription from './components/profile/subscription';
 import SessionResult from './components/sessionResult';
 import Signup from './components/signup';
-import { logoutReq } from './requests';
+import { initializeReq, logoutReq } from './requests';
 
 const APP_PATH = import.meta.env.BASE_URL;
 const { Header, Content, Footer, Sider } = Layout;
@@ -73,7 +73,7 @@ const App: React.FC = () => {
   const merchantStore = useMerchantInfoStore();
   const profileStore = useProfileStore();
   const sessionStore = useSessionStore();
-  const appConfig = useAppConfigStore();
+  const appConfigStore = useAppConfigStore();
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
@@ -111,7 +111,7 @@ const App: React.FC = () => {
     sessionStore.reset();
     profileStore.reset();
     merchantStore.reset();
-    appConfig.reset();
+    appConfigStore.reset();
     localStorage.removeItem('appConfig');
     localStorage.removeItem('merchantInfo');
     localStorage.removeItem('token');
@@ -125,6 +125,28 @@ const App: React.FC = () => {
     // since we are already in the current path, there is no need to navigate
     // console.log('app mounted, pathname: ', window.location.pathname);
     onItemClick({ key: window.location.pathname, needNavigate: false });
+
+    // detect reload
+    const init = async () => {
+      const navigationEntries =
+        window.performance.getEntriesByType('navigation');
+      if (
+        navigationEntries.length > 0 &&
+        (navigationEntries[0] as PerformanceNavigationTiming).type === 'reload'
+      ) {
+        console.log('Page was reloaded, begin initializing....');
+        const [initRes, errInit] = await initializeReq();
+        if (null != errInit) {
+          console.log('init err: ', errInit);
+          return;
+        }
+        const { appConfig, gateways, merchantInfo } = initRes;
+        appConfigStore.setAppConfig(appConfig);
+        appConfigStore.setGateway(gateways);
+        merchantStore.setMerchantInfo(merchantInfo.merchant);
+      }
+    };
+    init();
   }, []);
 
   // similar to onItemClick, try to refactor into one fn.

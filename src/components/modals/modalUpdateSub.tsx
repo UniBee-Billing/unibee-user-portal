@@ -164,20 +164,22 @@ const InvoiceLines = ({
     ) : (
       <>
         <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
-          <Col span={8}>Description</Col>
-          <Col span={4}>Quantity</Col>
-          <Col span={4}>Amt(Exc Tax)</Col>
-          <Col span={4}>Tax</Col>
-          <Col span={4}>Amt</Col>
+          <Col span={9}>Description</Col>
+          <Col span={5}>Amt(Exc Tax)</Col>
+          <Col span={5}>Quantity</Col>
+          <Col span={5}>Amt</Col>
         </Row>
         {invoice.lines.map((i, idx) => (
           <div key={idx}>
             <Row>
-              <Col span={8}>{i.description}</Col>
-              <Col span={4}>{i.quantity}</Col>
-              <Col span={4}>{showAmount(i.amountExcludingTax, i.currency)}</Col>
-              <Col span={4}>{showAmount(i.tax, i.currency)}</Col>
-              <Col span={4}>{showAmount(i.amount, i.currency)}</Col>
+              <Col span={9}>{i.description}</Col>
+              <Col span={5}>
+                {showAmount(i.unitAmountExcludingTax, i.currency)}
+              </Col>
+              <Col span={5}>{i.quantity}</Col>
+              <Col span={5}>
+                {showAmount(i.unitAmountExcludingTax * i.quantity, i.currency)}
+              </Col>
             </Row>
             {idx != invoice.lines.length - 1 && (
               <Divider style={{ margin: '8px 0' }} />
@@ -186,10 +188,37 @@ const InvoiceLines = ({
         ))}
 
         <Row>
-          <Col span={20}>
-            <span style={{ fontSize: '18px' }}>Total</span>
+          <Col span={19}>
+            <div
+              style={{
+                fontSize: '18px',
+                textAlign: 'right',
+                marginRight: '18px',
+              }}
+            >
+              VAT({`${invoice.taxPercentage / 100} %`})
+            </div>
           </Col>
-          <Col span={4}>
+          <Col span={5}>
+            <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+              {' '}
+              {`${showAmount(invoice.taxAmount, invoice.currency)}`}
+            </span>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={19}>
+            <div
+              style={{
+                fontSize: '18px',
+                textAlign: 'right',
+                marginRight: '18px',
+              }}
+            >
+              Total
+            </div>
+          </Col>
+          <Col span={5}>
             <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
               {' '}
               {`${showAmount(invoice.totalAmount, invoice.currency)}`}

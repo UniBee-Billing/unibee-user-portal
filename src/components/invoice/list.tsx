@@ -34,6 +34,7 @@ const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = () => {
   const { page, onPageChange } = usePagination();
+  const [total, setTotal] = useState(0);
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -168,7 +169,7 @@ const Index = () => {
     searchTerm.amountEnd = amtTo;
     */
     setLoading(true);
-    const [invoices, err] = await getInvoiceListReq(
+    const [res, err] = await getInvoiceListReq(
       {
         page,
         count: PAGE_SIZE,
@@ -181,7 +182,9 @@ const Index = () => {
       message.error(err.message);
       return;
     }
-    setInvoiceList(invoices || []);
+    const { invoices, total } = res;
+    setInvoiceList(invoices ?? []);
+    setTotal(total);
   };
 
   useEffect(() => {
@@ -237,9 +240,12 @@ const Index = () => {
         <Pagination
           current={page + 1} // back-end starts with 0, front-end starts with 1
           pageSize={PAGE_SIZE}
-          total={500}
+          total={total}
           size="small"
           onChange={onPageChange}
+          showTotal={(total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`
+          }
           disabled={loading}
           showSizeChanger={false}
         />

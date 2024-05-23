@@ -235,7 +235,7 @@ const Index = () => {
             orientation="left"
             style={{ margin: '32px 0', color: '#757575' }}
           >
-            Social Info{' '}
+            Social Media Contact
           </Divider>
           {[
             [

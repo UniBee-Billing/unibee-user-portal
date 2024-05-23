@@ -19,6 +19,7 @@ const APP_PATH = import.meta.env.BASE_URL;
 
 const Index = () => {
   const { page, onPageChange } = usePagination();
+  const [total, setTotal] = useState(0);
   const appConfig = useAppConfigStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -121,7 +122,7 @@ const Index = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [paymentList, err] = await getPaymentListReq(
+    const [res, err] = await getPaymentListReq(
       {
         page,
         count: PAGE_SIZE,
@@ -134,14 +135,11 @@ const Index = () => {
       message.error(err.message);
       return;
     }
-    setPaymentList(paymentList || []);
+    const { paymentTimeline, total } = res;
+    setPaymentList(paymentTimeline ?? []);
+    setTotal(total);
   };
 
-  /*
-  useEffect(() => {
-    fetchData();
-  }, []);
-  */
   useEffect(() => {
     fetchData();
   }, [page]);
@@ -185,9 +183,12 @@ const Index = () => {
         <Pagination
           current={page + 1} // back-end starts with 0, front-end starts with 1
           pageSize={PAGE_SIZE}
-          total={500}
+          total={total}
           size="small"
           onChange={onPageChange}
+          showTotal={(total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`
+          }
           disabled={loading}
           showSizeChanger={false}
         />

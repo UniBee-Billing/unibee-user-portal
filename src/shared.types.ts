@@ -208,6 +208,7 @@ type InvoiceItemTotal = {
   subscriptionAmount: number;
   subscriptionAmountExcludingTax: number;
   taxAmount: number;
+  taxPercentage: number;
   totalAmount: number;
   totalAmountExcludingTax: number;
   lines: InvoiceItem[];
