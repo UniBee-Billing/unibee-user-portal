@@ -11,21 +11,26 @@ const stripeGatewayId = appConfig.gateway.find(
 
 // after login, we need merchantInfo, appConfig, payment gatewayInfo, etc.
 // this fn get all these data in one go.
+// getProfileReq seems redundant, because a successful login will save user profile in store,
+// but in case of user manual refresh, no login involved, I have to make this req.
+// paymentMethod is saved in user profile, in case admin has updated userProfile, user need to refresh to get the updated profile.
 export const initializeReq = async () => {
   const [
     [appConfig, errConfig],
     [gateways, errGateway],
     [merchantInfo, errMerchant],
+    [user, errUser],
   ] = await Promise.all([
     getAppConfigReq(),
     getGatewayListReq(),
     getMerchantInfoReq(),
+    getProfileReq(),
   ]);
-  let err = errConfig || errGateway || errMerchant;
+  let err = errConfig || errGateway || errMerchant || errUser;
   if (null != err) {
     return [null, err];
   }
-  return [{ appConfig, gateways, merchantInfo }, null];
+  return [{ appConfig, gateways, merchantInfo, user }, null];
 };
 
 // ------------

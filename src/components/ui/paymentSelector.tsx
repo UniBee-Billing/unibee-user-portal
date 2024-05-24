@@ -18,9 +18,11 @@ const WireTrasfer = [<WireIcon />];
 const Index = ({
   selected,
   onSelect,
+  showWTtips,
 }: {
   selected: number | undefined;
   onSelect: React.ChangeEventHandler<HTMLInputElement>;
+  showWTtips?: boolean;
 }) => {
   const appConfig = useAppConfigStore();
   const gateways = appConfig.gateway
@@ -88,7 +90,7 @@ const Index = ({
           </label>
         );
       })}
-      {wire != null && selected == wire.gatewayId && (
+      {wire != null && selected == wire.gatewayId && showWTtips && (
         <div className=" text-xs text-gray-400">
           <Row style={{ marginBottom: '6px' }}>
             <Col span={8}>Account Holder</Col>

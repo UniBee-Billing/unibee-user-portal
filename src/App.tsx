@@ -140,10 +140,11 @@ const App: React.FC = () => {
           console.log('init err: ', errInit);
           return;
         }
-        const { appConfig, gateways, merchantInfo } = initRes;
+        const { appConfig, gateways, merchantInfo, user } = initRes;
         appConfigStore.setAppConfig(appConfig);
         appConfigStore.setGateway(gateways);
         merchantStore.setMerchantInfo(merchantInfo.merchant);
+        profileStore.setProfile(user);
       }
     };
     init();

@@ -28,6 +28,7 @@ import {
   useProfileStore,
   useSessionStore,
 } from '../../stores';
+import PaymentSelector from '../ui/paymentSelector';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 
@@ -40,15 +41,23 @@ const Index = () => {
   const [resetPasswordModal, setResetPasswordModal] = useState(false);
   const togglePasswordModal = () => setResetPasswordModal(!resetPasswordModal);
   const profileStore = useProfileStore();
+  const [gatewayId, setGatewayId] = useState(0);
 
   const filterOption = (
     input: string,
     option?: { label: string; value: string },
   ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
+  const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    setGatewayId(Number(e.target.value));
+  };
+
   const onSave = async () => {
+    console.log(' saving...', form.getFieldsValue(), '//', gatewayId);
+    let u = JSON.parse(JSON.stringify(form.getFieldsValue()));
+    u.gatewayId = gatewayId;
     setLoading(true);
-    const [saveProfileRes, err] = await saveProfileReq(form.getFieldsValue());
+    const [saveProfileRes, err] = await saveProfileReq(u);
     setLoading(false);
     if (null != err) {
       message.error(err.message);
@@ -56,6 +65,7 @@ const Index = () => {
     }
     message.success('saved');
     const { user } = saveProfileRes;
+    setGatewayId(user.gatewayId);
     setProfile(user);
     profileStore.setProfile(user);
   };
@@ -70,6 +80,7 @@ const Index = () => {
     }
     const { user, countryList } = res;
     setProfile(user);
+    setGatewayId(user.gatewayId);
     setCountryList(
       countryList.map((c: any) => ({
         code: c.countryCode,
@@ -107,37 +118,45 @@ const Index = () => {
         fullscreen
       />
       {loading ? null : (
-        <Form form={form} initialValues={profile ?? {}}>
+        <Form
+          form={form}
+          onFinish={onSave}
+          initialValues={profile ?? {}}
+          labelCol={{ span: 7 }}
+        >
           <Form.Item label="ID" name="id" hidden>
             <Input disabled />
           </Form.Item>
+          <Form.Item label="gatewayId" name="gatewayId" hidden>
+            <Input disabled />
+          </Form.Item>
 
-          <Row className="my-4 flex items-center" gutter={[8, 8]}>
-            <Col span={4}>First Name</Col>
-            <Col span={6}>
-              <Form.Item name="firstName" noStyle={true}>
-                <Input style={{ width: '80%' }} />
+          <Form.Item label="paymentMethod" name="paymentMethod" hidden>
+            <Input disabled />
+          </Form.Item>
+
+          <Row>
+            <Col span={12}>
+              <Form.Item label="First name" name="firstName">
+                <Input style={{ width: '300px' }} />
               </Form.Item>
             </Col>
-            <Col span={4}>Last Name</Col>
-            <Col span={6}>
-              <Form.Item name="lastName" noStyle={true}>
-                <Input style={{ width: '80%' }} />
+            <Col span={12}>
+              <Form.Item label="Last name" name="lastName">
+                <Input style={{ width: '300px' }} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row className="my-4 flex items-center" gutter={[8, 8]}>
-            <Col span={4}>Email </Col>
-            <Col span={6}>
-              <Form.Item name="email" noStyle={true}>
-                <Input disabled style={{ width: '80%' }} />
+          <Row>
+            <Col span={12}>
+              <Form.Item name="email" label="Email">
+                <Input disabled style={{ width: '300px' }} />
               </Form.Item>
             </Col>
-            <Col span={4}>Billing Address</Col>
-            <Col span={6}>
+            <Col span={12}>
               <Form.Item
-                noStyle={true}
+                label="Billing address"
                 name="address"
                 rules={[
                   {
@@ -146,7 +165,7 @@ const Index = () => {
                   },
                 ]}
               >
-                <Input style={{ width: '80%' }} />
+                <Input.TextArea rows={4} style={{ width: '300px' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -154,13 +173,11 @@ const Index = () => {
           <Form.Item label="Country Name" name="countryName" hidden>
             <Input />
           </Form.Item>
-
-          <Row className="my-4 flex items-center" gutter={[8, 8]}>
-            <Col span={4}>Country </Col>
-            <Col span={6}>
+          <Row>
+            <Col span={12}>
               <Form.Item
+                label="Country"
                 name="countryCode"
-                noStyle={true}
                 rules={[
                   {
                     required: true,
@@ -169,13 +186,10 @@ const Index = () => {
                 ]}
               >
                 <Select
-                  style={{ width: '80%' }}
+                  style={{ width: '300px' }}
                   showSearch
                   placeholder="Type to search"
                   optionFilterProp="children"
-                  // value={country}
-                  // onChange={onCountryChange}
-                  // onSearch={onSearch}
                   filterOption={filterOption}
                   options={countryList.map((c) => ({
                     label: c.name,
@@ -184,40 +198,41 @@ const Index = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={4}>Comapny Name</Col>
-            <Col span={6}>
-              {' '}
-              <Form.Item name="companyName" noStyle={true}>
-                <Input style={{ width: '80%' }} />
+            <Col span={12}>
+              <Form.Item label="Comapany name" name="companyName">
+                <Input style={{ width: '300px' }} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row className="my-4 flex items-center" gutter={[8, 8]}>
-            <Col span={4}>VAT Number</Col>
-            <Col span={6}>
-              {' '}
-              <Form.Item name="vATNumber" noStyle={true}>
-                <Input style={{ width: '80%' }} />
-              </Form.Item>{' '}
+          <Row>
+            <Col span={12}>
+              <Form.Item label="VAT number" name="vATNumber">
+                <Input style={{ width: '300px' }} />
+              </Form.Item>
             </Col>
-            <Col span={4}>Phone Number</Col>
-            <Col span={6}>
-              <Form.Item name="phone" noStyle={true}>
-                <Input style={{ width: '80%' }} />
+            <Col span={12}>
+              <Form.Item label="Phone number" name="phone">
+                <Input style={{ width: '300px' }} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row className="my-5 flex items-center" gutter={[8, 8]}>
-            <Col span={4}>Payment Methods</Col>
-            <Col span={20}>
-              <Form.Item name="paymentMethod" noStyle={true}>
+          <Row>
+            <Col span={12}>
+              <Form.Item label="Payment Method" name="gatewayId">
+                <PaymentSelector
+                  selected={gatewayId}
+                  onSelect={onGatewayChange}
+                  showWTtips={false}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Account Type" name="type">
                 <Radio.Group>
-                  <Radio value="CreditCard">Credit Card</Radio>
-                  <Radio value="Crypto">Crypto</Radio>
-                  <Radio value="PayPal">PayPal</Radio>
-                  <Radio value="WireTransfer">Wire Transfer</Radio>
+                  <Radio value={1}>Individual</Radio>
+                  <Radio value={2}>Business</Radio>
                 </Radio.Group>
               </Form.Item>
             </Col>
@@ -244,23 +259,19 @@ const Index = () => {
             ],
             [{ label: 'Other Social Info', name: 'otherSocialInfo' }],
           ].map((s, idx) => (
-            <Row key={idx} className="my-4 flex items-center" gutter={[8, 8]}>
-              <Col span={4}>{s[0].label}</Col>
-              <Col span={6}>
-                <Form.Item name={s[0].name} noStyle={true}>
-                  <Input style={{ width: '80%' }} />
+            <Row key={idx}>
+              <Col span={12}>
+                <Form.Item label={s[0].label} name={s[0].name}>
+                  <Input style={{ width: '300px' }} />
                 </Form.Item>
               </Col>
-              {s[1] != null && (
-                <>
-                  <Col span={4}>{s[1].label}</Col>
-                  <Col span={6}>
-                    <Form.Item name={s[1].name} noStyle={true}>
-                      <Input />
-                    </Form.Item>
-                  </Col>
-                </>
-              )}
+              <Col span={12}>
+                {s[1] != null && (
+                  <Form.Item label={s[1].label} name={s[1].name}>
+                    <Input style={{ width: '300px' }} />
+                  </Form.Item>
+                )}
+              </Col>
             </Row>
           ))}
 
@@ -269,7 +280,7 @@ const Index = () => {
             &nbsp;&nbsp;&nbsp;&nbsp;
             <Button
               type="primary"
-              onClick={onSave}
+              onClick={form.submit}
               disabled={loading}
               loading={loading}
             >

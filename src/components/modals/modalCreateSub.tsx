@@ -475,6 +475,7 @@ const Index = ({
                 <PaymentSelector
                   selected={gatewayId}
                   onSelect={onGatewayChange}
+                  showWTtips={true}
                 />
               </Col>
             </Row>
