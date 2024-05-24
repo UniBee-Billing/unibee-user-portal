@@ -476,6 +476,48 @@ export const createSubscriptionReq = async (
   }
 };
 
+/*
+export const getSubTimelineReq = async ({page, count}: {page: number, count: number}) => {
+  const session = useSessionStore.getState()
+  try {
+    const res = await request.get(`/user/subscription/onetime_addon_list?page=${page}&count=${count}`)
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null })
+      throw new ExpiredError('Session expired')
+    }
+    return [res.data.data, null]
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error')
+    return [null, e]
+  }
+}
+*/
+
+// one-time payment history
+// https://api.unibee.top/user/payment/item/list
+export const getOnetimePaymentHistoryReq = async ({
+  page,
+  count,
+}: {
+  page: number;
+  count: number;
+}) => {
+  const session = useSessionStore.getState();
+  try {
+    const res = await request.get(
+      `/user/payment/item/list?page=${page}&count=${count}`,
+    );
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
 // mark wire transfer as complete
 export const markWireCompleteReq = async (subscriptionId: string) => {
   try {

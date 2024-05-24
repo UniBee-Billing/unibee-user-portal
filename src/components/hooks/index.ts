@@ -52,7 +52,15 @@ const usePagination = () => {
     setSearchParams({ page: page + '' });
   };
 
-  return { page, onPageChange };
+  // some tables are part of a page, no need to set searchParams on URL
+  const onPageChangeNoParams: (page: number, pageSize: number) => void = (
+    page: number,
+    pageSize: number,
+  ) => {
+    setPage(page - 1);
+  };
+
+  return { page, onPageChange, onPageChangeNoParams };
 };
 
 export { useCountdown, usePagination };

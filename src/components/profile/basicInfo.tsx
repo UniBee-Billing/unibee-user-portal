@@ -123,6 +123,7 @@ const Index = () => {
           onFinish={onSave}
           initialValues={profile ?? {}}
           labelCol={{ span: 7 }}
+          disabled={loading}
         >
           <Form.Item label="ID" name="id" hidden>
             <Input disabled />

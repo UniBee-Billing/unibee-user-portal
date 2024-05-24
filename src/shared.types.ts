@@ -150,6 +150,25 @@ interface ISubscription {
   latestInvoice?: UserInvoice;
 }
 
+interface IOneTimeHistoryItem {
+  id: number;
+  bizType: number;
+  merchantId: number;
+  userId: number;
+  subscriptionId: string;
+  invoiceId: string;
+  uniqueId: string;
+  currency: string;
+  amount: number;
+  unitAmount: number;
+  quantity: number;
+  paymentId: string;
+  status: number;
+  createTime: number;
+  description: string;
+  name: string;
+}
+
 type TRefund = {
   currency: string;
   refundAmount: number;
@@ -309,6 +328,7 @@ export type {
   Country,
   DiscountCode,
   IAppConfig,
+  IOneTimeHistoryItem,
   IPlan,
   IPreview,
   IProfile,

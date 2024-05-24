@@ -20,6 +20,7 @@ import EditCardModal from '../modals/editCardModal';
 import CancelSubModal from '../modals/modalCancelPendingSub';
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub';
 import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag';
+import OneTimePaymentHistory from './onetimeHistory';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 
@@ -171,7 +172,7 @@ const Index = () => {
         orientation="left"
         style={{ margin: '32px 0', color: '#757575' }}
       >
-        Subscription Log
+        Subscription and Add-on History
       </Divider>
       {/* <Table
         columns={columns}
@@ -184,6 +185,7 @@ const Index = () => {
           indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />,
         }}
       /> */}
+      <OneTimePaymentHistory />
     </div>
   );
 };
