@@ -1,0 +1,10 @@
+.triangle-left {
+  left: 8px;
+  top: 18px;
+  position: relative;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-right: 12px solid #f5f5f5;
+  border-bottom: 6px solid transparent;
+}

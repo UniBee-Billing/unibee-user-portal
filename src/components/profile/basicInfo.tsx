@@ -29,11 +29,13 @@ import {
   useSessionStore,
 } from '../../stores';
 import PaymentSelector from '../ui/paymentSelector';
+import './basicInfo.css';
+import EditCard from './editCard';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 
 const Index = () => {
-  // const appConfigStore = useAppConfigStore();
+  const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<IProfile | null>(null);
   const [form] = Form.useForm();
@@ -41,7 +43,7 @@ const Index = () => {
   const [resetPasswordModal, setResetPasswordModal] = useState(false);
   const togglePasswordModal = () => setResetPasswordModal(!resetPasswordModal);
   const profileStore = useProfileStore();
-  const [gatewayId, setGatewayId] = useState(0);
+  const [gatewayId, setGatewayId] = useState(0); // payment gateway is not a antd native radio component, I have to manually update its value here
 
   const filterOption = (
     input: string,
@@ -102,6 +104,10 @@ const Index = () => {
       );
   }, [countryCode]);
 
+  const isCardPaymentSelected =
+    appConfigStore.gateway.find(
+      (g) => g.gatewayId == gatewayId && g.gatewayName == 'stripe',
+    ) != null;
   return (
     <div>
       {resetPasswordModal && (
@@ -136,6 +142,22 @@ const Index = () => {
             <Input disabled />
           </Form.Item>
 
+          <Divider
+            orientation="left"
+            style={{ margin: '32px 0', color: '#757575' }}
+          >
+            General Info
+          </Divider>
+          <Row>
+            <Col span={12}>
+              <Form.Item label="Account Type" name="type">
+                <Radio.Group>
+                  <Radio value={1}>Individual</Radio>
+                  <Radio value={2}>Business</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
           <Row>
             <Col span={12}>
               <Form.Item label="First name" name="firstName">
@@ -230,12 +252,30 @@ const Index = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Account Type" name="type">
-                <Radio.Group>
-                  <Radio value={1}>Individual</Radio>
-                  <Radio value={2}>Business</Radio>
-                </Radio.Group>
-              </Form.Item>
+              <div
+                style={{
+                  visibility: isCardPaymentSelected ? 'visible' : 'hidden',
+                  position: 'relative',
+                  display: 'flex',
+                  width: '100%',
+                  height: '100%',
+                }}
+              >
+                <div className="triangle-left" />
+                <div
+                  style={{
+                    left: '6px',
+                    width: '90%',
+                    borderRadius: '6px',
+                    padding: '8px',
+                    background: '#f5f5f5',
+                    position: 'relative',
+                    // border: '1px solid #eee',
+                  }}
+                >
+                  <EditCard defaultPaymentId={profile?.paymentMethod} />
+                </div>
+              </div>
             </Col>
           </Row>
 

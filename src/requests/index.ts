@@ -749,8 +749,8 @@ export const addPaymentMethodReq = async ({
   subscriptionId,
   redirectUrl,
 }: {
-  currency: string;
-  subscriptionId: string;
+  currency?: string;
+  subscriptionId?: string;
   redirectUrl: string;
 }) => {
   const body = { currency, redirectUrl, gatewayId: stripeGatewayId };
@@ -767,6 +767,7 @@ export const addPaymentMethodReq = async ({
   }
 };
 
+// change the current subscription's payment method
 export const changePaymentMethodReq = async ({
   paymentMethodId,
   subscriptionId,
@@ -777,6 +778,27 @@ export const changePaymentMethodReq = async ({
   const body = { paymentMethodId, subscriptionId, gatewayId: stripeGatewayId };
   try {
     const res = await request.post('/user/subscription/change_gateway', body);
+    if (res.data.code == 61) {
+      // session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
+// globally change payment method, applies to all current and future subscription
+//https://api.unibee.top/
+export const changeGlobalPaymentMethodReq = async ({
+  paymentMethodId,
+}: {
+  paymentMethodId: string;
+}) => {
+  const body = { paymentMethodId, gatewayId: stripeGatewayId };
+  try {
+    const res = await request.post('/user/change_gateway', body);
     if (res.data.code == 61) {
       // session.setSession({ expired: true, refresh: null });
       throw new ExpiredError('Session expired');
