@@ -331,8 +331,8 @@ const Index = ({
       })),
       preview?.totalAmount as number,
       preview?.currency as string,
-      preview?.vatCountryCode as string,
-      preview?.vatNumber as string,
+      selectedCountry, // preview?.vatCountryCode as string,
+      vatNumber, // preview?.vatNumber as string,
       gatewayId,
       discountInputRef.current?.input?.value,
     );
