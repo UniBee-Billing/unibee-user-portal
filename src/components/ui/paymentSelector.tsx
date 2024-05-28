@@ -19,10 +19,12 @@ const Index = ({
   selected,
   onSelect,
   showWTtips,
+  disabled,
 }: {
   selected: number | undefined;
   onSelect: React.ChangeEventHandler<HTMLInputElement>;
   showWTtips?: boolean;
+  disabled?: boolean;
 }) => {
   const appConfig = useAppConfigStore();
   const gateways = appConfig.gateway
@@ -54,7 +56,7 @@ const Index = ({
             key={g.gatewayId}
             // htmlFor={isCard ? 'card-payment' : 'crypto-payment'}
             htmlFor={payMethod}
-            className={`flex h-12 w-full cursor-pointer items-center justify-between rounded border border-solid ${selected == g.gatewayId ? 'border-blue-500' : 'border-gray-200'} px-2`}
+            className={`flex h-12 w-full cursor-pointer ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}  items-center justify-between rounded border border-solid ${selected == g.gatewayId ? 'border-blue-500' : 'border-gray-200'} px-2`}
           >
             <div className="flex">
               <input
@@ -65,6 +67,7 @@ const Index = ({
                 value={g.gatewayId}
                 checked={g.gatewayId == selected}
                 onChange={onSelect}
+                disabled={disabled}
               />
               <div className="ml-2 flex justify-between">{g.label}</div>
             </div>
@@ -91,14 +94,20 @@ const Index = ({
         );
       })}
       {wire != null && selected == wire.gatewayId && showWTtips && (
-        <div className=" text-xs text-gray-400">
+        <div>
           <Row style={{ marginBottom: '6px' }}>
-            <Col span={8}>Account Holder</Col>
-            <Col span={16}>{wire.bank?.accountHolder}</Col>
+            <Col span={10} className=" text-xs font-bold text-gray-500">
+              Account Holder
+            </Col>
+            <Col className=" text-xs text-gray-400" span={14}>
+              {wire.bank?.accountHolder}
+            </Col>
           </Row>
           <Row style={{ marginBottom: '6px' }}>
-            <Col span={8}>Minimum Amount</Col>
-            <Col span={16}>
+            <Col className=" text-xs font-bold text-gray-500" span={10}>
+              Minimum Amount
+            </Col>
+            <Col className=" text-xs text-gray-400" span={14}>
               {showAmount(
                 wire.minimumAmount as number,
                 wire.currency as string,
@@ -106,12 +115,20 @@ const Index = ({
             </Col>
           </Row>
           <Row style={{ marginBottom: '6px' }}>
-            <Col span={8}>BIC</Col>
-            <Col span={16}>{wire.bank?.bic}</Col>
+            <Col className=" text-xs font-bold text-gray-500" span={10}>
+              BIC
+            </Col>
+            <Col className=" text-xs text-gray-400" span={14}>
+              {wire.bank?.bic}
+            </Col>
           </Row>
           <Row style={{ marginBottom: '6px' }}>
-            <Col span={8}>IBAN</Col>
-            <Col span={16}>{wire.bank?.iban}</Col>
+            <Col className=" text-xs font-bold text-gray-500" span={10}>
+              IBAN
+            </Col>
+            <Col className=" text-xs text-gray-400" span={14}>
+              {wire.bank?.iban}
+            </Col>
           </Row>
         </div>
       )}

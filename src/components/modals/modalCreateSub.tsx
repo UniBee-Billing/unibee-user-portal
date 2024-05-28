@@ -1,4 +1,4 @@
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons';
+import { LoadingOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
 import {
   Button,
@@ -11,6 +11,7 @@ import {
   Spin,
   message,
 } from 'antd';
+import update from 'immutability-helper';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CURRENCY } from '../../constants';
@@ -55,16 +56,11 @@ const Index = ({
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
   const [vatNumber, setVatNumber] = useState(defaultVatNumber);
-  const [vatDetail, setVatDetail] = useState<null | TVATDetail>(null);
-  const [isVatValid, setIsVatValid] = useState(false);
-  // const [discountCode, setDiscountCode] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
   const vatChechkingRef = useRef(false);
   const discountChkingRef = useRef(false);
   const discountInputRef = useRef<InputRef>(null);
   const [discountChecking, setDiscountChecking] = useState(false);
-  const [discountErr, setDiscountErr] = useState('');
-  const [VATErr, setVatErr] = useState('');
   const [vatChecking, setVatChecking] = useState(false);
 
   const subscriptionId = useRef(''); // fore wire transfer, we need this Id(after creating sub) to mark transfer as complete
@@ -87,9 +83,9 @@ const Index = ({
   const onVatChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setVatNumber(e.target.value);
 
+  // vat number and vatCountry are exclusive to each other,
+  // when one is selected/input, the other need to be disabled(or cleared)
   const onCountryChange = (value: string) => {
-    setVatDetail(null); // vat number and vatCountry are exclusive to each other,
-    setIsVatValid(false); // when one is selected/input, the other need to be disabled(or cleared)
     setSelectedCountry(value);
   };
   const filterOption = (
@@ -140,7 +136,6 @@ const Index = ({
       selectedCountry,
       gatewayId as number,
       createPreview,
-      // discountCode,
       discountInputRef.current?.input?.value,
     );
     setLoading(false);
@@ -150,7 +145,7 @@ const Index = ({
       return false;
     }
 
-    setDiscountChecking(previewRes.discountMessage);
+    setDiscountChecking(false);
     setPreview(previewRes);
     return true;
   };
@@ -213,8 +208,6 @@ const Index = ({
     }
 
     if (vatNumber == '') {
-      setVatDetail(null);
-      setIsVatValid(false);
       setVatChecking(false);
       vatChechkingRef.current = false;
       await createPreview();
@@ -227,31 +220,44 @@ const Index = ({
     if (null != err) {
       message.error(err.message);
       setSubmitting(false);
-      setVatDetail(null);
-      setIsVatValid(false);
       vatChechkingRef.current = false;
       return;
     }
-    const v = vatNumberValidate;
-    setIsVatValid(v.valid);
     vatChechkingRef.current = false;
-    if (!v.valid) {
+    const newPreview = update(preview, {
+      vatNumberValidate: { $set: vatNumberValidate },
+    });
+    setPreview(newPreview);
+    if (!vatNumberValidate.valid) {
       setSubmitting(false);
-      setVatDetail(null);
       message.error('Invalid VAT, please re-type or leave it blank.');
       return;
     }
 
-    setVatDetail({
-      companyAddress: v.companyAddress,
-      companyName: v.companyName,
-      countryCode: v.countryCode,
-    });
     await createPreview();
     setSubmitting(false);
   };
 
+  const confirmCheck = () => {
+    if (preview == null) {
+      return false;
+    }
+    if (preview.vatNumberValidate != null && !preview.vatNumberValidate.valid) {
+      message.error('Invalid VAT number');
+      return false;
+    }
+    if (preview.discountMessage != '') {
+      message.error('Invalid discount code');
+      return false;
+    }
+    return true;
+  };
+
   const onConfirm = async () => {
+    if (!confirmCheck()) {
+      return;
+    }
+
     if (wireConfirmStep) {
       setLoading(true);
       const [res, err] = await markWireCompleteReq(subscriptionId.current);
@@ -268,11 +274,6 @@ const Index = ({
     }
 
     if (vatChechkingRef.current || discountChkingRef.current) {
-      return;
-    }
-
-    if (!isVatValid && vatNumber != '') {
-      message.error('Invalid VAT, please re-type or leave it blank.');
       return;
     }
 
@@ -317,7 +318,6 @@ const Index = ({
       }
     }
 
-    // return;
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
@@ -345,7 +345,7 @@ const Index = ({
 
     if (isWireSelected) {
       console.log(
-        'setting sub id after creaaet sub: ',
+        'setting sub id after create sub: ',
         createSubRes.subscription.subscriptionId,
       );
       subscriptionId.current = createSubRes.subscription.subscriptionId;
@@ -359,13 +359,6 @@ const Index = ({
     }
     navigate(`${APP_PATH}my-subscription`);
   };
-
-  /*
-  useEffect(() => {
-    console.log('did mount, calling preview');
-    createPreview();
-  }, []);
-  */
 
   const onClose = () => {
     closeModal();
@@ -435,70 +428,114 @@ const Index = ({
             ))}
             <Divider />
             <Row>
-              <Col span={5}>VAT number</Col>
-              <Col span={6} style={{ marginLeft: '12px' }}>
-                Country
-              </Col>
-              <Col span={8} style={{ marginLeft: '2px' }}>
+              <Col span={14}>
+                <Row>
+                  <Col span={12}>VAT number</Col>
+                  <Col span={12}>Country</Col>
+                  {/* <Col span={8} style={{ marginLeft: '2px' }}>
                 Payment method
-              </Col>
-            </Row>
-            <Row style={{ marginBottom: '12px' }}>
-              <Col span={5}>
-                <Input
-                  disabled={loading || submitting}
-                  value={vatNumber}
-                  style={{ width: '100%' }}
-                  onChange={onVatChange}
-                  onBlur={onVATCheck}
-                  // onPressEnter={onVATCheck}
-                  placeholder="Your VAT number"
-                />
-              </Col>
-              <Col span={6} style={{ marginLeft: '12px' }}>
-                <Select
-                  disabled={loading || submitting}
-                  value={selectedCountry}
-                  style={{ width: '160px' }}
-                  onChange={onCountryChange}
-                  showSearch
-                  placeholder="Type to search"
-                  optionFilterProp="children"
-                  filterOption={filterOption}
-                  options={countryList.map((c) => ({
-                    label: c.name,
-                    value: c.code,
-                  }))}
-                />
-              </Col>
-              <Col span={12}>
-                <PaymentSelector
-                  selected={gatewayId}
-                  onSelect={onGatewayChange}
-                  showWTtips={true}
-                />
-              </Col>
-            </Row>
-            {isVatValid && (
-              <>
-                <Row style={{ fontWeight: 'bold' }}>
-                  <Col span={6}>Company Address</Col>
-                  <Col span={6}>Company Name</Col>
-                  <Col span={6}>Country Code</Col>
+          </Col> */}
                 </Row>
-                <Row style={{ marginBottom: '12px' }}>
-                  <Col span={6} style={{ fontSize: '11px' }}>
-                    {vatDetail?.companyAddress}
+                <Row>
+                  <Col span={12}>
+                    <Input
+                      disabled={loading || submitting}
+                      value={vatNumber}
+                      style={{ width: '80%' }}
+                      onChange={onVatChange}
+                      onBlur={onVATCheck}
+                      // onPressEnter={onVATCheck}
+                      placeholder="Your VAT number"
+                    />
                   </Col>
-                  <Col span={6} style={{ fontSize: '11px' }}>
-                    {vatDetail?.companyName}
-                  </Col>
-                  <Col span={6} style={{ fontSize: '11px' }}>
-                    {vatDetail?.countryCode}
+                  <Col span={12}>
+                    <Select
+                      disabled={loading || submitting}
+                      value={selectedCountry}
+                      style={{ width: '160px' }}
+                      onChange={onCountryChange}
+                      showSearch
+                      placeholder="Type to search"
+                      optionFilterProp="children"
+                      filterOption={filterOption}
+                      options={countryList.map((c) => ({
+                        label: c.name,
+                        value: c.code,
+                      }))}
+                    />
                   </Col>
                 </Row>
-              </>
-            )}
+                {preview.vatNumberValidate != null &&
+                  !preview.vatNumberValidate.valid && (
+                    <div className=" mt-4 text-xs text-red-500">
+                      {preview.vatNumberValidate.validateMessage}
+                    </div>
+                  )}
+                {preview.vatNumberValidate != null &&
+                  preview.vatNumberValidate.valid && (
+                    <>
+                      <Row className=" mt-4">
+                        <Col span={6}>
+                          <span className=" txt-xs font-bold text-gray-500">
+                            Comapny Address
+                          </span>
+                        </Col>
+                        <Col span={18}>
+                          <span className=" text-xs text-gray-400">
+                            {preview.vatNumberValidate.companyAddress}
+                          </span>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col
+                          span={6}
+                          style={{ fontWeight: 'bold', fontSize: '12px' }}
+                        >
+                          <span className=" text-xs font-bold text-gray-500">
+                            Comapny Name
+                          </span>
+                        </Col>
+                        <Col span={18}>
+                          <span className=" text-xs text-gray-400">
+                            {preview.vatNumberValidate.companyName}
+                          </span>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col
+                          span={6}
+                          style={{ fontWeight: 'bold', fontSize: '12px' }}
+                        >
+                          <span className=" text-xs font-bold text-gray-500">
+                            Comapny Code
+                          </span>
+                        </Col>
+                        <Col span={18}>
+                          <span className=" text-xs text-gray-400">
+                            {preview.vatNumberValidate.countryCode}
+                          </span>
+                        </Col>
+                      </Row>
+                    </>
+                  )}
+              </Col>
+              <Col span={10}>
+                <Row>
+                  <Col>Payment method</Col>
+                </Row>
+                <Row>
+                  <Col span={20}>
+                    <PaymentSelector
+                      selected={gatewayId}
+                      onSelect={onGatewayChange}
+                      showWTtips={true}
+                      disabled={loading || submitting}
+                    />
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
             <div className=" mt-6 flex w-full pr-4">
               <div className="w-3/5">
                 <Row>
