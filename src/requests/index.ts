@@ -767,6 +767,25 @@ export const addPaymentMethodReq = async ({
   }
 };
 
+export const removePaymentMethodReq = async ({
+  paymentMethodId,
+}: {
+  paymentMethodId: string;
+}) => {
+  const body = { gatewayId: stripeGatewayId, paymentMethodId };
+  try {
+    const res = await request.post('/user/payment/method_delete', body);
+    if (res.data.code == 61) {
+      // session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
 // change the current subscription's payment method
 export const changePaymentMethodReq = async ({
   paymentMethodId,

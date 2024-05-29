@@ -1,10 +1,16 @@
-import { LoadingOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons';
-import { Button, Col, Row, Spin, Tooltip, message } from 'antd';
+import {
+  LoadingOutlined,
+  MinusOutlined,
+  PlusOutlined,
+  SyncOutlined,
+} from '@ant-design/icons';
+import { Button, Col, Popconfirm, Row, Spin, Tooltip, message } from 'antd';
 import { useEffect, useState } from 'react';
 import {
   addPaymentMethodReq,
   changeGlobalPaymentMethodReq,
   getPaymentMethodListReq,
+  removePaymentMethodReq,
 } from '../../requests';
 
 type TCard = {
@@ -59,10 +65,24 @@ const Index = ({ defaultPaymentId }: Props) => {
     window.open(addCardRes.url, '_blank');
   };
 
+  const removeCard = async (paymentMethodId: string) => {
+    console.log('removing....', paymentMethodId);
+    setLoading(true);
+    const [res, err] = await removePaymentMethodReq({
+      paymentMethodId,
+    });
+    if (null != err) {
+      message.error(err.message);
+      setLoading(false);
+      return;
+    }
+    console.log('payment method remove res: ', res);
+    fetchCards();
+  };
+
   const onPaymentMethodChange: React.ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
-    console.log('evt radio: ', evt.target);
     setDefaultPaymentMethod(evt.target.value);
   };
 
@@ -146,7 +166,19 @@ const Index = ({ defaultPaymentId }: Props) => {
               <Col span={4}>{c.country}</Col>
               <Col span={5}>{c.expiredAt}</Col>
               <Col span={3}>{c.last4}</Col>
-              <Col span={4}></Col>
+              <Col span={4}>
+                <Popconfirm
+                  title="Deletion Confirm"
+                  description="Are you sure to delete this card?"
+                  onConfirm={() => removeCard(c.id)}
+                  showCancel={false}
+                  okText="Yes"
+                >
+                  <div className=" ml-3 h-6 w-6 cursor-pointer">
+                    <MinusOutlined />
+                  </div>
+                </Popconfirm>
+              </Col>
             </Row>
           ))
         )}
