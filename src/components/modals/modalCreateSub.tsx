@@ -23,7 +23,7 @@ import {
   vatNumberCheckReq,
 } from '../../requests';
 import { Country, IPlan, IPreview } from '../../shared.types';
-import { useAppConfigStore } from '../../stores';
+import { useAppConfigStore, useProfileStore } from '../../stores';
 import PaymentSelector from '../ui/paymentSelector';
 import './modalCreateSub.css';
 
@@ -52,6 +52,7 @@ const Index = ({
 }: Props) => {
   const navigate = useNavigate();
   const appConfig = useAppConfigStore();
+  const profileStore = useProfileStore();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<IPreview | null>(null);
@@ -295,7 +296,6 @@ const Index = ({
       }
     }
 
-    console.log('wire selected...');
     if (isWireSelected) {
       const wire = appConfig.gateway.find(
         (g) => g.gatewayName == 'wire_transfer',
@@ -341,6 +341,16 @@ const Index = ({
     if (err != null) {
       message.error(err.message);
       return;
+    }
+
+    // user has updated either one of them, need to update the local store. Backend will also update these values.
+    if (defaultVatNumber != vatNumber || userCountryCode != selectedCountry) {
+      const p = update(profileStore.getProfile(), {
+        vATNumber: { $set: vatNumber },
+        countryCode: { $set: selectedCountry },
+      });
+      console.log('new profile: ', p);
+      profileStore.setProfile(p);
     }
 
     if (isWireSelected) {

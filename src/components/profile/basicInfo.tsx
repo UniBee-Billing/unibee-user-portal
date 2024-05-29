@@ -257,7 +257,7 @@ const Index = () => {
                   visibility: isCardPaymentSelected ? 'visible' : 'hidden',
                   position: 'relative',
                   display: 'flex',
-                  width: '100%',
+                  maxWidth: '560px',
                   height: '100%',
                 }}
               >
@@ -267,7 +267,7 @@ const Index = () => {
                     left: '6px',
                     width: '90%',
                     borderRadius: '6px',
-                    padding: '8px',
+                    padding: '16px',
                     background: '#f5f5f5',
                     position: 'relative',
                     // border: '1px solid #eee',
