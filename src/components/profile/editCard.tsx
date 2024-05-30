@@ -32,7 +32,7 @@ const Index = ({ defaultPaymentId }: Props) => {
   const [defaultPaymentMethodId, setDefaultPaymentMethod] =
     useState(defaultPaymentId);
 
-  // set default payment card, not working...
+  // set default payment card for auto-billing
   const onConfirm = async () => {
     if (defaultPaymentMethodId == undefined || defaultPaymentMethodId == '') {
       return;
@@ -115,12 +115,12 @@ const Index = ({ defaultPaymentId }: Props) => {
   return (
     <div>
       <Row gutter={[16, 16]} style={{ fontWeight: 'bold', color: 'gray' }}>
-        {/* <Col span={4}>Current</Col> */}
-        <Col span={5}>Brand</Col>
-        <Col span={5}>Country</Col>
-        <Col span={5}>Expired at</Col>
+        <Col span={4}>Current</Col>
+        <Col span={4}>Brand</Col>
+        <Col span={4}>Country</Col>
+        <Col span={4}>Expired at</Col>
         <Col span={5}>Last 4 digits</Col>
-        <Col span={4}>
+        <Col span={3}>
           <div className="flex justify-start gap-2">
             <Tooltip title="Add new card">
               <span className=" cursor-pointer" onClick={addCard}>
@@ -152,7 +152,7 @@ const Index = ({ defaultPaymentId }: Props) => {
                 fontWeight: defaultPaymentMethodId == c.id ? 'bold' : 'unset',
               }}
             >
-              {/* <Col span={4}>
+              <Col span={4}>
                 <input
                   type="radio"
                   name="payment-methods"
@@ -161,12 +161,12 @@ const Index = ({ defaultPaymentId }: Props) => {
                   checked={defaultPaymentMethodId == c.id}
                   onChange={onPaymentMethodChange}
                 />
-            </Col> */}
-              <Col span={5}>{c.brand}</Col>
-              <Col span={5}>{c.country}</Col>
-              <Col span={5}>{c.expiredAt}</Col>
+              </Col>
+              <Col span={4}>{c.brand}</Col>
+              <Col span={4}>{c.country}</Col>
+              <Col span={4}>{c.expiredAt}</Col>
               <Col span={5}>{c.last4}</Col>
-              <Col span={4}>
+              <Col span={3}>
                 <div className="flex justify-start gap-2">
                   <Popconfirm
                     title="Deletion Confirm"
@@ -186,7 +186,7 @@ const Index = ({ defaultPaymentId }: Props) => {
         )}
       </div>
 
-      {/* <div className="flex items-center justify-end">
+      <div className="my-2 flex items-center justify-end">
         <Button
           onClick={onConfirm}
           loading={loading}
@@ -197,9 +197,9 @@ const Index = ({ defaultPaymentId }: Props) => {
             defaultPaymentMethodId == undefined
           }
         >
-          Set as default
+          Set as auto payment card
         </Button>
-        </div> */}
+      </div>
     </div>
   );
 };

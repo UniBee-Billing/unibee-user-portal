@@ -265,7 +265,7 @@ const Index = () => {
                 <div
                   style={{
                     left: '6px',
-                    width: '90%',
+                    width: '100%',
                     borderRadius: '6px',
                     padding: '16px',
                     background: '#f5f5f5',
