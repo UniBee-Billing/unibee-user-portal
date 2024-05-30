@@ -87,8 +87,8 @@ const Index = () => {
     }
     setCountryList(
       list.map((c: any) => ({
-        code: c.countryCode,
-        name: c.countryName,
+        countryCode: c.countryCode,
+        countryName: c.countryName,
       })),
     );
   };

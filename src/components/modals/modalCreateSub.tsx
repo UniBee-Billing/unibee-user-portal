@@ -469,8 +469,8 @@ const Index = ({
                       optionFilterProp="children"
                       filterOption={filterOption}
                       options={countryList.map((c) => ({
-                        label: c.name,
-                        value: c.code,
+                        label: c.countryName,
+                        value: c.countryCode,
                       }))}
                     />
                   </Col>

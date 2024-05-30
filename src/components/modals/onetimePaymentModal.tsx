@@ -87,8 +87,8 @@ const Index = ({ isOpen, closeModal, plan, subscriptionId }: Props) => {
       }
       setCountryList(
         list.map((c: any) => ({
-          code: c.countryCode,
-          name: c.countryName,
+          countryCode: c.countryCode,
+          countryName: c.countryName,
         })),
       );
     };
@@ -100,7 +100,7 @@ const Index = ({ isOpen, closeModal, plan, subscriptionId }: Props) => {
     countryCode &&
       form.setFieldValue(
         'countryName',
-        countryList.find((c) => c.code == countryCode)!.name,
+        countryList.find((c) => c.countryCode == countryCode)!.countryName,
       );
   }, [countryCode]);
 

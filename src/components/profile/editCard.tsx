@@ -190,7 +190,7 @@ const Index = ({ defaultPaymentId }: Props) => {
         <Button
           onClick={onConfirm}
           loading={loading}
-          size="small"
+          // size="small"
           disabled={
             loading ||
             defaultPaymentMethodId == '' ||

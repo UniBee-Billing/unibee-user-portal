@@ -714,9 +714,8 @@ export const cancelSubReq = async (subscriptionId: string) => {
 };
 
 export const getCountryList = async () => {
-  const body = {};
   try {
-    const res = await request.post(`/user/vat/country_list`, body);
+    const res = await request.post(`/user/vat/country_list`, {});
     if (res.data.code == 61) {
       // session.setSession({ expired: true, refresh: null });
       throw new ExpiredError('Session expired');

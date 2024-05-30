@@ -79,8 +79,8 @@ interface IAppConfig {
 }
 
 type Country = {
-  code: string;
-  name: string;
+  countryCode: string;
+  countryName: string;
 };
 
 interface IAddon extends IPlan {

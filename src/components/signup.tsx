@@ -1,9 +1,10 @@
-import { Button, Form, Input, message } from 'antd';
-import React, { useState } from 'react';
+import { Button, Form, Input, message, Select, Tabs } from 'antd';
+import React, { useEffect, useState } from 'react';
 import OtpInput from 'react-otp-input';
 import { useNavigate } from 'react-router-dom';
 import { emailValidate, passwordSchema } from '../helpers';
-import { signUpReq, signUpVerifyReq } from '../requests';
+import { getCountryList, signUpReq, signUpVerifyReq } from '../requests';
+import { Country } from '../shared.types';
 import AppFooter from './appFooter';
 import AppHeader from './appHeader';
 import { useCountdown } from './hooks';
@@ -14,6 +15,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 const Index = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [accountType, setAccountType] = useState('1'); // 1: individual, 2: business, backend use number, front-end uses string
+  const [countryList, setCountryList] = useState<Country[]>([]);
   const [currentStep, setCurrentStep] = useState(0); // 0: signup-basic-info  |  1: enter verfication code
   const [submitting, setSubmitting] = useState(false);
   const [countVal, isCounting, startCountdown, stopCounter] = useCountdown(60);
@@ -22,15 +25,34 @@ const Index = () => {
     setOtp(value.toUpperCase());
   };
 
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string },
+  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+
+  const onTabChange = (key: string) => setAccountType(key);
+
   const goLogin = () => navigate(`${APP_PATH}login`);
 
   // send basic signup info
   const onSubmitBasicInfo = async () => {
+    const body = JSON.parse(JSON.stringify(form.getFieldsValue()));
+    body.type = Number(accountType);
+    if (accountType == '1') {
+      delete body.companyName;
+      delete body.vATNumber;
+      delete body.countryName;
+      delete body.countryCode;
+      delete body.address;
+      delete body.city;
+      delete body.zipCode;
+    }
+    console.log('signup info: ', body);
+    // return;
     setSubmitting(true);
-
-    const [res, err] = await signUpReq(form.getFieldsValue());
-    console.log('signup res: ', res);
+    const [res, err] = await signUpReq(body);
     setSubmitting(false);
+    console.log('signup res: ', res);
     if (null != err) {
       message.error(err.message);
       return;
@@ -58,10 +80,248 @@ const Index = () => {
     });
   };
 
+  const signUpForm = (name: string) => (
+    <div
+      style={{ width: '580px', maxHeight: '480px', overflowY: 'auto' }}
+      className=" flex justify-center"
+    >
+      <Form
+        form={form}
+        name={name}
+        onFinish={onSubmitBasicInfo}
+        labelCol={{ span: 7 }}
+        wrapperCol={{ span: 17 }}
+        style={{ maxWidth: 640, width: 480 }}
+      >
+        <Form.Item
+          label="First Name"
+          name="firstName"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your first name!',
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Last Lame"
+          name="lastName"
+          rules={[
+            {
+              required: true,
+              message: 'Please input yourn last name!',
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your Email!',
+            },
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                if (value != null && value != '' && emailValidate(value)) {
+                  return Promise.resolve();
+                }
+                return Promise.reject('Invalid email address');
+              },
+            }),
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        {accountType == '2' && (
+          <Form.Item
+            label="Company Name"
+            name="companyName"
+            rules={[
+              {
+                required: true,
+                message: 'Please input your company name!',
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+        )}
+
+        {accountType == '2' && (
+          <Form.Item
+            label="Vat number"
+            name="vATNumber"
+            /* rules={[
+          {
+            required: true,
+            message: 'Please input your company name!',
+          },
+        ]} */
+          >
+            <Input />
+          </Form.Item>
+        )}
+
+        {accountType == '2' && (
+          <Form.Item label="Country Name" name="countryName" hidden>
+            <Input />
+          </Form.Item>
+        )}
+
+        {accountType == '2' && (
+          <Form.Item
+            label="Country"
+            name="countryCode"
+            rules={[
+              {
+                required: true,
+                message: 'Please select your country!',
+              },
+            ]}
+          >
+            <Select
+              // style={{ width: '300px' }}
+              showSearch
+              placeholder="Type to search"
+              optionFilterProp="children"
+              filterOption={filterOption}
+              options={countryList.map((c) => ({
+                label: c.countryName,
+                value: c.countryCode,
+              }))}
+            />
+          </Form.Item>
+        )}
+
+        {accountType == '2' && (
+          <Form.Item
+            label="City"
+            name="city"
+            rules={[
+              {
+                required: true,
+                message: 'Please input your city name!',
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+        )}
+
+        {accountType == '2' && (
+          <Form.Item
+            label="Zipcode"
+            name="zipCode"
+            rules={[
+              {
+                required: true,
+                message: 'Please input your zipcode!',
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+        )}
+
+        {accountType == '2' && (
+          <Form.Item
+            label="Address detail"
+            name="address"
+            rules={[
+              {
+                required: true,
+                message: 'Please input your company address!',
+              },
+            ]}
+          >
+            <Input.TextArea rows={3} />
+          </Form.Item>
+        )}
+
+        <Form.Item
+          label="Password"
+          name="password"
+          dependencies={['password2']}
+          rules={[
+            {
+              required: true,
+              message: 'Please input your password!',
+            },
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                if (!passwordSchema.validate(value)) {
+                  return Promise.reject(
+                    'At least 8 characters containing lowercase, uppercase, number and special character.',
+                  );
+                }
+                return Promise.resolve();
+              },
+            }),
+          ]}
+        >
+          <Input.Password />
+        </Form.Item>
+
+        <Form.Item
+          label="Password Confirm"
+          name="password2"
+          dependencies={['password']}
+          rules={[
+            {
+              required: true,
+              message: 'Please retype your password!',
+            },
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                if (value == getFieldValue('password')) {
+                  return Promise.resolve();
+                }
+                return Promise.reject('Please retype the same password');
+              },
+            }),
+          ]}
+        >
+          <Input.Password onPressEnter={form.submit} />
+        </Form.Item>
+
+        <Form.Item
+          wrapperCol={{
+            offset: 11,
+            span: 8,
+          }}
+        >
+          <Button type="primary" onClick={form.submit} loading={submitting}>
+            OK
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
+  );
+
+  useEffect(() => {
+    const getCountries = async () => {
+      const [vatCountryList, err] = await getCountryList();
+      if (null != err) {
+        message.error('Getting country list err');
+        return;
+      }
+      setCountryList(vatCountryList);
+    };
+    getCountries();
+  }, []);
+
   return (
     <div
       style={{
-        height: 'calc(100vh - 142px)',
+        height: 'calc(100vh - 132px)',
         overflowY: 'auto',
       }}
     >
@@ -72,7 +332,7 @@ const Index = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          marginTop: '100px',
+          marginTop: '60px',
         }}
       >
         <h1 className="mb-9 mt-16">Customer Sign-up</h1>
@@ -90,133 +350,23 @@ const Index = () => {
           }}
         >
           {currentStep == 0 ? (
-            <Form
-              form={form}
-              name="basic"
-              onFinish={onSubmitBasicInfo}
-              labelCol={{ span: 7 }}
-              wrapperCol={{ span: 17 }}
-              style={{ maxWidth: 640, width: 480 }}
-              initialValues={{
-                firstName: '',
-                lastName: '',
-                email: '',
-                password: '',
-                password2: '',
-              }}
-              autoComplete="off"
-            >
-              <Form.Item
-                label="First Name"
-                name="firstName"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input your first name!',
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                label="Last Lame"
-                name="lastName"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input yourn last name!',
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                label="Email"
-                name="email"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input your Email!',
-                  },
-                  ({ getFieldValue }) => ({
-                    validator(rule, value) {
-                      if (
-                        value != null &&
-                        value != '' &&
-                        emailValidate(value)
-                      ) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject('Invalid email address');
-                    },
-                  }),
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label="Password"
-                name="password"
-                dependencies={['password2']}
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input your password!',
-                  },
-                  ({ getFieldValue }) => ({
-                    validator(rule, value) {
-                      if (!passwordSchema.validate(value)) {
-                        return Promise.reject(
-                          'At least 8 characters containing lowercase, uppercase, number and special character.',
-                        );
-                      }
-                      return Promise.resolve();
-                    },
-                  }),
-                ]}
-              >
-                <Input.Password />
-              </Form.Item>
-
-              <Form.Item
-                label="Password Confirm"
-                name="password2"
-                dependencies={['password']}
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please retype your password!',
-                  },
-                  ({ getFieldValue }) => ({
-                    validator(rule, value) {
-                      if (value == getFieldValue('password')) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject('Please retype the same password');
-                    },
-                  }),
-                ]}
-              >
-                <Input.Password onPressEnter={form.submit} />
-              </Form.Item>
-
-              <Form.Item
-                wrapperCol={{
-                  offset: 11,
-                  span: 8,
-                }}
-              >
-                <Button
-                  type="primary"
-                  onClick={form.submit}
-                  loading={submitting}
-                >
-                  Submit
-                </Button>
-              </Form.Item>
-            </Form>
+            <Tabs
+              activeKey={accountType}
+              onChange={onTabChange}
+              style={{ marginBottom: 32 }}
+              items={[
+                {
+                  key: '1',
+                  label: 'Individual',
+                  children: signUpForm('individual-signup'),
+                },
+                {
+                  key: '2',
+                  label: 'Business',
+                  children: signUpForm('business-signup'),
+                },
+              ]}
+            />
           ) : (
             <Form
               name="login_OTP_code"
@@ -270,7 +420,7 @@ const Index = () => {
                   disabled={submitting}
                   size="large"
                 >
-                  submit
+                  OK
                 </Button>
                 <div style={{ display: 'flex', margin: '12px 0' }}>
                   <Button
