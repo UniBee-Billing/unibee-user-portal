@@ -4,7 +4,16 @@ import {
   PlusOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
-import { Button, Col, Popconfirm, Row, Spin, Tooltip, message } from 'antd';
+import {
+  Button,
+  Col,
+  Empty,
+  Popconfirm,
+  Row,
+  Spin,
+  Tooltip,
+  message,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import {
   addPaymentMethodReq,
@@ -47,7 +56,7 @@ const Index = ({ defaultPaymentId }: Props) => {
       return;
     }
     console.log('changePaymentMethodRes: ', changePaymentMethodRes);
-    message.success('Your default payment card changed');
+    message.success('Your auto payment card changed');
     // refresh();
   };
 
@@ -135,9 +144,16 @@ const Index = ({ defaultPaymentId }: Props) => {
           </div>
         </Col>
       </Row>
-      <div className="flex w-full flex-col">
+      <div className="flex w-full flex-col" style={{ minHeight: '140px' }}>
         {loading ? (
           <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+        ) : cards.length == 0 ? (
+          <div>
+            <Empty
+              description="No cards"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          </div>
         ) : (
           cards.map((c) => (
             <Row

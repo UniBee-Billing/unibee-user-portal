@@ -1,4 +1,13 @@
-import { Button, Form, Input, message, Select, Tabs } from 'antd';
+import {
+  Button,
+  Form,
+  Input,
+  message,
+  Radio,
+  RadioChangeEvent,
+  Select,
+  Tabs,
+} from 'antd';
 import React, { useEffect, useState } from 'react';
 import OtpInput from 'react-otp-input';
 import { useNavigate } from 'react-router-dom';
@@ -30,7 +39,8 @@ const Index = () => {
     option?: { label: string; value: string },
   ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
-  const onTabChange = (key: string) => setAccountType(key);
+  const onAccountTypeChange = (evt: RadioChangeEvent) =>
+    setAccountType(evt.target.value);
 
   const goLogin = () => navigate(`${APP_PATH}login`);
 
@@ -41,8 +51,6 @@ const Index = () => {
     if (accountType == '1') {
       delete body.companyName;
       delete body.vATNumber;
-      delete body.countryName;
-      delete body.countryCode;
       delete body.address;
       delete body.city;
       delete body.zipCode;
@@ -83,7 +91,7 @@ const Index = () => {
   const signUpForm = (name: string) => (
     <div
       style={{ width: '580px', maxHeight: '480px', overflowY: 'auto' }}
-      className=" flex justify-center"
+      className=" mb-4 flex justify-center"
     >
       <Form
         form={form}
@@ -170,36 +178,32 @@ const Index = () => {
           </Form.Item>
         )}
 
-        {accountType == '2' && (
-          <Form.Item label="Country Name" name="countryName" hidden>
-            <Input />
-          </Form.Item>
-        )}
+        <Form.Item label="Country Name" name="countryName" hidden>
+          <Input />
+        </Form.Item>
 
-        {accountType == '2' && (
-          <Form.Item
-            label="Country"
-            name="countryCode"
-            rules={[
-              {
-                required: true,
-                message: 'Please select your country!',
-              },
-            ]}
-          >
-            <Select
-              // style={{ width: '300px' }}
-              showSearch
-              placeholder="Type to search"
-              optionFilterProp="children"
-              filterOption={filterOption}
-              options={countryList.map((c) => ({
-                label: c.countryName,
-                value: c.countryCode,
-              }))}
-            />
-          </Form.Item>
-        )}
+        <Form.Item
+          label="Country"
+          name="countryCode"
+          rules={[
+            {
+              required: true,
+              message: 'Please select your country!',
+            },
+          ]}
+        >
+          <Select
+            // style={{ width: '300px' }}
+            showSearch
+            placeholder="Type to search"
+            optionFilterProp="children"
+            filterOption={filterOption}
+            options={countryList.map((c) => ({
+              label: c.countryName,
+              value: c.countryCode,
+            }))}
+          />
+        </Form.Item>
 
         {accountType == '2' && (
           <Form.Item
@@ -350,23 +354,16 @@ const Index = () => {
           }}
         >
           {currentStep == 0 ? (
-            <Tabs
-              activeKey={accountType}
-              onChange={onTabChange}
-              style={{ marginBottom: 32 }}
-              items={[
-                {
-                  key: '1',
-                  label: 'Individual',
-                  children: signUpForm('individual-signup'),
-                },
-                {
-                  key: '2',
-                  label: 'Business',
-                  children: signUpForm('business-signup'),
-                },
-              ]}
-            />
+            <>
+              <Radio.Group onChange={onAccountTypeChange} value={accountType}>
+                <Radio.Button value="1">Individual</Radio.Button>
+                <Radio.Button value="2">Business</Radio.Button>
+              </Radio.Group>
+              <div className=" my-4"></div>
+              {signUpForm(
+                accountType == '1' ? 'individual-signup' : 'business-signup',
+              )}
+            </>
           ) : (
             <Form
               name="login_OTP_code"

@@ -64,7 +64,7 @@ const Index = ({
       message.error(err.message);
       return;
     }
-    message.success('Your default payment card changed');
+    message.success('Your auto payment card changed');
     refresh();
     closeModal();
   };

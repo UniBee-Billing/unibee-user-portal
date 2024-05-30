@@ -12,6 +12,7 @@ interface IProfile {
   lastName: string;
   id: number | null;
   phone: string;
+  type: 1 | 2; // 1: individual, 2: business
   paymentMethod: string; // for card payment, this is the stripe paymentId, used for auto recurring payment
   gatewayId?: number; // after a successful payment, the payment gateway is saved as default. This is null for newly registered user.
   gateway?: TGateway; // ditto.
