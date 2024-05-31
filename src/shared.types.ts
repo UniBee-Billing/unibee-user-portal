@@ -151,6 +151,23 @@ interface ISubscription {
   latestInvoice?: UserInvoice;
 }
 
+interface ISubHistoryItem {
+  merchantId: number;
+  userId: number;
+  subscriptionId: string;
+  periodStart: number;
+  periodEnd: number;
+  invoiceId: string;
+  uniqueId: string;
+  currency: string;
+  planId: number;
+  plan: IPlan;
+  quantity: number;
+  addons: { quantity: number; addonPlan: IPlan }[];
+  gatewayId: number;
+  createTime: number;
+}
+
 interface IOneTimeHistoryItem {
   id: number;
   bizType: number;
@@ -333,6 +350,7 @@ export type {
   IPlan,
   IPreview,
   IProfile,
+  ISubHistoryItem,
   ISubscription,
   InvoiceItem,
   InvoiceItemTotal,

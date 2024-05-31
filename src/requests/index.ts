@@ -493,6 +493,29 @@ export const getSubTimelineReq = async ({page, count}: {page: number, count: num
 }
 */
 
+export const getSubHistoryReq = async ({
+  page,
+  count,
+}: {
+  page: number;
+  count: number;
+}) => {
+  const session = useSessionStore.getState();
+  try {
+    const res = await request.get(
+      `/user/subscription/timeline_list?page=${page}&count=${count}`,
+    );
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new ExpiredError('Session expired');
+    }
+    return [res.data.data, null];
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
 // one-time payment history
 // https://api.unibee.top/user/payment/item/list
 export const getOnetimePaymentHistoryReq = async ({

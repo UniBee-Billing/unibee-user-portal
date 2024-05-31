@@ -21,6 +21,7 @@ import CancelSubModal from '../modals/modalCancelPendingSub';
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub';
 import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag';
 import OneTimePaymentHistory from './onetimeHistory';
+import SubHistory from './subHistory';
 
 const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
 
@@ -168,23 +169,7 @@ const Index = () => {
         </>
       )}
 
-      <Divider
-        orientation="left"
-        style={{ margin: '32px 0', color: '#757575' }}
-      >
-        Subscription and Add-on History
-      </Divider>
-      {/* <Table
-        columns={columns}
-        dataSource={subscriptions}
-        rowKey={'id'}
-        rowClassName="clickable-tbl-row"
-        pagination={false}
-        loading={{
-          spinning: loading,
-          indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />,
-        }}
-      /> */}
+      <SubHistory />
       <OneTimePaymentHistory />
     </div>
   );
