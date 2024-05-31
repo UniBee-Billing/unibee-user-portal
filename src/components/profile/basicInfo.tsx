@@ -275,7 +275,7 @@ const Index = () => {
           </Col>
           <Col span={12}>
             <Form.Item
-              label="Comapany name"
+              label="Company name"
               name="companyName"
               labelCol={{ span: 6 }}
               rules={[

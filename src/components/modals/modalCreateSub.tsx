@@ -487,7 +487,7 @@ const Index = ({
                       <Row className=" mt-4">
                         <Col span={6}>
                           <span className=" txt-xs font-bold text-gray-500">
-                            Comapny Address
+                            Company Address
                           </span>
                         </Col>
                         <Col span={18}>
@@ -502,7 +502,7 @@ const Index = ({
                           style={{ fontWeight: 'bold', fontSize: '12px' }}
                         >
                           <span className=" text-xs font-bold text-gray-500">
-                            Comapny Name
+                            Company Name
                           </span>
                         </Col>
                         <Col span={18}>
@@ -517,7 +517,7 @@ const Index = ({
                           style={{ fontWeight: 'bold', fontSize: '12px' }}
                         >
                           <span className=" text-xs font-bold text-gray-500">
-                            Comapny Code
+                            Company Code
                           </span>
                         </Col>
                         <Col span={18}>
