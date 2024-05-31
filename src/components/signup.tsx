@@ -165,14 +165,14 @@ const Index = () => {
 
         {accountType == '2' && (
           <Form.Item
-            label="Vat number"
+            label="VAT number"
             name="vATNumber"
-            /* rules={[
-          {
-            required: true,
-            message: 'Please input your company name!',
-          },
-        ]} */
+            rules={[
+              {
+                required: true,
+                message: 'Please input your VAT number!',
+              },
+            ]}
           >
             <Input />
           </Form.Item>

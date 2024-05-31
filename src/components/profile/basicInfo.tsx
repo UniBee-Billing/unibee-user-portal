@@ -83,6 +83,7 @@ const Index = () => {
     }
     const { user, countryList } = res;
     setProfile(user);
+    form.setFieldsValue(user);
     setGatewayId(user.gatewayId);
     setCountryList(
       countryList.map((c: any) => ({
@@ -116,301 +117,302 @@ const Index = () => {
         }
         fullscreen
       />
-      {loading ? null : (
-        <Form
-          form={form}
-          onFinish={onSave}
-          initialValues={profile ?? {}}
-          labelCol={{ span: 7 }}
-          disabled={loading}
+
+      <Form
+        form={form}
+        onFinish={onSave}
+        // initialValues={profile ?? {}}
+        labelCol={{ span: 7 }}
+        disabled={loading}
+      >
+        <Form.Item label="ID" name="id" hidden>
+          <Input disabled />
+        </Form.Item>
+        <Form.Item label="gatewayId" name="gatewayId" hidden>
+          <Input disabled />
+        </Form.Item>
+
+        <Form.Item label="paymentMethod" name="paymentMethod" hidden>
+          <Input disabled />
+        </Form.Item>
+
+        <Divider
+          orientation="left"
+          style={{ margin: '32px 0', color: '#757575' }}
         >
-          <Form.Item label="ID" name="id" hidden>
-            <Input disabled />
-          </Form.Item>
-          <Form.Item label="gatewayId" name="gatewayId" hidden>
-            <Input disabled />
-          </Form.Item>
+          General Info
+        </Divider>
+        <Row>
+          <Col span={24}>
+            <Form.Item label="Account Type" labelCol={{ span: 3 }}>
+              <Form.Item name="type" noStyle>
+                <Radio.Group disabled={profile?.type == 2}>
+                  <Radio value={1}>Individual</Radio>
+                  <Radio value={2}>Business</Radio>
+                </Radio.Group>
+              </Form.Item>
+              <span className=" text-xs text-gray-400">
+                You can switch account type from <b>Individual</b> to{' '}
+                <b>Business</b>, but not the other way around.
+              </span>
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              label="First name"
+              name="firstName"
+              labelCol={{ span: 6 }}
+              rules={[
+                {
+                  required: true,
+                  message: 'Please input your first name!',
+                },
+              ]}
+            >
+              <Input style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Last name"
+              name="lastName"
+              labelCol={{ span: 6 }}
+              rules={[
+                {
+                  required: true,
+                  message: 'Please input your last name!',
+                },
+              ]}
+            >
+              <Input style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Form.Item label="paymentMethod" name="paymentMethod" hidden>
-            <Input disabled />
-          </Form.Item>
+        <Row>
+          <Col span={12}>
+            <Form.Item name="email" label="Email" labelCol={{ span: 6 }}>
+              <Input disabled style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              labelCol={{ span: 6 }}
+              label="Country"
+              name="countryCode"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please select your country!',
+                },
+              ]}
+            >
+              <Select
+                style={{ width: '300px' }}
+                showSearch
+                placeholder="Type to search"
+                optionFilterProp="children"
+                filterOption={filterOption}
+                options={countryList.map((c) => ({
+                  label: c.countryName,
+                  value: c.countryCode,
+                }))}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Divider
-            orientation="left"
-            style={{ margin: '32px 0', color: '#757575' }}
-          >
-            General Info
-          </Divider>
-          <Row>
-            <Col span={24}>
-              <Form.Item label="Account Type" labelCol={{ span: 3 }}>
-                <Form.Item name="type" noStyle>
-                  <Radio.Group disabled={profile?.type == 2}>
-                    <Radio value={1}>Individual</Radio>
-                    <Radio value={2}>Business</Radio>
-                  </Radio.Group>
-                </Form.Item>
-                <span className=" text-xs text-gray-400">
-                  You can switch account type from <b>Individual</b> to{' '}
-                  <b>Business</b>, but not the other way around.
-                </span>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                label="First name"
-                name="firstName"
-                labelCol={{ span: 6 }}
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input your first name!',
-                  },
-                ]}
-              >
-                <Input style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Last name"
-                name="lastName"
-                labelCol={{ span: 6 }}
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input your last name!',
-                  },
-                ]}
-              >
-                <Input style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-          </Row>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              label="City"
+              name="city"
+              labelCol={{ span: 6 }}
+              rules={[
+                {
+                  required: watchAccountType == 2, // biz user
+                  message: 'Please input your city!',
+                },
+              ]}
+            >
+              <Input style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="ZIP code"
+              name="zipCode"
+              labelCol={{ span: 6 }}
+              rules={[
+                {
+                  required: watchAccountType == 2, // biz user
+                  message: 'Please input your zipcode!',
+                },
+              ]}
+            >
+              <Input style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Row>
-            <Col span={12}>
-              <Form.Item name="email" label="Email" labelCol={{ span: 6 }}>
-                <Input disabled style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                labelCol={{ span: 6 }}
-                label="Country"
-                name="countryCode"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please select your country!',
-                  },
-                ]}
-              >
-                <Select
-                  style={{ width: '300px' }}
-                  showSearch
-                  placeholder="Type to search"
-                  optionFilterProp="children"
-                  filterOption={filterOption}
-                  options={countryList.map((c) => ({
-                    label: c.countryName,
-                    value: c.countryCode,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              label="Billing address"
+              labelCol={{ span: 6 }}
+              name="address"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please input your billing address!',
+                },
+              ]}
+            >
+              <Input.TextArea rows={4} style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Comapany name"
+              name="companyName"
+              labelCol={{ span: 6 }}
+              rules={[
+                {
+                  required: watchAccountType == 2, // biz user
+                  message: 'Please input your company name!',
+                },
+              ]}
+            >
+              <Input style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                label="City"
-                name="city"
-                labelCol={{ span: 6 }}
-                rules={[
-                  {
-                    required: watchAccountType == 2, // biz user
-                    message: 'Please input your city!',
-                  },
-                ]}
-              >
-                <Input style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Zipcode"
-                name="zipCode"
-                labelCol={{ span: 6 }}
-                rules={[
-                  {
-                    required: watchAccountType == 2, // biz user
-                    message: 'Please input your zipcode!',
-                  },
-                ]}
-              >
-                <Input style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-          </Row>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              label="VAT number"
+              name="vATNumber"
+              labelCol={{ span: 6 }}
+              rules={[
+                {
+                  required: watchAccountType == 2, // biz user
+                  message: 'Please input your VAT number!',
+                },
+              ]}
+            >
+              <Input style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="Phone number" name="phone" labelCol={{ span: 6 }}>
+              <Input style={{ width: '300px' }} />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                label="Billing address"
-                labelCol={{ span: 6 }}
-                name="address"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input your billing address!',
-                  },
-                ]}
-              >
-                <Input.TextArea rows={4} style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Comapany name"
-                name="companyName"
-                labelCol={{ span: 6 }}
-                rules={[
-                  {
-                    required: watchAccountType == 2, // biz user
-                    message: 'Please input your company name!',
-                  },
-                ]}
-              >
-                <Input style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                label="VAT number"
-                name="vATNumber"
-                labelCol={{ span: 6 }}
-              >
-                <Input style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Phone number"
-                name="phone"
-                labelCol={{ span: 6 }}
-              >
-                <Input style={{ width: '300px' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                label="Payment Method"
-                name="gatewayId"
-                labelCol={{ span: 6 }}
-              >
-                <PaymentSelector
-                  selected={gatewayId}
-                  onSelect={onGatewayChange}
-                  showWTtips={false}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              label="Payment Method"
+              name="gatewayId"
+              labelCol={{ span: 6 }}
+            >
+              <PaymentSelector
+                selected={gatewayId}
+                onSelect={onGatewayChange}
+                showWTtips={false}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <div
+              style={{
+                visibility: isCardPaymentSelected ? 'visible' : 'hidden',
+                position: 'relative',
+                display: 'flex',
+                maxWidth: '560px',
+                height: '100%',
+              }}
+            >
+              <div className="triangle-left" />
               <div
                 style={{
-                  visibility: isCardPaymentSelected ? 'visible' : 'hidden',
+                  left: '6px',
+                  width: '100%',
+                  borderRadius: '6px',
+                  padding: '16px',
+                  background: '#f5f5f5',
                   position: 'relative',
-                  display: 'flex',
-                  maxWidth: '560px',
-                  height: '100%',
+                  // border: '1px solid #eee',
                 }}
               >
-                <div className="triangle-left" />
-                <div
-                  style={{
-                    left: '6px',
-                    width: '100%',
-                    borderRadius: '6px',
-                    padding: '16px',
-                    background: '#f5f5f5',
-                    position: 'relative',
-                    // border: '1px solid #eee',
-                  }}
-                >
-                  <EditCard defaultPaymentId={profile?.paymentMethod} />
-                </div>
+                <EditCard defaultPaymentId={profile?.paymentMethod} />
               </div>
-            </Col>
-          </Row>
+            </div>
+          </Col>
+        </Row>
 
-          <Divider
-            orientation="left"
-            style={{ margin: '32px 0', color: '#757575' }}
-          >
-            Social Media Contact
-          </Divider>
-          {[
-            [
-              { label: 'Telegram', name: 'telegram' },
-              { label: 'WhatsApp', name: 'whatsAPP' },
-            ],
-            [
-              { label: 'WeChat', name: 'weChat' },
-              { label: 'LinkedIn', name: 'linkedIn' },
-            ],
-            [
-              { label: 'Facebook', name: 'facebook' },
-              { label: 'TikTok', name: 'tikTok' },
-            ],
-            [{ label: 'Other Social Info', name: 'otherSocialInfo' }],
-          ].map((s, idx) => (
-            <Row key={idx}>
-              <Col span={12}>
+        <Divider
+          orientation="left"
+          style={{ margin: '32px 0', color: '#757575' }}
+        >
+          Social Media Contact
+        </Divider>
+        {[
+          [
+            { label: 'Telegram', name: 'telegram' },
+            { label: 'WhatsApp', name: 'whatsAPP' },
+          ],
+          [
+            { label: 'WeChat', name: 'weChat' },
+            { label: 'LinkedIn', name: 'linkedIn' },
+          ],
+          [
+            { label: 'Facebook', name: 'facebook' },
+            { label: 'TikTok', name: 'tikTok' },
+          ],
+          [{ label: 'Other Social Info', name: 'otherSocialInfo' }],
+        ].map((s, idx) => (
+          <Row key={idx}>
+            <Col span={12}>
+              <Form.Item
+                label={s[0].label}
+                name={s[0].name}
+                labelCol={{ span: 6 }}
+              >
+                <Input style={{ width: '300px' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              {s[1] != null && (
                 <Form.Item
-                  label={s[0].label}
-                  name={s[0].name}
+                  label={s[1].label}
+                  name={s[1].name}
                   labelCol={{ span: 6 }}
                 >
                   <Input style={{ width: '300px' }} />
                 </Form.Item>
-              </Col>
-              <Col span={12}>
-                {s[1] != null && (
-                  <Form.Item
-                    label={s[1].label}
-                    name={s[1].name}
-                    labelCol={{ span: 6 }}
-                  >
-                    <Input style={{ width: '300px' }} />
-                  </Form.Item>
-                )}
-              </Col>
-            </Row>
-          ))}
+              )}
+            </Col>
+          </Row>
+        ))}
 
-          <div className="mx-8 my-8 flex justify-center">
-            <Button onClick={togglePasswordModal}>Change Password</Button>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <Button
-              type="primary"
-              onClick={form.submit}
-              disabled={loading}
-              loading={loading}
-            >
-              Save
-            </Button>
-          </div>
-        </Form>
-      )}
+        <div className="mx-8 my-8 flex justify-center">
+          <Button onClick={togglePasswordModal}>Change Password</Button>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <Button
+            type="primary"
+            onClick={form.submit}
+            disabled={loading}
+            loading={loading}
+          >
+            Save
+          </Button>
+        </div>
+      </Form>
     </div>
   );
 };
