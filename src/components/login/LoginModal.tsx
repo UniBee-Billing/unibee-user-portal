@@ -3,8 +3,6 @@ import { useSessionStore } from '../../stores';
 import LoginContainer from './loginContainer';
 
 const Index = ({ email }: { email: string }) => {
-  const session = useSessionStore();
-  console.log('sessin in password login modal: ', session);
   return (
     <Modal
       title="Session expired"

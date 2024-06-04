@@ -248,7 +248,7 @@ const Index = () => {
               rules={[
                 {
                   required: watchAccountType == 2, // biz user
-                  message: 'Please input your zipcode!',
+                  message: 'Please input your ZIP code!',
                 },
               ]}
             >

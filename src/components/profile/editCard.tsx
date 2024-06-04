@@ -38,17 +38,16 @@ const Index = ({ defaultPaymentId }: Props) => {
   // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false);
   const [cards, setCards] = useState<TCard[]>([]);
-  const [defaultPaymentMethodId, setDefaultPaymentMethod] =
-    useState(defaultPaymentId);
+  const [paymentId, setDefaultPaymentMethod] = useState(defaultPaymentId);
 
   // set default payment card for auto-billing
   const onConfirm = async () => {
-    if (defaultPaymentMethodId == undefined || defaultPaymentMethodId == '') {
+    if (paymentId == undefined || paymentId == '') {
       return;
     }
     setLoading(true);
     const [changePaymentMethodRes, err] = await changeGlobalPaymentMethodReq({
-      paymentMethodId: defaultPaymentMethodId,
+      paymentMethodId: paymentId,
     });
     setLoading(false);
     if (null != err) {
@@ -57,7 +56,6 @@ const Index = ({ defaultPaymentId }: Props) => {
     }
     console.log('changePaymentMethodRes: ', changePaymentMethodRes);
     message.success('Your auto payment card changed');
-    // refresh();
   };
 
   const addCard = async () => {
@@ -92,11 +90,8 @@ const Index = ({ defaultPaymentId }: Props) => {
   const onPaymentMethodChange: React.ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
+    console.log('evt: ', evt.target);
     setDefaultPaymentMethod(evt.target.value);
-  };
-
-  const onPaymentMethodChange2 = (methodId: string) => (evt: any) => {
-    setDefaultPaymentMethod(methodId);
   };
 
   const fetchCards = async () => {
@@ -115,12 +110,27 @@ const Index = ({ defaultPaymentId }: Props) => {
       expiredAt: m.data.expYear + '-' + m.data.expMonth,
     }));
     setCards(cards);
+    // there are cardA(default), B, and C, user clicked and selected B, but didn't click 'set as auto payment card'
+    // refresh the list, I have to reset A as default, otherwise, user might think B is the new default.
+    // setDefaultPaymentMethod(defaultPaymentId);
   };
+
+  // when current component get mounted, defaultPaymentId is undefined(parent's profile is also undefined)
+  // after parent profile is fetched from backend, defaultPaymentId is also passed here.
+  useEffect(() => {
+    setDefaultPaymentMethod(defaultPaymentId);
+  }, [defaultPaymentId]);
 
   useEffect(() => {
     fetchCards();
   }, []);
 
+  console.log(
+    'defaultPaymentId from parent/current: ',
+    defaultPaymentId,
+    '///',
+    paymentId,
+  );
   return (
     <div>
       <Row gutter={[16, 16]} style={{ fontWeight: 'bold', color: 'gray' }}>
@@ -157,7 +167,7 @@ const Index = ({ defaultPaymentId }: Props) => {
         ) : (
           cards.map((c) => (
             <Row
-              onClick={onPaymentMethodChange2(c.id)}
+              // onClick={onPaymentMethodChange2(c.id)}
               gutter={[16, 16]}
               key={c.id}
               style={{
@@ -165,7 +175,7 @@ const Index = ({ defaultPaymentId }: Props) => {
                 display: 'flex',
                 alignItems: 'center',
                 cursor: 'pointer',
-                fontWeight: defaultPaymentMethodId == c.id ? 'bold' : 'unset',
+                fontWeight: paymentId == c.id ? 'bold' : 'unset',
               }}
             >
               <Col span={4}>
@@ -173,25 +183,55 @@ const Index = ({ defaultPaymentId }: Props) => {
                   type="radio"
                   name="payment-methods"
                   id={c.id}
+                  style={{ width: '100%' }}
                   value={c.id}
-                  checked={defaultPaymentMethodId == c.id}
+                  checked={paymentId == c.id}
                   onChange={onPaymentMethodChange}
                 />
               </Col>
-              <Col span={4}>{c.brand}</Col>
-              <Col span={4}>{c.country}</Col>
-              <Col span={4}>{c.expiredAt}</Col>
-              <Col span={5}>{c.last4}</Col>
+              <Col span={4}>
+                <label
+                  className="inline-block w-full cursor-pointer"
+                  htmlFor={c.id}
+                >
+                  {c.brand}
+                </label>
+              </Col>
+              <Col span={4}>
+                <label
+                  className="inline-block w-full cursor-pointer"
+                  htmlFor={c.id}
+                >
+                  {c.country}
+                </label>
+              </Col>
+              <Col span={4}>
+                <label
+                  className="inline-block w-full cursor-pointer"
+                  htmlFor={c.id}
+                >
+                  {c.expiredAt}
+                </label>
+              </Col>
+              <Col span={5}>
+                <label
+                  className="inline-block w-full cursor-pointer"
+                  htmlFor={c.id}
+                >
+                  {c.last4}
+                </label>
+              </Col>
               <Col span={3}>
-                <div className="flex justify-start gap-2">
+                <div className="btn-delete-card-wrapper flex justify-start gap-2">
                   <Popconfirm
+                    className="btn-delete-card-wrapper"
                     title="Deletion Confirm"
-                    description="Are you sure to delete this card?"
+                    description={`Are you sure to delete this card ****${c.last4}?`}
                     onConfirm={() => removeCard(c.id)}
                     showCancel={false}
                     okText="Yes"
                   >
-                    <div className="  h-6 w-6 cursor-pointer">
+                    <div className="btn-delete-card-wrapper  h-6 w-6 cursor-pointer">
                       <MinusOutlined />
                     </div>
                   </Popconfirm>
@@ -207,11 +247,7 @@ const Index = ({ defaultPaymentId }: Props) => {
           onClick={onConfirm}
           loading={loading}
           // size="small"
-          disabled={
-            loading ||
-            defaultPaymentMethodId == '' ||
-            defaultPaymentMethodId == undefined
-          }
+          disabled={loading || paymentId == '' || paymentId == undefined}
         >
           Set as auto payment card
         </Button>
