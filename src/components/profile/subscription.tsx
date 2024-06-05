@@ -356,7 +356,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         closeModal={toggleResumeOrTerminateSubModal}
         refresh={refresh}
       />
-      {editCardModalOpen && (
+      {/* CardModalOpen && (
         <EditCardModal
           subscriptionId={subInfo.subscriptionId}
           currency={subInfo.currency}
@@ -364,7 +364,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           defaultPaymentId={subInfo.defaultPaymentMethodId}
           refresh={refresh}
         />
-      )}
+      ) */}
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
           Plan
@@ -608,7 +608,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           <Button onClick={() => navigate(`${APP_PATH}plans`)}>
             Change Plan
           </Button>
-          <Button onClick={toggleEditCardModal}>Edit payment method</Button>
+          {/* <Button onClick={toggleEditCardModal}>Edit payment method</Button> */}
           {subInfo.cancelAtPeriodEnd == 0 ? (
             <div className="flex items-center gap-3">
               <Button onClick={() => openModal('CANCEL')}>

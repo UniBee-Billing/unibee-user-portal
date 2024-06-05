@@ -66,7 +66,7 @@ const Index = () => {
           ''
         ) : (
           <div
-            className=" w-28 overflow-hidden overflow-ellipsis whitespace-nowrap text-blue-500"
+            className=" w-30 overflow-hidden overflow-ellipsis whitespace-nowrap text-blue-500"
             onClick={() => navigate(`${APP_PATH}invoice/${ivId}`)}
           >
             {ivId}
