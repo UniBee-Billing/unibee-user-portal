@@ -66,10 +66,6 @@ const PAYMENTS: {
   },
 };
 
-const Cards = [<VisaIcon />, <MastercardIcon />, <AmexIcon />];
-const Cryptos = [<BitcoinIcon />, <EthIcon />, <UsdtIcon />, <LitecoinIcon />];
-const WireTrasfer = [<WireIcon />];
-
 const Index = ({
   selected,
   onSelect,

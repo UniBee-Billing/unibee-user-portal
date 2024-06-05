@@ -349,7 +349,10 @@ const Index = () => {
                   // border: '1px solid #eee',
                 }}
               >
-                <EditCard defaultPaymentId={profile?.paymentMethod} />
+                <EditCard
+                  defaultPaymentId={profile?.paymentMethod}
+                  refresh={fetchData}
+                />
               </div>
             </div>
           </Col>

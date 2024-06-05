@@ -33,8 +33,9 @@ type TCard = {
 
 interface Props {
   defaultPaymentId: string | undefined;
+  refresh: () => void;
 }
-const Index = ({ defaultPaymentId }: Props) => {
+const Index = ({ defaultPaymentId, refresh }: Props) => {
   // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false);
   const [cards, setCards] = useState<TCard[]>([]);
@@ -68,12 +69,10 @@ const Index = ({ defaultPaymentId }: Props) => {
       message.error(err.message);
       return;
     }
-    console.log('payment method add res: ', addCardRes);
     window.open(addCardRes.url, '_blank');
   };
 
   const removeCard = async (paymentMethodId: string) => {
-    console.log('removing....', paymentMethodId);
     setLoading(true);
     const [res, err] = await removePaymentMethodReq({
       paymentMethodId,
@@ -83,14 +82,13 @@ const Index = ({ defaultPaymentId }: Props) => {
       setLoading(false);
       return;
     }
-    console.log('payment method remove res: ', res);
+    refresh();
     fetchCards();
   };
 
   const onPaymentMethodChange: React.ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
-    console.log('evt: ', evt.target);
     setDefaultPaymentMethod(evt.target.value);
   };
 
@@ -102,7 +100,6 @@ const Index = ({ defaultPaymentId }: Props) => {
       message.error(err.message);
       return;
     }
-    console.log('payment method list: ', methodList);
     const cards = methodList.map((m: any) => ({
       id: m.id,
       type: m.type,
@@ -110,27 +107,17 @@ const Index = ({ defaultPaymentId }: Props) => {
       expiredAt: m.data.expYear + '-' + m.data.expMonth,
     }));
     setCards(cards);
-    // there are cardA(default), B, and C, user clicked and selected B, but didn't click 'set as auto payment card'
-    // refresh the list, I have to reset A as default, otherwise, user might think B is the new default.
-    // setDefaultPaymentMethod(defaultPaymentId);
+    // there are cardA(default), B, and C, user clicked and selected B, but didn't click 'set as auto payment card', then refresh the list.
+    // I have to reset A as default, otherwise, user might think B is the new default.
+    if (defaultPaymentId != paymentId) {
+      setDefaultPaymentMethod(defaultPaymentId);
+    }
   };
-
-  // when current component get mounted, defaultPaymentId is undefined(parent's profile is also undefined)
-  // after parent profile is fetched from backend, defaultPaymentId is also passed here.
-  useEffect(() => {
-    setDefaultPaymentMethod(defaultPaymentId);
-  }, [defaultPaymentId]);
 
   useEffect(() => {
     fetchCards();
-  }, []);
+  }, [defaultPaymentId]);
 
-  console.log(
-    'defaultPaymentId from parent/current: ',
-    defaultPaymentId,
-    '///',
-    paymentId,
-  );
   return (
     <div>
       <Row gutter={[16, 16]} style={{ fontWeight: 'bold', color: 'gray' }}>
@@ -147,7 +134,7 @@ const Index = ({ defaultPaymentId }: Props) => {
               </span>
             </Tooltip>
             <Tooltip title="Refresh">
-              <span className=" ml-2 cursor-pointer" onClick={fetchCards}>
+              <span className=" ml-2 cursor-pointer" onClick={refresh}>
                 <SyncOutlined />
               </span>
             </Tooltip>
