@@ -4,7 +4,7 @@ import Table, { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { showAmount } from '../../helpers';
+import { formatDate, showAmount } from '../../helpers';
 import { getOnetimePaymentHistoryReq } from '../../requests';
 import { IOneTimeHistoryItem } from '../../shared.types';
 import { usePagination } from '../hooks';
@@ -44,13 +44,7 @@ const Index = () => {
       dataIndex: 'name',
       key: 'name',
     },
-    {
-      title: 'createTime',
-      dataIndex: 'createTime',
-      key: 'createTime',
-      render: (d) =>
-        d == 0 || d == null ? 'N/A' : dayjs(d * 1000).format('YYYY-MMM-DD'),
-    },
+
     {
       title: 'Status',
       dataIndex: 'status',
@@ -83,6 +77,12 @@ const Index = () => {
       title: 'Payment Id',
       dataIndex: 'paymentId',
       key: 'paymentId',
+    },
+    {
+      title: 'created at',
+      dataIndex: 'createTime',
+      key: 'createTime',
+      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
   ];
 

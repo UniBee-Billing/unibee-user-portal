@@ -713,7 +713,7 @@ const Index = ({
           onClick={onClose}
           disabled={loading || submitting}
         >
-          {wireConfirmStep ? "No I'll finish the transfer later" : 'Cancel'}
+          {wireConfirmStep ? "No, I'll finish the transfer later" : 'Cancel'}
         </Button>
         <div className="confirm-btn-wrapper">
           <Button
@@ -724,7 +724,7 @@ const Index = ({
             disabled={loading || submitting}
           >
             {wireConfirmStep
-              ? "Yes I've finished the transfer"
+              ? "Yes, I've finished the transfer"
               : discountChecking
                 ? 'Discount checking'
                 : vatChecking

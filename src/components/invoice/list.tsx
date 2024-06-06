@@ -21,7 +21,7 @@ import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CURRENCY, INVOICE_STATUS } from '../../constants';
-import { showAmount } from '../../helpers';
+import { formatDate, showAmount } from '../../helpers';
 import { downloadInvoice, getInvoiceListReq } from '../../requests';
 import '../../shared.css';
 import { UserInvoice } from '../../shared.types';
@@ -101,8 +101,7 @@ const Index = () => {
       title: 'Issue date',
       dataIndex: 'periodStart',
       key: 'periodStart',
-      render: (d, plan) =>
-        d == 0 ? '' : dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d, plan) => (d == 0 ? '' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
       sorter: (a, b) => a.periodStart - b.periodStart,
     },
     {

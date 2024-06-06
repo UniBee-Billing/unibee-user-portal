@@ -2,9 +2,9 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Col, Divider, Pagination, Popover, Row, Spin, message } from 'antd';
 import Table, { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import React, { CSSProperties, ReactElement, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { showAmount } from '../../helpers';
+import { formatDate, showAmount } from '../../helpers';
 import { getSubHistoryReq } from '../../requests';
 import { usePagination } from '../hooks';
 
@@ -33,15 +33,13 @@ const Index = () => {
       title: 'Start',
       dataIndex: 'periodStart',
       key: 'periodStart',
-      render: (d) =>
-        d == 0 || d == null ? 'N/A' : dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
     {
       title: 'End',
       dataIndex: 'periodEnd',
       key: 'periodEnd',
-      render: (d) =>
-        d == 0 || d == null ? 'N/A' : dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
     {
       title: 'Addons',
@@ -91,8 +89,7 @@ const Index = () => {
       title: 'Created at',
       dataIndex: 'createTime',
       key: 'createTime',
-      render: (d, _) =>
-        d === 0 ? 'N/A' : dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d, _) => (d === 0 ? 'N/A' : formatDate(d)), // (d * 1000).format('YYYY-MMM-DD'),
     },
     {
       title: 'Invoice Id',
