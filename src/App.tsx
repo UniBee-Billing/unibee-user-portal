@@ -26,10 +26,12 @@ import InvoiceList from './components/invoice/list';
 import Login from './components/login';
 import LoginModal from './components/login/LoginModal';
 import NotFound from './components/notFound';
+import OnetimePaymentResult from './components/onetimePaymentResult';
 import OutletPage from './components/outletPage';
 import PaymentList from './components/payment/list';
 import PaymentResult from './components/paymentResult';
-import ProductsUpdate from './components/productUpdate';
+// import ProductsUpdate from './components/productUpdate';
+import PlanList from './components/planList';
 import ProfileBasic from './components/profile/basicInfo';
 import ProfileSubscription from './components/profile/subscription';
 import SessionResult from './components/sessionResult';
@@ -187,6 +189,10 @@ const App: React.FC = () => {
               Component={PaymentResult}
             />
             <Route
+              path={`${APP_PATH}onetime-payment-result`}
+              Component={OnetimePaymentResult}
+            />
+            <Route
               path={`${APP_PATH}session-result`}
               Component={SessionResult}
             />
@@ -266,6 +272,10 @@ const App: React.FC = () => {
                     Component={PaymentResult}
                   />
                   <Route
+                    path={`${APP_PATH}onetime-payment-result`}
+                    Component={OnetimePaymentResult}
+                  />
+                  <Route
                     path={`${APP_PATH}add-payment-method-result`}
                     Component={AddPaymentMethodResult}
                   />
@@ -283,9 +293,9 @@ const App: React.FC = () => {
                   />
                   <Route
                     path={`${APP_PATH}plans/update`}
-                    Component={ProductsUpdate}
+                    Component={PlanList}
                   />
-                  <Route path={`${APP_PATH}plans`} Component={ProductsUpdate} />
+                  <Route path={`${APP_PATH}plans`} Component={PlanList} />
                   <Route path={`${APP_PATH}invoice`} Component={OutletPage}>
                     <Route path="list" element={<InvoiceList />} />
                     <Route path=":invoiceId" element={<InvoiceDetail />} />

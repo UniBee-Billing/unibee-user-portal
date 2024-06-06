@@ -1,18 +1,31 @@
-import { Button, Col, Form, InputNumber, Modal, Row, message } from 'antd';
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Row,
+  Select,
+  message,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showAmount } from '../../helpers';
-import { addonPaymentReq, getCountryList } from '../../requests';
+import {
+  addonPaymentReq,
+  getCountryList,
+  onetimePaymentReq,
+} from '../../requests';
 import { Country, IPlan, IProfile } from '../../shared.types';
 import { useAppConfigStore, useProfileStore } from '../../stores';
 import PaymentSelector from '../ui/paymentSelector';
 
 interface Props {
   plan: IPlan | undefined;
-  subscriptionId: string;
   closeModal: () => void;
 }
-const Index = ({ closeModal, plan, subscriptionId }: Props) => {
+const Index = ({ closeModal, plan }: Props) => {
   const appConfig = useAppConfigStore();
   const [form] = Form.useForm();
   const [countryList, setCountryList] = useState<Country[]>([]);
@@ -39,11 +52,11 @@ const Index = ({ closeModal, plan, subscriptionId }: Props) => {
     }
 
     setLoading(true);
-    const [paymentRes, err] = await addonPaymentReq({
-      addonId: plan!.id,
-      subscriptionId,
+    const [paymentRes, err] = await onetimePaymentReq({
+      planId: plan!.id,
       quantity,
-      returnUrl: `${window.location.origin}/payment-result`,
+      gatewayId,
+      returnUrl: `${window.location.origin}/onetime-payment-result`,
     });
     setLoading(false);
     if (null != err) {

@@ -311,14 +311,16 @@ const Index = () => {
       }
       {otpModalOpen && (
         <OTPModal
-          isOpen={otpModalOpen}
           closeModal={toggleOTP}
           plan={otpPlans.find((p) => p.id == otpPlanId)}
           subscriptionId={activeSub!.subscriptionId}
         />
       )}
 
-      <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
+      <div
+        style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}
+        className="flex flex-wrap gap-4 pb-5"
+      >
         {plans.length == 0 && !loading ? (
           <div className="flex w-full items-center justify-center">
             <Empty description="No plan" />

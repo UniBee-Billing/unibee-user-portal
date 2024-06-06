@@ -79,7 +79,7 @@ const Index = () => {
       key: 'paymentId',
     },
     {
-      title: 'created at',
+      title: 'Created at',
       dataIndex: 'createTime',
       key: 'createTime',
       render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),

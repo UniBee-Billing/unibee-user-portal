@@ -318,12 +318,12 @@ export const getActiveSubReq = async (refreshCb: () => void) => {
   }
 };
 
-export const getPlanList = async () => {
+export const getPlanList = async (type?: number[]) => {
   try {
     const res = await request.post(`/user/plan/list`, {
       page: 0,
       count: 100,
-      // type: 1,
+      type,
     });
     if (res.data.code == 61) {
       // session.setSession({ expired: true, refresh: null });
@@ -338,7 +338,7 @@ export const getPlanList = async () => {
 
 export const getActiveSubWithMore = async (refreshCb: () => void) => {
   const [[subscriptions, errSubDetail], [plans, errPlanList]] =
-    await Promise.all([getActiveSub(), getPlanList()]);
+    await Promise.all([getActiveSub(), getPlanList([1, 2])]);
   const err = errSubDetail || errPlanList;
   if (null != err) {
     if (err instanceof ExpiredError) {
@@ -675,6 +675,23 @@ export const checkPaymentReq = async (subscriptionId: string) => {
   }
 };
 
+// check one-time addon payment result
+export const checkOnetimePaymentReq = async (paymentId: string) => {
+  try {
+    const res = await request.get(
+      `/user/payment/detail?paymentId=${paymentId}`,
+    );
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null });
+      throw new Error('Session expired');
+    }
+    return [res.data.data.paymentDetail, null];
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error');
+    return [null, e];
+  }
+};
+
 export const checkSessionReq = async (sessionId: string) => {
   const body = { session: sessionId };
   try {
@@ -853,17 +870,19 @@ export const changeGlobalPaymentMethodReq = async ({
 
 // one-time-payment for addon, but the payment has nothing to do with subscription
 export const onetimePaymentReq = async ({
-  userId,
   gatewayId,
   planId,
+  quantity,
+  returnUrl,
 }: {
-  userId: number;
   gatewayId: number;
   planId: number;
+  quantity: number;
+  returnUrl: string;
 }) => {
-  const body = { userId, gatewayId, planId };
+  const body = { gatewayId, planId, quantity, returnUrl };
   try {
-    const res = await request.post(`/merchant/payment/new`, body);
+    const res = await request.post(`/user/payment/new`, body);
     if (res.data.code == 61) {
       // session.setSession({ expired: true, refresh: null });
       throw new ExpiredError('Session expired');
