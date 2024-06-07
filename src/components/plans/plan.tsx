@@ -2,7 +2,7 @@ import { Button, Checkbox, Input } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import React, { useEffect, useState } from 'react';
 import { CURRENCY } from '../../constants';
-import { showAmount } from '../../helpers';
+import { formatPlanPrice, showAmount } from '../../helpers';
 import { IPlan } from '../../shared.types';
 
 interface IPLanProps {
@@ -117,6 +117,10 @@ const Index = ({
     toggleOtpModal();
   };
 
+  // this is a main plan and has a addon array
+  const hasAddonInfo =
+    plan.type == 1 && plan.addons != null && plan.addons.length > 0;
+
   return (
     <div>
       <div className="flex h-8 items-center justify-center">
@@ -140,9 +144,9 @@ const Index = ({
         <div style={{ fontSize: '28px' }}>{plan.planName}</div>
         <div>{plan.description}</div>
 
-        {plan.addons && (
+        {hasAddonInfo && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {plan.addons.map((a) => (
+            {plan.addons!.map((a) => (
               <div
                 key={a.id}
                 style={{
@@ -189,15 +193,13 @@ const Index = ({
           </div>
         )}
 
-        <div style={{ fontSize: '14px' }}>{`${showAmount(
-          plan.amount,
-          plan.currency,
-        )}/${plan.intervalCount == 1 ? '' : plan.intervalCount}${
-          plan.intervalUnit
-        }`}</div>
+        <div style={{ fontSize: '14px' }}>
+          {hasAddonInfo && formatPlanPrice(plan)}
+        </div>
         <div style={{ fontSize: '24px' }}>
+          {/* this is the total price(plan + addon * quantity) */}
           Total:&nbsp;
-          {`${showAmount(totalAmount, plan.currency)}/${
+          {`${showAmount(totalAmount, plan.currency)} ${plan.type != 3 ? '/' : ''}${
             plan.intervalCount == 1 ? '' : plan.intervalCount
           }${plan.intervalUnit}`}
         </div>

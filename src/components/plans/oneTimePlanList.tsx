@@ -156,7 +156,7 @@ const Index = () => {
 
       <div
         style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}
-        className="flex flex-wrap gap-4 pb-5"
+        className="flex flex-wrap gap-6 pb-5"
       >
         {' '}
         {plans.length == 0 && !loading ? (
@@ -192,7 +192,7 @@ const Index = () => {
             onClick={onPlanConfirm}
             disabled={selectedPlan == null}
           >
-            Confirm
+            Buy
           </Button>
         )}
       </div>

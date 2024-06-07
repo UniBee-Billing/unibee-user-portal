@@ -33,6 +33,8 @@ const Index = () => {
     },
   ];
 
+  // it's better to fetch all plans in this component, then pass them to 2 children
+  // maybe later
   return (
     <div>
       <Tabs activeKey={activeTab} items={tabItems} onChange={onChange} />

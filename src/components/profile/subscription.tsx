@@ -5,7 +5,17 @@ import {
   MinusOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
-import { Button, Col, Divider, Empty, Popover, Row, Spin, message } from 'antd';
+import {
+  Button,
+  Col,
+  Divider,
+  Empty,
+  Popover,
+  Row,
+  Spin,
+  Tooltip,
+  message,
+} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { CSSProperties, useEffect, useState } from 'react';
@@ -356,15 +366,6 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         closeModal={toggleResumeOrTerminateSubModal}
         refresh={refresh}
       />
-      {/* CardModalOpen && (
-        <EditCardModal
-          subscriptionId={subInfo.subscriptionId}
-          currency={subInfo.currency}
-          closeModal={toggleEditCardModal}
-          defaultPaymentId={subInfo.defaultPaymentMethodId}
-          refresh={refresh}
-        />
-      ) */}
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
           Plan
@@ -385,7 +386,9 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
             style={{ cursor: 'pointer', marginLeft: '8px' }}
             onClick={refresh}
           >
-            <SyncOutlined />
+            <Tooltip title="Refresh">
+              <SyncOutlined />
+            </Tooltip>
           </span>
         </Col>
         <Col span={4} style={colStyle}>
