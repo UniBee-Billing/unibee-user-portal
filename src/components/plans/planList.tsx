@@ -3,9 +3,9 @@ import type { TabsProps } from 'antd';
 import { Tabs } from 'antd';
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useProfileStore } from '../stores';
-import OnetimePlanList from './oneTimeProductList';
-import MainPlanList from './productUpdate';
+import { useProfileStore } from '../../stores';
+import MainPlanList from './mainPlanList';
+import OnetimePlanList from './oneTimePlanList';
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();

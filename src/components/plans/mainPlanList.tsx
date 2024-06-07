@@ -2,16 +2,16 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd';
 import update from 'immutability-helper';
 import React, { useEffect, useRef, useState } from 'react';
-import { showAmount } from '../helpers';
-import { getActiveSubWithMore, getCountryList } from '../requests';
-import { Country, IPlan, ISubscription } from '../shared.types';
-import { useAppConfigStore, useProfileStore } from '../stores';
-import OTPBuyListModal from './modals/addonBuyListModal';
-import BillingAddressModal from './modals/billingAddressModal';
-import CancelSubModal from './modals/modalCancelPendingSub';
-import CreateSubModal from './modals/modalCreateSub';
-import UpdatePlanModal from './modals/modalUpdateSub';
-import OTPModal from './modals/onetimePaymentModal';
+import { showAmount } from '../../helpers';
+import { getActiveSubWithMore, getCountryList } from '../../requests';
+import { Country, IPlan, ISubscription } from '../../shared.types';
+import { useAppConfigStore, useProfileStore } from '../../stores';
+import OTPBuyListModal from '../modals/addonBuyListModal';
+import BillingAddressModal from '../modals/billingAddressModal';
+import CancelSubModal from '../modals/modalCancelPendingSub';
+import CreateSubModal from '../modals/modalCreateSub';
+import UpdatePlanModal from '../modals/modalUpdateSub';
+import OTPModal from '../modals/onetimePaymentModal';
 import Plan from './plan';
 
 const Index = () => {

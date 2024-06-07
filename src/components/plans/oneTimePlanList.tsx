@@ -2,16 +2,20 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd';
 import update from 'immutability-helper';
 import React, { useEffect, useRef, useState } from 'react';
-import { showAmount } from '../helpers';
-import { getActiveSubWithMore, getCountryList, getPlanList } from '../requests';
-import { Country, IPlan, ISubscription } from '../shared.types';
-import { useAppConfigStore, useProfileStore } from '../stores';
-import OTPBuyListModal from './modals/addonBuyListModal';
-import BillingAddressModal from './modals/billingAddressModal';
-import CancelSubModal from './modals/modalCancelPendingSub';
-import CreateSubModal from './modals/modalCreateSub';
-import UpdatePlanModal from './modals/modalUpdateSub';
-import OTPModal from './modals/onetimePaymentModal2';
+import { showAmount } from '../../helpers';
+import {
+  getActiveSubWithMore,
+  getCountryList,
+  getPlanList,
+} from '../../requests';
+import { Country, IPlan, ISubscription } from '../../shared.types';
+import { useAppConfigStore, useProfileStore } from '../../stores';
+import OTPBuyListModal from '../modals/addonBuyListModal';
+import BillingAddressModal from '../modals/billingAddressModal';
+import CancelSubModal from '../modals/modalCancelPendingSub';
+import CreateSubModal from '../modals/modalCreateSub';
+import UpdatePlanModal from '../modals/modalUpdateSub';
+import OTPModal from '../modals/onetimePaymentModal2';
 import Plan from './plan';
 
 const Index = () => {
@@ -33,11 +37,6 @@ const Index = () => {
   const toggleOTP = () => setOtpModalOpen(!otpModalOpen);
   const [otpPlanId, setOtpPlanId] = useState<null | number>(null); // the one-time-payment addon user want to buy
 
-  // new user has choosen a sub plan, but haven't paid yet, before the payment due day, they can still cancel it
-  // this modal is for this purpose only.
-  // It's not the same as 'terminate an active sub'.
-  const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
-
   const [buyRecordModalOpen, setBuyRecordModalOpen] = useState(false);
   const toggleBuyRecordModal = () => setBuyRecordModalOpen(!buyRecordModalOpen);
 
@@ -45,8 +44,6 @@ const Index = () => {
   const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen); // Modal for update plan
   const toggleBillingModal = () =>
     setBillingAddressModalOpen(!billingAddressModalOpen);
-
-  const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen);
 
   const onAddonChange = (
     addonId: number,
@@ -80,7 +77,6 @@ const Index = () => {
   };
 
   const onPlanConfirm = async () => {
-    console.log('selected addonId: ', selectedPlan);
     if (profileStore.countryCode == '' || profileStore.countryCode == null) {
       toggleBillingModal();
       return;

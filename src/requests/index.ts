@@ -338,7 +338,7 @@ export const getPlanList = async (type?: number[]) => {
 
 export const getActiveSubWithMore = async (refreshCb: () => void) => {
   const [[subscriptions, errSubDetail], [plans, errPlanList]] =
-    await Promise.all([getActiveSub(), getPlanList([1, 2])]);
+    await Promise.all([getActiveSub(), getPlanList()]);
   const err = errSubDetail || errPlanList;
   if (null != err) {
     if (err instanceof ExpiredError) {
@@ -517,7 +517,6 @@ export const getSubHistoryReq = async ({
 };
 
 // one-time payment history
-// https://api.unibee.top/user/payment/item/list
 export const getOnetimePaymentHistoryReq = async ({
   page,
   count,

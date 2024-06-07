@@ -1,9 +1,9 @@
 import { Button, Checkbox, Input } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import React, { useEffect, useState } from 'react';
-import { CURRENCY } from '../constants';
-import { showAmount } from '../helpers';
-import { IPlan } from '../shared.types';
+import { CURRENCY } from '../../constants';
+import { showAmount } from '../../helpers';
+import { IPlan } from '../../shared.types';
 
 interface IPLanProps {
   plan: IPlan;
@@ -112,6 +112,7 @@ const Index = ({
   // console.log('plan detail: ', plan);
 
   const onOtpClick = (planId: number) => () => {
+    console.log('plan addon clicked: ', planId);
     setOtpPlanId(planId);
     toggleOtpModal();
   };

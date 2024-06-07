@@ -31,7 +31,7 @@ import OutletPage from './components/outletPage';
 import PaymentList from './components/payment/list';
 import PaymentResult from './components/paymentResult';
 // import ProductsUpdate from './components/productUpdate';
-import PlanList from './components/planList';
+import PlanList from './components/plans/planList';
 import ProfileBasic from './components/profile/basicInfo';
 import ProfileSubscription from './components/profile/subscription';
 import SessionResult from './components/sessionResult';

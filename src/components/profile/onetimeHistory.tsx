@@ -44,7 +44,11 @@ const Index = () => {
       dataIndex: 'name',
       key: 'name',
     },
-
+    {
+      title: 'Quantity',
+      dataIndex: 'quantity',
+      key: 'quantity',
+    },
     {
       title: 'Status',
       dataIndex: 'status',
@@ -101,7 +105,7 @@ const Index = () => {
       <Table
         columns={columns}
         dataSource={onetimeHistory}
-        rowKey={'uniqueId'}
+        rowKey={'id'}
         rowClassName="clickable-tbl-row"
         pagination={false}
         // scroll={{ x: true, y: 640 }}
