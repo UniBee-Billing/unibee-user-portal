@@ -167,12 +167,13 @@ const Index = () => {
           <Form.Item
             label="VAT number"
             name="vATNumber"
-            rules={[
+            /* rules={[
               {
                 required: true,
                 message: 'Please input your VAT number!',
               },
             ]}
+            */
           >
             <Input />
           </Form.Item>

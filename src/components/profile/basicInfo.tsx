@@ -296,12 +296,12 @@ const Index = () => {
               label="VAT number"
               name="vATNumber"
               labelCol={{ span: 6 }}
-              rules={[
+              /* rules={[
                 {
                   required: watchAccountType == 2, // biz user
                   message: 'Please input your VAT number!',
                 },
-              ]}
+              ]} */
             >
               <Input style={{ width: '300px' }} />
             </Form.Item>
