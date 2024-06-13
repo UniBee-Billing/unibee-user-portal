@@ -66,7 +66,6 @@ const Index = ({
   );
   const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setGatewayId(Number(e.target.value));
-    createPreview();
   };
 
   // is wire-transfer selected? Yes, then extra step is needed
@@ -375,7 +374,7 @@ const Index = ({
 
   useEffect(() => {
     createPreview();
-  }, [selectedCountry]);
+  }, [selectedCountry, gatewayId]);
 
   // console.log('discount/vat checking: ', discountChecking, '//', vatChecking);
   return (
