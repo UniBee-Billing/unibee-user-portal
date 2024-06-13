@@ -3,6 +3,7 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import {
   CURRENCY,
   DISCOUNT_CODE_STATUS,
+  INVOICE_STATUS,
   PAYMENT_STATUS,
   SUBSCRIPTION_STATUS,
 } from '../../constants';
@@ -16,6 +17,21 @@ const SUB_STATUS: { [key: number]: ReactElement } = {
   8: <Tag color="blue">{SUBSCRIPTION_STATUS[8]}</Tag>, // 7: Incomplete
 };
 const SubscriptionStatus = (statusId: number) => SUB_STATUS[statusId];
+
+const IV_STATUS: { [key: number]: ReactElement } = {
+  0: <span>Initiating</span>, // this status only exist for a very short period, users/admin won't even know it exist
+  1: <Tag color="magenta">{INVOICE_STATUS[1]}</Tag>, // 1: pending
+  2: <Tag color="blue">{INVOICE_STATUS[2]}</Tag>, // 2: processing
+  3: <Tag color="#87d068">{INVOICE_STATUS[3]}</Tag>, // 3: paid
+  4: <Tag color="red">{INVOICE_STATUS[4]}</Tag>, // 4: failed
+  5: <Tag color="purple">{INVOICE_STATUS[5]}</Tag>, // 5: cancellled
+};
+const InvoiceStatus = (statusId: number, isRefund?: boolean) =>
+  statusId == 3 && isRefund ? ( // status == 3 means invoice Paid, for refund invoice, description should be Refunded
+    <Tag color="#87d068">Refunded</Tag>
+  ) : (
+    IV_STATUS[statusId]
+  );
 
 const PAYMENT_STATUS_TAG: { [key: number]: ReactElement } = {
   0: <Tag color="blue">{PAYMENT_STATUS[0]}</Tag>, // pending
@@ -33,4 +49,4 @@ const DISCOUNT_CODE_STATUS_TAG: { [key: number]: ReactElement } = {
 const DiscountCodeStatus = (statusId: number) =>
   DISCOUNT_CODE_STATUS_TAG[statusId];
 
-export { DiscountCodeStatus, PaymentStatus, SubscriptionStatus };
+export { DiscountCodeStatus, InvoiceStatus, PaymentStatus, SubscriptionStatus };

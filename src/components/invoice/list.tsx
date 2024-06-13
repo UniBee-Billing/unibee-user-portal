@@ -27,6 +27,7 @@ import '../../shared.css';
 import { UserInvoice } from '../../shared.types';
 import { usePagination } from '../hooks';
 import RefundModal from '../payment/refundModal';
+import { InvoiceStatus } from '../ui/statusTag';
 import PreviewModal from './invoicePreviewModal';
 
 const PAGE_SIZE = 10;
@@ -53,7 +54,7 @@ const Index = () => {
 
   const columns: ColumnsType<UserInvoice> = [
     {
-      title: 'Invoice Id',
+      title: 'Id',
       dataIndex: 'invoiceId',
       key: 'invoiceId',
     },
@@ -75,17 +76,15 @@ const Index = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (s, iv) => (
-        <span>{INVOICE_STATUS[s as keyof typeof INVOICE_STATUS]}</span>
-      ),
+      render: (s, iv) => InvoiceStatus(s, iv.refund != null),
     },
     {
-      title: 'Is refund',
+      title: 'Document Type',
       dataIndex: 'refund',
       key: 'refund',
       render: (refund, iv) =>
         refund == null ? (
-          'No'
+          'Invoice'
         ) : (
           <Button
             type="link"
@@ -93,7 +92,7 @@ const Index = () => {
             className="btn-refund-modal-wrapper"
             style={{ padding: 0 }}
           >
-            Yes
+            Credit Note
           </Button>
         ),
     },
@@ -101,8 +100,13 @@ const Index = () => {
       title: 'Issue date',
       dataIndex: 'periodStart',
       key: 'periodStart',
-      render: (d, plan) => (d == 0 ? '' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
-      sorter: (a, b) => a.periodStart - b.periodStart,
+      render: (d, iv) =>
+        iv.refund == null
+          ? d == 0
+            ? ''
+            : formatDate(d)
+          : formatDate(iv.refund.refundTime), // dayjs(d * 1000).format('YYYY-MMM-DD'),
+      // sorter: (a, b) => a.periodStart - b.periodStart,
     },
     {
       /*

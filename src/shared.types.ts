@@ -30,6 +30,7 @@ type TGateway = {
   gatewayId?: number;
   gatewayKey?: string;
   gatewayName: 'paypal' | 'changelly' | 'stripe' | 'wire_transfer';
+  displayName: string;
   // gatewayLogo: string
   gatewayType?: number;
   webhookEndpointUrl: string;
@@ -63,20 +64,7 @@ interface IAppConfig {
   isProd: boolean;
   supportTimeZone: string[];
   supportCurrency: { Currency: string; Symbol: string; Scale: number }[];
-  gateway: {
-    gatewayId: number;
-    gatewayName: string;
-    gatewayLogo: string;
-    gatewayType: number;
-    minimumAmount?: number;
-    currency?: string;
-    bank?: {
-      accountHolder: string;
-      address: string;
-      bic: string;
-      iban: string;
-    };
-  }[];
+  gateway: TGateway[];
 }
 
 type Country = {
@@ -224,7 +212,7 @@ interface UserInvoice {
   data: string;
   isDeleted: number;
   link: string;
-  gateway: { gatewayId: number; gatewayName: string };
+  gateway: TGateway;
   gatewayId: number;
   gatewayStatus: string;
   gatewayPaymentId: string;

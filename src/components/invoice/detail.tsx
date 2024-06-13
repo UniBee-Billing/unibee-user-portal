@@ -8,6 +8,7 @@ import { getInvoiceDetailReq } from '../../requests';
 import { IProfile, UserInvoice } from '../../shared.types';
 import { useProfileStore } from '../../stores';
 import InvoiceItemDetailModal from '../modals/invoiceDetailModal';
+import { InvoiceStatus } from '../ui/statusTag';
 // import InvoiceItemsModal from './invoiceModal'; // to be revmoed, not used anymore
 
 const APP_PATH = import.meta.env.BASE_URL; // if not specified in build command, default is /
@@ -100,7 +101,9 @@ const Index = () => {
           Status
         </Col>
         <Col span={6}>
-          {invoiceDetail == null ? '' : INVOICE_STATUS[invoiceDetail.status]}
+          {invoiceDetail == null
+            ? ''
+            : InvoiceStatus(invoiceDetail.status, invoiceDetail.refund != null)}
         </Col>
       </Row>
       <Row style={rowStyle} gutter={[16, 16]}>
@@ -127,7 +130,7 @@ const Index = () => {
         <Col span={4} style={colStyle}>
           Payment Gateway
         </Col>
-        <Col span={6}>{invoiceDetail?.gateway.gatewayName}</Col>
+        <Col span={6}>{invoiceDetail?.gateway.displayName}</Col>
         {/* <Col span={4} style={colStyle}>
           User Id
         </Col>
@@ -163,9 +166,7 @@ const Index = () => {
         </object>
       )}
       <div className="m-8 flex justify-center">
-        <Button type="primary" onClick={goBack}>
-          Go Back
-        </Button>
+        <Button onClick={goBack}>Go Back</Button>
       </div>
     </div>
   );
