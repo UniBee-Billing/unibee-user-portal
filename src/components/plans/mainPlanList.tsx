@@ -319,7 +319,7 @@ const Index = () => {
 
       <div
         style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}
-        className="flex flex-wrap gap-6 pb-5"
+        className="flex flex-wrap gap-6 pb-5 pl-4"
       >
         {plans.length == 0 && !loading ? (
           <div className="flex w-full items-center justify-center">

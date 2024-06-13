@@ -2,6 +2,7 @@ import {
   DownloadOutlined,
   EyeOutlined,
   LoadingOutlined,
+  SyncOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -14,10 +15,10 @@ import {
   Select,
   Space,
   Table,
+  Tooltip,
   message,
 } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CURRENCY, INVOICE_STATUS } from '../../constants';
@@ -37,7 +38,6 @@ const Index = () => {
   const { page, onPageChange } = usePagination();
   const [total, setTotal] = useState(0);
   const navigate = useNavigate();
-  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [invoiceList, setInvoiceList] = useState<UserInvoice[]>([]);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
@@ -50,6 +50,25 @@ const Index = () => {
   const openPreview = (ivLink: string) => {
     setPreviewLink(ivLink);
     togglePreviewModal();
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    const [res, err] = await getInvoiceListReq(
+      {
+        page,
+        count: PAGE_SIZE,
+      },
+      fetchData,
+    );
+    setLoading(false);
+    if (null != err) {
+      message.error(err.message);
+      return;
+    }
+    const { invoices, total } = res;
+    setInvoiceList(invoices ?? []);
+    setTotal(total);
   };
 
   const columns: ColumnsType<UserInvoice> = [
@@ -119,76 +138,48 @@ const Index = () => {
 */
     },
     {
-      title: 'Actions',
+      title: (
+        <>
+          <span>Actions</span>
+          <Tooltip title="Refresh">
+            <Button
+              size="small"
+              style={{ marginLeft: '8px' }}
+              disabled={loading}
+              onClick={fetchData}
+              icon={<SyncOutlined />}
+            ></Button>
+          </Tooltip>
+        </>
+      ),
       dataIndex: 'actions',
       key: 'actions',
       render: (_, iv) => (
         <Space size="middle">
           <span className="btn-preview-download-iv">
-            <Button
-              className="btn-preview-download-iv"
-              disabled={iv.sendPdf == '' || iv.sendPdf == null}
-              onClick={() => openPreview(iv.sendPdf)}
-              icon={<EyeOutlined />}
-            ></Button>
+            <Tooltip title="Preview">
+              <Button
+                className="btn-preview-download-iv"
+                disabled={iv.sendPdf == '' || iv.sendPdf == null}
+                onClick={() => openPreview(iv.sendPdf)}
+                icon={<EyeOutlined />}
+              ></Button>
+            </Tooltip>
           </span>
           <span className="btn-preview-download-iv">
-            <Button
-              className="btn-preview-download-iv"
-              disabled={iv.sendPdf == '' || iv.sendPdf == null}
-              onClick={() => downloadInvoice(iv.sendPdf)}
-              icon={<DownloadOutlined />}
-            ></Button>
+            <Tooltip title="Download">
+              <Button
+                className="btn-preview-download-iv"
+                disabled={iv.sendPdf == '' || iv.sendPdf == null}
+                onClick={() => downloadInvoice(iv.sendPdf)}
+                icon={<DownloadOutlined />}
+              ></Button>
+            </Tooltip>
           </span>
         </Space>
       ),
     },
   ];
-
-  const fetchData = async () => {
-    /*
-    const searchTerm = form.getFieldsValue();
-    let amtFrom = searchTerm.amountStart,
-      amtTo = searchTerm.amountEnd;
-    if (amtFrom != '' && amtFrom != null) {
-      amtFrom = Number(amtFrom) * CURRENCY[searchTerm.currency].stripe_factor;
-    }
-    if (amtTo != '' && amtTo != null) {
-      amtTo = Number(amtTo) * CURRENCY[searchTerm.currency].stripe_factor;
-    }
-    if (isNaN(amtFrom) || amtFrom < 0) {
-      message.error('Invalid amount-from value.');
-      return;
-    }
-    if (isNaN(amtTo) || amtTo < 0) {
-      message.error('Invalid amount-to value');
-      return;
-    }
-    if (amtFrom > amtTo) {
-      message.error('Amount-from must be less than or equal to amount-to');
-      return;
-    }
-    searchTerm.amountStart = amtFrom;
-    searchTerm.amountEnd = amtTo;
-    */
-    setLoading(true);
-    const [res, err] = await getInvoiceListReq(
-      {
-        page,
-        count: PAGE_SIZE,
-        // ...searchTerm,
-      },
-      fetchData,
-    );
-    setLoading(false);
-    if (null != err) {
-      message.error(err.message);
-      return;
-    }
-    const { invoices, total } = res;
-    setInvoiceList(invoices ?? []);
-    setTotal(total);
-  };
 
   useEffect(() => {
     fetchData();
@@ -196,7 +187,6 @@ const Index = () => {
 
   return (
     <div>
-      {/* <Search form={form} goSearch={fetchData} searching={loading} /> */}
       {previewModalOpen && (
         <PreviewModal closeModal={togglePreviewModal} ivLink={previewLink} />
       )}

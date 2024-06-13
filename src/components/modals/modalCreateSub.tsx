@@ -29,12 +29,6 @@ import './modalCreateSub.css';
 
 const APP_PATH = import.meta.env.BASE_URL;
 
-type TVATDetail = {
-  companyAddress: string;
-  companyName: string;
-  countryCode: string;
-};
-
 interface Props {
   plan: IPlan;
   countryList: Country[];
@@ -72,9 +66,10 @@ const Index = ({
   );
   const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setGatewayId(Number(e.target.value));
+    createPreview();
   };
 
-  // is wire transfer selected. Yes, then need extra step is needed
+  // is wire-transfer selected? Yes, then extra step is needed
   const [wireConfirmStep, setWireConfirmStep] = useState(false);
   const wireSetup = appConfig.gateway.find(
     (g) => g.gatewayName == 'wire_transfer',
