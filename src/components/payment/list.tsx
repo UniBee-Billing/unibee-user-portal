@@ -116,7 +116,7 @@ const Index = () => {
       title: 'Created at',
       dataIndex: 'createTime',
       key: 'createTime',
-      render: (d) => formatDate(d), // (d * 1000).format('YYYY-MMM-DD'),
+      render: (d) => formatDate(d, true), // (d * 1000).format('YYYY-MMM-DD'),
     },
   ];
 
@@ -157,6 +157,7 @@ const Index = () => {
       <Table
         columns={columns}
         dataSource={paymentList}
+        scroll={{ x: 1620 }}
         rowKey={'id'}
         rowClassName="clickable-tbl-row"
         pagination={false}

@@ -30,6 +30,13 @@ export const SUBSCRIPTION_STATUS: { [key: number]: string } = {
   8: 'Processing', // you claimed you've finished the payment, but admin need to verify it.
 };
 
+export const SUBSCRIPTION_HISTORY_STATUS: { [key: number]: string } = {
+  1: 'Processing',
+  2: 'Finished',
+  3: 'Cancelled',
+  4: 'Expired',
+};
+
 export const GATEWAY_TYPE: { [key: number]: string } = {
   1: 'Card',
   2: 'Crypto',

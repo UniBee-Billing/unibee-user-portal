@@ -9,6 +9,7 @@ import { getSubHistoryReq } from '../../requests';
 import { usePagination } from '../hooks';
 
 import { ISubHistoryItem } from '../../shared.types.ts';
+import { SubHistoryStatus, SubscriptionStatus } from '../ui/statusTag.tsx';
 // import { SubscriptionStatus } from '../ui/statusTag';
 
 const PAGE_SIZE = 10;
@@ -23,23 +24,30 @@ const Index = () => {
 
   const columns: ColumnsType<ISubHistoryItem> = [
     {
-      title: 'Item name',
+      title: 'Item Name',
       dataIndex: 'itemName',
       key: 'itemName',
+      width: 180,
       render: (_, record) =>
         record.plan == null ? null : record.plan.planName,
     },
     {
-      title: 'Start',
+      title: 'Start Time',
       dataIndex: 'periodStart',
       key: 'periodStart',
-      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d) => (d == 0 || d == null ? '―' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
     {
-      title: 'End',
+      title: 'End Time',
       dataIndex: 'periodEnd',
       key: 'periodEnd',
-      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d) => (d == 0 || d == null ? '―' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (s) => SubHistoryStatus(s),
     },
     {
       title: 'Addons',
@@ -47,7 +55,7 @@ const Index = () => {
       key: 'addons',
       render: (addons) =>
         addons == null ? (
-          'N/A'
+          '―'
         ) : (
           <Popover
             placement="top"
@@ -89,7 +97,7 @@ const Index = () => {
       title: 'Created at',
       dataIndex: 'createTime',
       key: 'createTime',
-      render: (d, _) => (d === 0 ? 'N/A' : formatDate(d)), // (d * 1000).format('YYYY-MMM-DD'),
+      render: (d, _) => (d === 0 ? '―' : formatDate(d, true)),
     },
     {
       title: 'Invoice Id',
@@ -109,6 +117,7 @@ const Index = () => {
         ),
       // render: (status, _) => UserStatus(status)
     },
+    { title: 'Payment Id', dataIndex: 'paymentId', key: 'paymentId' },
   ];
 
   const getSubHistory = async () => {
@@ -146,7 +155,7 @@ const Index = () => {
         rowKey={'uniqueId'}
         rowClassName="clickable-tbl-row"
         pagination={false}
-        // scroll={{ x: true, y: 640 }}
+        scroll={{ x: 1280 }}
         onRow={(record, rowIndex) => {
           return {
             onClick: (event) => {},

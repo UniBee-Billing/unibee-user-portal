@@ -40,9 +40,15 @@ const Index = () => {
 
   const columns: ColumnsType<IOneTimeHistoryItem> = [
     {
-      title: 'Item name',
+      title: 'Item Name',
       dataIndex: 'name',
       key: 'name',
+    },
+    {
+      title: 'Purchase Time',
+      dataIndex: 'createTime',
+      key: 'createTime',
+      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
     {
       title: 'Quantity',
@@ -72,21 +78,9 @@ const Index = () => {
         ),
     },
     {
-      title: 'Subscription Id',
-      dataIndex: 'subscriptionId',
-      key: 'subscriptionId',
-      width: 140,
-    },
-    {
       title: 'Payment Id',
       dataIndex: 'paymentId',
       key: 'paymentId',
-    },
-    {
-      title: 'Created at',
-      dataIndex: 'createTime',
-      key: 'createTime',
-      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
   ];
 

@@ -372,6 +372,7 @@ const Index = ({
     }
   };
 
+  // payment method change will cause VAT re-calclulation
   useEffect(() => {
     createPreview();
   }, [selectedCountry, gatewayId]);
