@@ -1,128 +1,128 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd';
-import update from 'immutability-helper';
-import React, { useEffect, useRef, useState } from 'react';
-import { showAmount } from '../../helpers';
+import { LoadingOutlined } from '@ant-design/icons'
+import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd'
+import update from 'immutability-helper'
+import React, { useEffect, useRef, useState } from 'react'
+import { showAmount } from '../../helpers'
 import {
   getActiveSubWithMore,
   getCountryList,
-  getPlanList,
-} from '../../requests';
-import { Country, IPlan, ISubscription } from '../../shared.types';
-import { useAppConfigStore, useProfileStore } from '../../stores';
-import OTPBuyListModal from '../modals/addonBuyListModal';
-import BillingAddressModal from '../modals/billingAddressModal';
-import CancelSubModal from '../modals/modalCancelPendingSub';
-import CreateSubModal from '../modals/modalCreateSub';
-import UpdatePlanModal from '../modals/modalUpdateSub';
-import OTPModal from '../modals/onetimePaymentModal2';
-import Plan from './plan';
+  getPlanList
+} from '../../requests'
+import { Country, IPlan, ISubscription } from '../../shared.types'
+import { useAppConfigStore, useProfileStore } from '../../stores'
+import OTPBuyListModal from '../modals/addonBuyListModal'
+import BillingAddressModal from '../modals/billingAddressModal'
+import CancelSubModal from '../modals/modalCancelPendingSub'
+import CreateSubModal from '../modals/modalCreateSub'
+import UpdatePlanModal from '../modals/modalUpdateSub'
+import OTPModal from '../modals/onetimePaymentModal2'
+import Plan from './plan'
 
 const Index = () => {
-  const profileStore = useProfileStore();
+  const profileStore = useProfileStore()
   // const appConfigStore = useAppConfigStore();
-  const [plans, setPlans] = useState<IPlan[]>([]);
-  const [otpPlans, setOtpPlans] = useState<IPlan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // selected planId, null: not selected
-  const [countryList, setCountryList] = useState<Country[]>([]);
-  const [createModalOpen, setCreateModalOpen] = useState(false); // create subscription Modal
-  const [updateModalOpen, setUpdateModalOpen] = useState(false); // update subscription Modal
-  const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState<IPlan[]>([])
+  const [otpPlans, setOtpPlans] = useState<IPlan[]>([])
+  const [selectedPlan, setSelectedPlan] = useState<null | number>(null) // selected planId, null: not selected
+  const [countryList, setCountryList] = useState<Country[]>([])
+  const [createModalOpen, setCreateModalOpen] = useState(false) // create subscription Modal
+  const [updateModalOpen, setUpdateModalOpen] = useState(false) // update subscription Modal
+  const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
   // const [terminateModal, setTerminateModal] = useState(false);
-  const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
-  const isNewUserRef = useRef(true); // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
+  const [activeSub, setActiveSub] = useState<ISubscription | null>(null) // null: when page is loading, no data is ready yet.
+  const isNewUserRef = useRef(true) // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
   // they have different api call and Modal window
-  const [otpModalOpen, setOtpModalOpen] = useState(false); // one-time-payment modal
-  const toggleOTP = () => setOtpModalOpen(!otpModalOpen);
-  const [otpPlanId, setOtpPlanId] = useState<null | number>(null); // the one-time-payment addon user want to buy
+  const [otpModalOpen, setOtpModalOpen] = useState(false) // one-time-payment modal
+  const toggleOTP = () => setOtpModalOpen(!otpModalOpen)
+  const [otpPlanId, setOtpPlanId] = useState<null | number>(null) // the one-time-payment addon user want to buy
 
-  const [buyRecordModalOpen, setBuyRecordModalOpen] = useState(false);
-  const toggleBuyRecordModal = () => setBuyRecordModalOpen(!buyRecordModalOpen);
+  const [buyRecordModalOpen, setBuyRecordModalOpen] = useState(false)
+  const toggleBuyRecordModal = () => setBuyRecordModalOpen(!buyRecordModalOpen)
 
-  const toggleCreateModal = () => setCreateModalOpen(!createModalOpen); // Modal for first time plan choosing
-  const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen); // Modal for update plan
+  const toggleCreateModal = () => setCreateModalOpen(!createModalOpen) // Modal for first time plan choosing
+  const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen) // Modal for update plan
   const toggleBillingModal = () =>
-    setBillingAddressModalOpen(!billingAddressModalOpen);
+    setBillingAddressModalOpen(!billingAddressModalOpen)
 
   const onAddonChange = (
     addonId: number,
     quantity: number | null, // null means: don't update this field, keep its original value
-    checked: boolean | null, // ditto
+    checked: boolean | null // ditto
   ) => {
-    const planIdx = plans.findIndex((p) => p.id == selectedPlan);
+    const planIdx = plans.findIndex((p) => p.id == selectedPlan)
     if (planIdx == -1) {
-      return;
+      return
     }
-    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
+    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId)
     if (addonIdx == -1) {
-      return;
+      return
     }
 
-    let newPlans = plans;
+    let newPlans = plans
     if (quantity == null) {
       newPlans = update(plans, {
         [planIdx]: {
-          addons: { [addonIdx]: { checked: { $set: checked as boolean } } },
-        },
-      });
+          addons: { [addonIdx]: { checked: { $set: checked as boolean } } }
+        }
+      })
     } else if (checked == null) {
       newPlans = update(plans, {
         [planIdx]: {
-          addons: { [addonIdx]: { quantity: { $set: quantity as number } } },
-        },
-      });
+          addons: { [addonIdx]: { quantity: { $set: quantity as number } } }
+        }
+      })
     }
-    setPlans(newPlans);
-  };
+    setPlans(newPlans)
+  }
 
   const onPlanConfirm = async () => {
     if (profileStore.countryCode == '' || profileStore.countryCode == null) {
-      toggleBillingModal();
-      return;
+      toggleBillingModal()
+      return
     }
-    toggleOTP();
-  };
+    toggleOTP()
+  }
 
   const fetchCountry = async () => {
-    const [list, err] = await getCountryList();
+    const [list, err] = await getCountryList()
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
     setCountryList(
       list.map((c: any) => ({
         countryCode: c.countryCode,
-        countryName: c.countryName,
-      })),
-    );
-  };
+        countryName: c.countryName
+      }))
+    )
+  }
 
   const fetchData = async () => {
-    setLoading(true);
-    const [res, err] = await getPlanList([3]);
-    setLoading(false);
+    setLoading(true)
+    const [res, err] = await getPlanList({ type: [3] })
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    console.log('add on list: ', res);
+    console.log('add on list: ', res)
     // setPlans(localPlans.filter((p) => p.type == 1));
     let localPlans: IPlan[] =
       res == null
         ? []
         : res.map((p: any) => {
             return {
-              ...p.plan,
-            };
-          });
-    setPlans(localPlans);
-  };
+              ...p.plan
+            }
+          })
+    setPlans(localPlans)
+  }
 
   useEffect(() => {
-    fetchData();
-    fetchCountry();
-  }, []);
+    fetchData()
+    fetchCountry()
+  }, [])
 
   return (
     <div>
@@ -183,7 +183,7 @@ const Index = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          margin: '48px',
+          margin: '48px'
         }}
       >
         {plans.length > 0 && (
@@ -197,7 +197,7 @@ const Index = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

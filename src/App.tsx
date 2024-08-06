@@ -1,59 +1,59 @@
 import {
   DesktopOutlined,
   LogoutOutlined,
-  PieChartOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Layout, Menu, message, theme } from 'antd';
-import React, { useEffect, useState } from 'react';
+  PieChartOutlined
+} from '@ant-design/icons'
+import type { MenuProps } from 'antd'
+import { Layout, Menu, message, theme } from 'antd'
+import React, { useEffect, useState } from 'react'
 import {
   Navigate,
   Route,
   Routes,
   useLocation,
-  useNavigate,
-} from 'react-router-dom';
+  useNavigate
+} from 'react-router-dom'
 import {
   useAppConfigStore,
   useMerchantInfoStore,
   useProfileStore,
-  useSessionStore,
-} from './stores';
+  useSessionStore
+} from './stores'
 
-import AddPaymentMethodResult from './components/addPaymentMethodResult';
-import InvoiceDetail from './components/invoice/detail';
-import InvoiceList from './components/invoice/list';
-import Login from './components/login';
-import LoginModal from './components/login/LoginModal';
-import NotFound from './components/notFound';
-import OnetimePaymentResult from './components/onetimePaymentResult';
-import OutletPage from './components/outletPage';
-import PaymentList from './components/payment/list';
-import PaymentResult from './components/paymentResult';
+import AddPaymentMethodResult from './components/addPaymentMethodResult'
+import InvoiceDetail from './components/invoice/detail'
+import InvoiceList from './components/invoice/list'
+import Login from './components/login'
+import LoginModal from './components/login/LoginModal'
+import NotFound from './components/notFound'
+import OnetimePaymentResult from './components/onetimePaymentResult'
+import OutletPage from './components/outletPage'
+import PaymentList from './components/payment/list'
+import PaymentResult from './components/paymentResult'
 // import ProductsUpdate from './components/productUpdate';
-import PlanList from './components/plans/planList';
-import ProfileBasic from './components/profile/basicInfo';
-import ProfileSubscription from './components/profile/subscription';
-import SessionResult from './components/sessionResult';
-import Signup from './components/signup';
-import { initializeReq, logoutReq } from './requests';
+import PlanList from './components/plans'
+import ProfileBasic from './components/profile/basicInfo'
+import ProfileSubscription from './components/profile/subscription'
+import SessionResult from './components/sessionResult'
+import Signup from './components/signup'
+import { initializeReq, logoutReq } from './requests'
 
-const APP_PATH = import.meta.env.BASE_URL;
-const { Header, Content, Footer, Sider } = Layout;
-type MenuItem = Required<MenuProps>['items'][number];
+const APP_PATH = import.meta.env.BASE_URL
+const { Header, Content, Footer, Sider } = Layout
+type MenuItem = Required<MenuProps>['items'][number]
 
 function getItem(
   label: React.ReactNode,
   key: React.Key,
   icon?: React.ReactNode,
-  children?: MenuItem[],
+  children?: MenuItem[]
 ): MenuItem {
   return {
     key,
     icon,
     children,
-    label,
-  } as MenuItem;
+    label
+  } as MenuItem
 }
 
 const items: MenuItem[] = [
@@ -61,121 +61,121 @@ const items: MenuItem[] = [
   getItem('My Subscription', '/my-subscription', <PieChartOutlined />),
   getItem('Invoice', '/invoice/list', <PieChartOutlined />),
   getItem('Transaction', '/transaction/list', <PieChartOutlined />),
-  getItem('My Account', '/my-account'),
-];
+  getItem('My Account', '/my-account')
+]
 
 const noSiderRoutes = [
   `${APP_PATH}login`,
   `${APP_PATH}signup`,
-  `${APP_PATH}session-result`,
+  `${APP_PATH}session-result`
   // `${APP_PATH}payment-result`,
-];
+]
 
 const App: React.FC = () => {
-  const merchantStore = useMerchantInfoStore();
-  const profileStore = useProfileStore();
-  const sessionStore = useSessionStore();
-  const appConfigStore = useAppConfigStore();
-  const [openLoginModal, setOpenLoginModal] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-  const location = useLocation();
-  const [activeMenuItem, setActiveMenuItem] = useState<string[]>(['/profile']);
+  const merchantStore = useMerchantInfoStore()
+  const profileStore = useProfileStore()
+  const sessionStore = useSessionStore()
+  const appConfigStore = useAppConfigStore()
+  const [openLoginModal, setOpenLoginModal] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+  const location = useLocation()
+  const [activeMenuItem, setActiveMenuItem] = useState<string[]>(['/profile'])
   // this is the default open keys after successful login.
-  const [openKeys, setOpenKeys] = useState<string[]>(['/profile']);
+  const [openKeys, setOpenKeys] = useState<string[]>(['/profile'])
   const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
+    token: { colorBgContainer, borderRadiusLG }
+  } = theme.useToken()
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const onItemClick = ({
     key,
-    needNavigate = true,
+    needNavigate = true
   }: {
-    key: string;
-    needNavigate?: boolean;
+    key: string
+    needNavigate?: boolean
   }) => {
-    needNavigate && navigate(`${APP_PATH}${key.substring(1)}`); // remove the leading '/' character, coz APP_PATH already has it
-    setActiveMenuItem([key]);
-    const pathItem = key.split('/').filter((k) => !!k); // remove the empty leading item
+    needNavigate && navigate(`${APP_PATH}${key.substring(1)}`) // remove the leading '/' character, coz APP_PATH already has it
+    setActiveMenuItem([key])
+    const pathItem = key.split('/').filter((k) => !!k) // remove the empty leading item
     if (pathItem.length == 2) {
       // submenu item clicked
-      setOpenKeys(['/' + pathItem[0]]);
+      setOpenKeys(['/' + pathItem[0]])
     }
-  };
+  }
 
   const logout = async () => {
-    const [res, err] = await logoutReq();
+    const [res, err] = await logoutReq()
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    sessionStore.reset();
-    profileStore.reset();
-    merchantStore.reset();
-    appConfigStore.reset();
-    localStorage.removeItem('appConfig');
-    localStorage.removeItem('merchantInfo');
-    localStorage.removeItem('token');
-    localStorage.removeItem('profile');
-    localStorage.removeItem('session');
-    navigate(`${APP_PATH}login`);
-  };
+    sessionStore.reset()
+    profileStore.reset()
+    merchantStore.reset()
+    appConfigStore.reset()
+    localStorage.removeItem('appConfig')
+    localStorage.removeItem('merchantInfo')
+    localStorage.removeItem('token')
+    localStorage.removeItem('profile')
+    localStorage.removeItem('session')
+    navigate(`${APP_PATH}login`)
+  }
 
   useEffect(() => {
     // when user refresh or enter URL then ENTER, call this fn to highlight the active menu
     // since we are already in the current path, there is no need to navigate
     // console.log('app mounted, pathname: ', window.location.pathname);
-    onItemClick({ key: window.location.pathname, needNavigate: false });
+    onItemClick({ key: window.location.pathname, needNavigate: false })
 
     // detect reload
     const init = async () => {
       const navigationEntries =
-        window.performance.getEntriesByType('navigation');
+        window.performance.getEntriesByType('navigation')
       if (
         navigationEntries.length > 0 &&
         (navigationEntries[0] as PerformanceNavigationTiming).type === 'reload'
       ) {
-        console.log('Page was reloaded, begin initializing....');
-        const [initRes, errInit] = await initializeReq();
+        console.log('Page was reloaded, begin initializing....')
+        const [initRes, errInit] = await initializeReq()
         if (null != errInit) {
-          console.log('init err: ', errInit);
-          return;
+          console.log('init err: ', errInit)
+          return
         }
-        const { appConfig, gateways, merchantInfo, user } = initRes;
-        appConfigStore.setAppConfig(appConfig);
-        appConfigStore.setGateway(gateways);
-        merchantStore.setMerchantInfo(merchantInfo.merchant);
-        profileStore.setProfile(user);
+        const { appConfig, gateways, merchantInfo, user } = initRes
+        appConfigStore.setAppConfig(appConfig)
+        appConfigStore.setGateway(gateways)
+        merchantStore.setMerchantInfo(merchantInfo.merchant)
+        profileStore.setProfile(user)
       }
-    };
-    init();
-  }, []);
+    }
+    init()
+  }, [])
 
   // similar to onItemClick, try to refactor into one fn.
   useEffect(() => {
-    const pathItems = location.pathname.split('/').filter((p) => p != '');
+    const pathItems = location.pathname.split('/').filter((p) => p != '')
     if (pathItems[0] == 'invoice') {
-      setActiveMenuItem(['/invoice/list']);
+      setActiveMenuItem(['/invoice/list'])
     } else if (pathItems[0] == 'transaction') {
-      setActiveMenuItem(['/transaction/list']);
+      setActiveMenuItem(['/transaction/list'])
     } else {
-      setActiveMenuItem(['/' + pathItems[0]]);
+      setActiveMenuItem(['/' + pathItems[0]])
     }
-  }, [location, location.pathname]);
+  }, [location, location.pathname])
 
   useEffect(() => {
     if (sessionStore.expired) {
       if (null == profileStore.id) {
         // is it better to use email?
-        navigate(`${APP_PATH}login`);
+        navigate(`${APP_PATH}login`)
       } else {
-        setOpenLoginModal(true);
+        setOpenLoginModal(true)
       }
     } else {
-      setOpenLoginModal(false);
+      setOpenLoginModal(false)
     }
-  }, [sessionStore.expired]);
+  }, [sessionStore.expired])
 
   return (
     <>
@@ -213,7 +213,7 @@ const App: React.FC = () => {
                 color: '#FFF',
                 margin: '18px 0',
                 display: 'flex',
-                justifyContent: 'center',
+                justifyContent: 'center'
               }}
             >
               <img
@@ -249,7 +249,7 @@ const App: React.FC = () => {
               style={{
                 padding: '16px',
                 height: 'calc(100vh - 180px)',
-                overflowY: 'auto',
+                overflowY: 'auto'
               }}
             >
               <div
@@ -258,7 +258,7 @@ const App: React.FC = () => {
                   minHeight: 360,
                   // height: '100%',
                   background: colorBgContainer,
-                  borderRadius: borderRadiusLG,
+                  borderRadius: borderRadiusLG
                 }}
               >
                 <Routes>
@@ -312,7 +312,7 @@ const App: React.FC = () => {
         </Layout>
       )}
     </>
-  );
-};
+  )
+}
 
-export default App;
+export default App

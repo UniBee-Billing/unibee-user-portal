@@ -1,5 +1,10 @@
 module.exports = {
   singleQuote: true,
-  plugins: ["prettier-plugin-organize-imports", "prettier-plugin-tailwindcss"],
+  tabWidth: 2,
+  semi: false,
+  useTabs: false,
+  trailingComma: 'none',
+  bracketSpacing: true,
+  plugins: ['prettier-plugin-organize-imports', 'prettier-plugin-tailwindcss'],
   organizeImportsSkipDestructiveCodeActions: true,
 };

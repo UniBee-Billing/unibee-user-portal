@@ -3,8 +3,8 @@ import {
   InfoCircleOutlined,
   LoadingOutlined,
   MinusOutlined,
-  SyncOutlined,
-} from '@ant-design/icons';
+  SyncOutlined
+} from '@ant-design/icons'
 import {
   Button,
   Col,
@@ -14,91 +14,55 @@ import {
   Row,
   Spin,
   Tooltip,
-  message,
-} from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import React, { CSSProperties, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { SUBSCRIPTION_STATUS } from '../../constants';
-import { daysBetweenDate, showAmount } from '../../helpers';
-import { getActiveSubReq } from '../../requests';
-import '../../shared.css';
-import { DiscountCode, ISubscription } from '../../shared.types';
-import { useAppConfigStore } from '../../stores';
-import EditCardModal from '../modals/editCardModal';
-import CancelSubModal from '../modals/modalCancelPendingSub';
-import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub';
-import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag';
-import OneTimePaymentHistory from './onetimeHistory';
-import SubHistory from './subHistory';
+  message
+} from 'antd'
+import type { ColumnsType } from 'antd/es/table'
+import dayjs from 'dayjs'
+import React, { CSSProperties, useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { SUBSCRIPTION_STATUS } from '../../constants'
+import { daysBetweenDate, showAmount } from '../../helpers'
+import { getActiveSubReq } from '../../requests'
+import '../../shared.css'
+import { DiscountCode, ISubscription } from '../../shared.types'
+import { useAppConfigStore } from '../../stores'
+import EditCardModal from '../modals/editCardModal'
+import CancelSubModal from '../modals/modalCancelPendingSub'
+import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub'
+import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag'
+import OneTimePaymentHistory from './onetimeHistory'
+import SubHistory from './subHistory'
 
-const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
-
-const columns: ColumnsType<ISubscription> = [
-  {
-    title: 'Name',
-    dataIndex: 'planName',
-    key: 'planName',
-    render: (_, sub) => <span>{sub.plan?.planName}</span>,
-  },
-  {
-    title: 'Total Amount',
-    dataIndex: 'amount',
-    key: 'amount',
-    render: (_, sub) => <span>{showAmount(sub.amount, sub.currency)}</span>,
-  },
-  {
-    title: 'Start Date',
-    dataIndex: 'currentPeriodStart',
-    key: 'currentPeriodStart',
-    render: (_, sub) => (
-      <span>
-        {' '}
-        {dayjs(sub.currentPeriodStart * 1000).format('YYYY-MMM-DD HH:MM')}
-      </span>
-    ),
-  },
-  {
-    title: 'End Date',
-    dataIndex: 'currentPeriodEnd',
-    key: 'currentPeriodEnd',
-    render: (_, sub) => (
-      <span>
-        {dayjs(sub.currentPeriodEnd * 1000).format('YYYY-MMM-DD HH:MM')}
-      </span>
-    ),
-  },
-];
+const APP_PATH = import.meta.env.BASE_URL // default is / (if no --base specified in build cmd)
 
 const Index = () => {
-  const location = useLocation();
+  const location = useLocation()
   // const appConfigStore = useAppConfigStore();
-  const [loading, setLoading] = useState(false);
-  const [subscription, setSubscription] = useState<ISubscription | null>(null);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false)
+  const [subscription, setSubscription] = useState<ISubscription | null>(null)
+  const navigate = useNavigate()
 
   const fetchData = async () => {
-    setLoading(true);
-    const [s, err] = await getActiveSubReq(fetchData);
-    setLoading(false);
-    console.log('active sub: ', s);
+    setLoading(true)
+    const [s, err] = await getActiveSubReq(fetchData)
+    setLoading(false)
+    console.log('active sub: ', s)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
 
     if (null == s) {
       // if user enter this route from login and has no subscription(new user or current sub expired/cancelled)
       // they'll be redirected to /product, otherwise, stay.
       if (location.state != null && location.state.from == 'login') {
-        navigate(`${APP_PATH}plans`);
+        navigate(`${APP_PATH}plans`)
       } else {
         // user might cancel a pending sub, after refresh, backend returns a null, I need to set to null
         // thus, page will show 'no subscription'
-        setSubscription(null);
+        setSubscription(null)
       }
-      return;
+      return
     }
 
     const sub = {
@@ -110,12 +74,11 @@ const Index = () => {
           ? []
           : s.addons.map((a: any) => ({
               ...a.addonPlan,
-              quantity: a.quantity,
+              quantity: a.quantity
             })),
       user: s.user,
-      unfinishedSubscriptionPendingUpdate:
-        s.unfinishedSubscriptionPendingUpdate,
-    };
+      unfinishedSubscriptionPendingUpdate: s.unfinishedSubscriptionPendingUpdate
+    }
     if (sub.unfinishedSubscriptionPendingUpdate != null) {
       if (sub.unfinishedSubscriptionPendingUpdate.updateAddons != null) {
         sub.unfinishedSubscriptionPendingUpdate.updateAddons =
@@ -123,27 +86,27 @@ const Index = () => {
             (a: any) => ({
               ...a.addonPlan,
               quantity: a.quantity,
-              addonPlanId: a.addonPlan.id,
-            }),
-          );
+              addonPlanId: a.addonPlan.id
+            })
+          )
       }
     }
 
-    console.log('sub: ', sub);
-    setSubscription(sub);
-  };
+    console.log('sub: ', sub)
+    setSubscription(sub)
+  }
 
-  const goToChoosePlan = () => navigate(`${APP_PATH}plans`);
+  const goToChoosePlan = () => navigate(`${APP_PATH}plans`)
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   useEffect(() => {
     if (location.state && location.state.msg) {
-      message.info(location.state.msg);
+      message.info(location.state.msg)
     }
-  }, []);
+  }, [])
 
   return (
     <div>
@@ -182,13 +145,13 @@ const Index = () => {
       <SubHistory />
       <OneTimePaymentHistory />
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
 
 const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
-  const i = subInfo.unfinishedSubscriptionPendingUpdate;
+  const i = subInfo.unfinishedSubscriptionPendingUpdate
   return (
     <>
       <Divider
@@ -224,11 +187,11 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
               i.updateAddons!.reduce(
                 (
                   sum,
-                  { quantity, amount }: { quantity: number; amount: number },
+                  { quantity, amount }: { quantity: number; amount: number }
                 ) => sum + quantity * amount,
-                0,
+                0
               ),
-              i.updateCurrency,
+              i.updateCurrency
             )}
 
           {i?.updateAddons && i.updateAddons.length > 0 && (
@@ -305,49 +268,49 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
         <Col span={6}>{dayjs(i!.effectTime * 1000).format('YYYY-MMM-DD')}</Col>
       </Row>
     </>
-  );
-};
+  )
+}
 
 const rowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  height: '32px',
-};
-const colStyle: CSSProperties = { fontWeight: 'bold' };
+  height: '32px'
+}
+const colStyle: CSSProperties = { fontWeight: 'bold' }
 
 interface ISubSectionProps {
-  subInfo: ISubscription;
-  refresh: () => void;
+  subInfo: ISubscription
+  refresh: () => void
 }
 const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
-  const appConfigStore = useAppConfigStore();
-  const navigate = useNavigate();
-  const [resumeOrTerminateModal, setResumeOrTerminateModal] = useState(false);
+  const appConfigStore = useAppConfigStore()
+  const navigate = useNavigate()
+  const [resumeOrTerminateModal, setResumeOrTerminateModal] = useState(false)
   const toggleResumeOrTerminateSubModal = () =>
-    setResumeOrTerminateModal(!resumeOrTerminateModal);
-  const [action, setAction] = useState<'CANCEL' | 'UN-CANCEL'>('CANCEL');
+    setResumeOrTerminateModal(!resumeOrTerminateModal)
+  const [action, setAction] = useState<'CANCEL' | 'UN-CANCEL'>('CANCEL')
   const openModal = (action: 'CANCEL' | 'UN-CANCEL') => {
-    setAction(action);
-    toggleResumeOrTerminateSubModal();
-  };
+    setAction(action)
+    toggleResumeOrTerminateSubModal()
+  }
 
-  const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
-  const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen);
+  const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false)
+  const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen)
 
-  const [editCardModalOpen, setEditCardModalOpen] = useState(false);
-  const toggleEditCardModal = () => setEditCardModalOpen(!editCardModalOpen);
+  const [editCardModalOpen, setEditCardModalOpen] = useState(false)
+  const toggleEditCardModal = () => setEditCardModalOpen(!editCardModalOpen)
 
   const discountAmt = (code: DiscountCode) => {
     if (code.discountType == 1) {
       // percentage
-      return `${code.discountPercentage / 100} %`;
+      return `${code.discountPercentage / 100} %`
     } else if (code.discountType == 2) {
       // fixed amt
-      return showAmount(code.discountAmount, code.currency);
+      return showAmount(code.discountAmount, code.currency)
     } else {
-      return '';
+      return ''
     }
-  };
+  }
 
   return (
     <>
@@ -414,11 +377,11 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
               subInfo!.addons!.reduce(
                 (
                   sum,
-                  { quantity, amount }: { quantity: number; amount: number },
+                  { quantity, amount }: { quantity: number; amount: number }
                 ) => sum + quantity * amount,
-                0,
+                0
               ),
-              subInfo!.currency,
+              subInfo!.currency
             )}
 
           {subInfo && subInfo.addons && subInfo.addons.length > 0 && (
@@ -455,7 +418,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
             subInfo.latestInvoice &&
             showAmount(
               subInfo.latestInvoice.discountAmount as number,
-              subInfo.latestInvoice.currency,
+              subInfo.latestInvoice.currency
             )}
 
           {subInfo &&
@@ -484,7 +447,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
                       </Col>
                       <Col span={14}>
                         {DiscountCodeStatus(
-                          subInfo.latestInvoice.discount.status as number,
+                          subInfo.latestInvoice.discount.status as number
                         )}
                       </Col>
                     </Row>
@@ -520,9 +483,9 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
                       </Col>
                       <Col span={14}>
                         {`${dayjs(
-                          subInfo.latestInvoice.discount.startTime * 1000,
+                          subInfo.latestInvoice.discount.startTime * 1000
                         ).format(
-                          'YYYY-MMM-DD',
+                          'YYYY-MMM-DD'
                         )} ~ ${dayjs(subInfo.latestInvoice.discount.endTime * 1000).format('YYYY-MMM-DD')} `}
                       </Col>
                     </Row>
@@ -570,13 +533,13 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
                 style={{
                   fontSize: '11px',
                   color: '#f44336',
-                  marginLeft: '6px',
+                  marginLeft: '6px'
                 }}
               >
                 +
                 {daysBetweenDate(
                   subInfo.currentPeriodEnd * 1000,
-                  subInfo.trialEnd * 1000,
+                  subInfo.trialEnd * 1000
                 )}{' '}
                 days →{' '}
                 {dayjs(new Date(subInfo.trialEnd * 1000)).format('YYYY-MMM-DD')}
@@ -601,7 +564,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           {' '}
           {subInfo &&
             appConfigStore.gateway.find(
-              (g) => g.gatewayId == subInfo?.gatewayId,
+              (g) => g.gatewayId == subInfo?.gatewayId
             )?.gatewayName}
         </Col>
       </Row>
@@ -624,7 +587,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
               <span style={{ color: 'red', marginRight: '8px' }}>
                 {subInfo &&
                   dayjs(new Date(subInfo!.currentPeriodEnd * 1000)).format(
-                    'YYYY-MMM-DD, HH:mm:ss',
+                    'YYYY-MMM-DD, HH:mm:ss'
                   )}
               </span>
               <Button onClick={() => openModal('UN-CANCEL')}>Un-cancel</Button>
@@ -633,32 +596,32 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         </div>
       )}
     </>
-  );
-};
+  )
+}
 
 // productUpdate.tsx has the same code, refactor it
 const SubReminder = ({
   sub,
-  toggleModal,
+  toggleModal
 }: {
-  sub: ISubscription | null;
-  toggleModal: () => void;
+  sub: ISubscription | null
+  toggleModal: () => void
 }) => {
-  const appConfigStore = useAppConfigStore();
+  const appConfigStore = useAppConfigStore()
   const wireSetup = appConfigStore.gateway.find(
-    (g) => g.gatewayName == 'wire_transfer',
-  );
-  let isWire = false;
+    (g) => g.gatewayName == 'wire_transfer'
+  )
+  let isWire = false
   if (wireSetup != null && sub?.gatewayId == wireSetup.gatewayId) {
-    isWire = true;
+    isWire = true
   }
 
   const getReminder = () => {
-    let n;
+    let n
     switch (sub!.status) {
       case 0:
-        n = 'Your subscription is initializing, please wait a few moment.';
-        break;
+        n = 'Your subscription is initializing, please wait a few moment.'
+        break
       case 1:
         if (isWire) {
           n = (
@@ -669,7 +632,7 @@ const SubReminder = ({
                 background: '#fbe9e7',
                 borderRadius: '4px',
                 padding: '6px',
-                marginBottom: '12px',
+                marginBottom: '12px'
               }}
             >
               Your subscription has been created, but not activated, please wire
@@ -715,7 +678,7 @@ const SubReminder = ({
               </Button>{' '}
               this subscription immediately.
             </div>
-          );
+          )
         } else {
           n = (
             <div
@@ -725,7 +688,7 @@ const SubReminder = ({
                 background: '#fbe9e7',
                 borderRadius: '4px',
                 padding: '6px',
-                marginBottom: '12px',
+                marginBottom: '12px'
               }}
             >
               Your subscription has been created, but not activated, please go
@@ -745,13 +708,13 @@ const SubReminder = ({
               </Button>{' '}
               this subscription immediately.
             </div>
-          );
+          )
         }
 
-        break;
+        break
       case 3:
-        n = `Your subscription is in ${SUBSCRIPTION_STATUS[3]} status, please wait`;
-        break;
+        n = `Your subscription is in ${SUBSCRIPTION_STATUS[3]} status, please wait`
+        break
       case 7:
       case 8:
         n = (
@@ -762,7 +725,7 @@ const SubReminder = ({
               background: '#fbe9e7',
               borderRadius: '4px',
               padding: '6px',
-              marginBottom: '12px',
+              marginBottom: '12px'
             }}
           >
             We are checking your payment, please be patient. Make sure you have
@@ -804,19 +767,19 @@ const SubReminder = ({
             </Button>{' '}
             this subscription immediately.
           </div>
-        );
-        break;
+        )
+        break
       default:
-        n = '';
+        n = ''
     }
-    return n;
+    return n
     // STATUS[sub?.status as keyof typeof STATUS]
-  };
+  }
 
   if (sub == null || sub.status == 2) {
     // 2: active, only with this status, users can upgrade/downgrad/change
-    return null; // nothing need to be shown on page.
+    return null // nothing need to be shown on page.
   }
-  return getReminder();
+  return getReminder()
   // <div>{STATUS[sub.status as keyof typeof STATUS]}</div>;
-};
+}

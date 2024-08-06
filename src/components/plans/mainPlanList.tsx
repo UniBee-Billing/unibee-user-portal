@@ -1,130 +1,130 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd';
-import update from 'immutability-helper';
-import React, { useEffect, useRef, useState } from 'react';
-import { showAmount } from '../../helpers';
-import { getActiveSubWithMore, getCountryList } from '../../requests';
-import { Country, IPlan, ISubscription } from '../../shared.types';
-import { useAppConfigStore, useProfileStore } from '../../stores';
-import OTPBuyListModal from '../modals/addonBuyListModal';
-import BillingAddressModal from '../modals/billingAddressModal';
-import CancelSubModal from '../modals/modalCancelPendingSub';
-import CreateSubModal from '../modals/modalCreateSub';
-import UpdatePlanModal from '../modals/modalUpdateSub';
-import OTPModal from '../modals/onetimePaymentModal';
-import Plan from './plan';
+import { LoadingOutlined } from '@ant-design/icons'
+import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd'
+import update from 'immutability-helper'
+import React, { useEffect, useRef, useState } from 'react'
+import { showAmount } from '../../helpers'
+import { getActiveSubWithMore, getCountryList } from '../../requests'
+import { Country, IPlan, ISubscription } from '../../shared.types'
+import { useAppConfigStore, useProfileStore } from '../../stores'
+import OTPBuyListModal from '../modals/addonBuyListModal'
+import BillingAddressModal from '../modals/billingAddressModal'
+import CancelSubModal from '../modals/modalCancelPendingSub'
+import CreateSubModal from '../modals/modalCreateSub'
+import UpdatePlanModal from '../modals/modalUpdateSub'
+import OTPModal from '../modals/onetimePaymentModal'
+import Plan from './plan'
 
-const Index = () => {
-  const profileStore = useProfileStore();
+const Index = ({ productId }: { productId: number }) => {
+  const profileStore = useProfileStore()
   // const appConfigStore = useAppConfigStore();
-  const [plans, setPlans] = useState<IPlan[]>([]);
-  const [otpPlans, setOtpPlans] = useState<IPlan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<null | number>(null); // null: not selected
-  const [countryList, setCountryList] = useState<Country[]>([]);
-  const [createModalOpen, setCreateModalOpen] = useState(false); // create subscription Modal
-  const [updateModalOpen, setUpdateModalOpen] = useState(false); // update subscription Modal
-  const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState<IPlan[]>([])
+  const [otpPlans, setOtpPlans] = useState<IPlan[]>([])
+  const [selectedPlan, setSelectedPlan] = useState<null | number>(null) // null: not selected
+  const [countryList, setCountryList] = useState<Country[]>([])
+  const [createModalOpen, setCreateModalOpen] = useState(false) // create subscription Modal
+  const [updateModalOpen, setUpdateModalOpen] = useState(false) // update subscription Modal
+  const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
   // const [terminateModal, setTerminateModal] = useState(false);
-  const [activeSub, setActiveSub] = useState<ISubscription | null>(null); // null: when page is loading, no data is ready yet.
-  const isNewUserRef = useRef(true); // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
+  const [activeSub, setActiveSub] = useState<ISubscription | null>(null) // null: when page is loading, no data is ready yet.
+  const isNewUserRef = useRef(true) // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
   // they have different api call and Modal window
-  const [otpModalOpen, setOtpModalOpen] = useState(false); // one-time-payment modal
-  const toggleOTP = () => setOtpModalOpen(!otpModalOpen);
-  const [otpPlanId, setOtpPlanId] = useState<null | number>(null); // the one-time-payment addon user want to buy
+  const [otpModalOpen, setOtpModalOpen] = useState(false) // one-time-payment modal
+  const toggleOTP = () => setOtpModalOpen(!otpModalOpen)
+  const [otpPlanId, setOtpPlanId] = useState<null | number>(null) // the one-time-payment addon user want to buy
 
   // new user has choosen a sub plan, but haven't paid yet, before the payment due day, they can still cancel it
   // this modal is for this purpose only.
   // It's not the same as 'terminate an active sub'.
-  const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false);
+  const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false)
 
-  const [buyRecordModalOpen, setBuyRecordModalOpen] = useState(false);
-  const toggleBuyRecordModal = () => setBuyRecordModalOpen(!buyRecordModalOpen);
+  const [buyRecordModalOpen, setBuyRecordModalOpen] = useState(false)
+  const toggleBuyRecordModal = () => setBuyRecordModalOpen(!buyRecordModalOpen)
 
-  const toggleCreateModal = () => setCreateModalOpen(!createModalOpen); // Modal for first time plan choosing
-  const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen); // Modal for update plan
+  const toggleCreateModal = () => setCreateModalOpen(!createModalOpen) // Modal for first time plan choosing
+  const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen) // Modal for update plan
   const toggleBillingModal = () =>
-    setBillingAddressModalOpen(!billingAddressModalOpen);
+    setBillingAddressModalOpen(!billingAddressModalOpen)
 
-  const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen);
+  const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen)
 
   const onAddonChange = (
     addonId: number,
     quantity: number | null, // null means: don't update this field, keep its original value
-    checked: boolean | null, // ditto
+    checked: boolean | null // ditto
   ) => {
-    const planIdx = plans.findIndex((p) => p.id == selectedPlan);
+    const planIdx = plans.findIndex((p) => p.id == selectedPlan)
     if (planIdx == -1) {
-      return;
+      return
     }
-    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId);
+    const addonIdx = plans[planIdx].addons!.findIndex((a) => a.id == addonId)
     if (addonIdx == -1) {
-      return;
+      return
     }
 
-    let newPlans = plans;
+    let newPlans = plans
     if (quantity == null) {
       newPlans = update(plans, {
         [planIdx]: {
-          addons: { [addonIdx]: { checked: { $set: checked as boolean } } },
-        },
-      });
+          addons: { [addonIdx]: { checked: { $set: checked as boolean } } }
+        }
+      })
     } else if (checked == null) {
       newPlans = update(plans, {
         [planIdx]: {
-          addons: { [addonIdx]: { quantity: { $set: quantity as number } } },
-        },
-      });
+          addons: { [addonIdx]: { quantity: { $set: quantity as number } } }
+        }
+      })
     }
-    setPlans(newPlans);
-  };
+    setPlans(newPlans)
+  }
 
   const fetchCountry = async () => {
-    const [list, err] = await getCountryList();
+    const [list, err] = await getCountryList()
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
     setCountryList(
       list.map((c: any) => ({
         countryCode: c.countryCode,
-        countryName: c.countryName,
-      })),
-    );
-  };
+        countryName: c.countryName
+      }))
+    )
+  }
 
   const fetchData = async () => {
-    setLoading(true);
-    const [res, err] = await getActiveSubWithMore(fetchData);
-    setLoading(false);
+    setLoading(true)
+    const [res, err] = await getActiveSubWithMore(productId, fetchData)
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
 
-    const { subscriptions, plans } = res;
-    let sub;
+    const { subscriptions, plans } = res
+    let sub
     if (subscriptions != null && subscriptions[0] != null) {
       // there is only one active sub at most or null.
       // null: new user(no purchase record), non-null: user has bought one plan, and want to change/upgrade/downgrade
-      sub = subscriptions[0];
-      isNewUserRef.current = false;
+      sub = subscriptions[0]
+      isNewUserRef.current = false
       // TODO: backup current user's selectedPlan and addons info
     } else {
       // user has an active sub, but not paid, after cancel, active sub becomes null, I need to set its state back to null
       // otherwise, page still use the obsolete sub info.
-      setActiveSub(null);
-      isNewUserRef.current = true;
+      setActiveSub(null)
+      isNewUserRef.current = true
     }
 
     // addons and other props are separated in different area in the response subscription obj, I want to combine them into one subscription obj
-    let localActiveSub: ISubscription | null = null;
+    let localActiveSub: ISubscription | null = null
     if (sub != null) {
-      localActiveSub = { ...sub.subscription };
-      (localActiveSub as ISubscription).addons = sub.addonParams;
-      console.log('local sub: ', localActiveSub);
-      setActiveSub(localActiveSub);
-      setSelectedPlan(sub.subscription.planId);
+      localActiveSub = { ...sub.subscription }
+      ;(localActiveSub as ISubscription).addons = sub.addonParams
+      console.log('local sub: ', localActiveSub)
+      setActiveSub(localActiveSub)
+      setSelectedPlan(sub.subscription.planId)
     }
 
     let localPlans: IPlan[] =
@@ -134,70 +134,70 @@ const Index = () => {
             return {
               ...p.plan,
               addons: p.addons,
-              onetimeAddons: p.onetimeAddons,
-            };
-          });
+              onetimeAddons: p.onetimeAddons
+            }
+          })
     // localPlans = localPlans.filter((p) => p != null);
     // opt plans
-    setOtpPlans(localPlans.filter((p) => p.type == 3));
+    setOtpPlans(localPlans.filter((p) => p.type == 3))
 
     if (localActiveSub != null) {
       const planIdx = plans.findIndex(
-        (p: any) => p.id == localActiveSub!.planId,
-      );
+        (p: any) => p.id == localActiveSub!.planId
+      )
       // let's say we have planA(which has addonA1, addonA2, addonA3), planB, planC, user has subscribed to planA, and selected addonA1, addonA3
       // I need to find the index of addonA1,3 in planA.addons array,
       // then set their {quantity, checked: true} props on planA.addons, these props value are from subscription.addons array.
       if (planIdx != -1 && plans[planIdx].addons != null) {
         for (let i = 0; i < plans[planIdx].addons!.length; i++) {
           const addonIdx = localActiveSub.addons.findIndex(
-            (subAddon) => subAddon.addonPlanId == plans[planIdx].addons![i].id,
-          );
+            (subAddon) => subAddon.addonPlanId == plans[planIdx].addons![i].id
+          )
           if (addonIdx != -1) {
-            plans[planIdx].addons![i].checked = true;
+            plans[planIdx].addons![i].checked = true
             plans[planIdx].addons![i].quantity =
-              localActiveSub.addons[addonIdx].quantity;
+              localActiveSub.addons[addonIdx].quantity
           }
         }
       }
     }
 
-    console.log('plans....: ', localPlans);
+    console.log('plans/productId: : ', localPlans, '///', productId)
     // main plans
-    setPlans(localPlans.filter((p) => p.type == 1));
-  };
+    setPlans(localPlans.filter((p) => p.type == 1))
+  }
 
   const upgradeCheck = () => {
     if (isNewUserRef.current) {
       // user has no active sub, this is first-time purchase, not a upgrade
-      return true;
+      return true
     }
-    const currentPlan = plans.find((p) => p.id == activeSub?.planId);
-    const upgradePlan = plans.find((p) => p.id == selectedPlan);
+    const currentPlan = plans.find((p) => p.id == activeSub?.planId)
+    const upgradePlan = plans.find((p) => p.id == selectedPlan)
     console.log(
       'current/upgrade: ',
       currentPlan,
       '//',
       upgradePlan,
       '/active sub: ',
-      activeSub,
-    );
+      activeSub
+    )
 
     if (currentPlan?.currency != upgradePlan?.currency) {
       message.error(
-        'Upgrade to a plan with different currency is not supported.',
-      );
-      return false;
+        'Upgrade to a plan with different currency is not supported.'
+      )
+      return false
     }
     if (currentPlan?.intervalUnit == upgradePlan?.intervalUnit) {
       if (currentPlan?.intervalCount! > upgradePlan?.intervalCount!) {
         // we are selecting plan, itvCount always exist
         message.error(
-          `Upgrade from a ${currentPlan?.intervalCount}/${currentPlan?.intervalUnit} plan to a ${upgradePlan?.intervalCount}/${upgradePlan?.intervalUnit} is not supported.`,
-        );
-        return false;
+          `Upgrade from a ${currentPlan?.intervalCount}/${currentPlan?.intervalUnit} plan to a ${upgradePlan?.intervalCount}/${upgradePlan?.intervalUnit} is not supported.`
+        )
+        return false
       } else {
-        return true;
+        return true
       }
     }
 
@@ -205,53 +205,53 @@ const Index = () => {
       day: 24 * 60 * 60,
       week: 7 * 24 * 60 * 60,
       month: 30 * 24 * 60 * 60,
-      year: 365 * 24 * 60 * 60,
-    };
+      year: 365 * 24 * 60 * 60
+    }
 
     if (units[currentPlan!.intervalUnit] > units[upgradePlan!.intervalUnit]) {
       message.error(
-        `Upgrade from a ${currentPlan?.intervalCount}/${currentPlan?.intervalUnit} plan to a ${upgradePlan?.intervalCount}/${upgradePlan?.intervalUnit} is not supported.`,
-      );
-      return false;
+        `Upgrade from a ${currentPlan?.intervalCount}/${currentPlan?.intervalUnit} plan to a ${upgradePlan?.intervalCount}/${upgradePlan?.intervalUnit} is not supported.`
+      )
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   const onPlanConfirm = () => {
     if (!upgradeCheck()) {
-      return;
+      return
     }
 
     if (profileStore.countryCode == '' || profileStore.countryCode == null) {
-      toggleBillingModal();
-      return;
+      toggleBillingModal()
+      return
     }
-    const plan = plans.find((p) => p.id == selectedPlan);
-    let valid = true;
+    const plan = plans.find((p) => p.id == selectedPlan)
+    let valid = true
     if (plan?.addons != null && plan.addons.length > 0) {
       for (let i = 0; i < plan.addons.length; i++) {
         if (plan.addons[i].checked) {
-          const q = Number(plan.addons[i].quantity);
+          const q = Number(plan.addons[i].quantity)
           if (!Number.isInteger(q) || q <= 0) {
-            valid = false;
-            break;
+            valid = false
+            break
           }
         }
       }
     }
     if (!valid) {
-      message.error('Please input valid addon quantity.');
-      return;
+      message.error('Please input valid addon quantity.')
+      return
     }
 
-    isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal();
-  };
+    isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal()
+  }
 
   useEffect(() => {
-    fetchData();
-    fetchCountry();
-  }, []);
+    fetchData()
+    fetchCountry()
+  }, [])
 
   return (
     <div>
@@ -318,7 +318,7 @@ const Index = () => {
       )}
 
       <div
-        style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}
+        style={{ maxHeight: 'calc(100vh - 460px)', overflowY: 'auto' }}
         className="flex flex-wrap gap-6 pb-5 pl-4"
       >
         {plans.length == 0 && !loading ? (
@@ -345,7 +345,7 @@ const Index = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          margin: '48px',
+          margin: '48px'
         }}
       >
         {plans.length > 0 && (
@@ -376,34 +376,34 @@ const Index = () => {
         */}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
 
 // same code in profile/subscription, refactor them
 const SubReminder = ({
   sub,
-  toggleModal,
+  toggleModal
 }: {
-  sub: ISubscription | null;
-  toggleModal: () => void;
+  sub: ISubscription | null
+  toggleModal: () => void
 }) => {
-  const appConfigStore = useAppConfigStore();
+  const appConfigStore = useAppConfigStore()
   const wireSetup = appConfigStore.gateway.find(
-    (g) => g.gatewayName == 'wire_transfer',
-  );
-  let isWire = false;
+    (g) => g.gatewayName == 'wire_transfer'
+  )
+  let isWire = false
   if (wireSetup != null && sub?.gatewayId == wireSetup.gatewayId) {
-    isWire = true;
+    isWire = true
   }
 
   const getReminder = () => {
-    let n;
+    let n
     switch (sub!.status) {
       case 0:
-        n = 'Your subscription is initializing, please wait a few moment.';
-        break;
+        n = 'Your subscription is initializing, please wait a few moment.'
+        break
       case 1:
         if (isWire) {
           n = (
@@ -414,7 +414,7 @@ const SubReminder = ({
                 background: '#fbe9e7',
                 borderRadius: '4px',
                 padding: '6px',
-                marginBottom: '12px',
+                marginBottom: '12px'
               }}
             >
               Your subscription has been created, but not activated, please wire
@@ -437,7 +437,7 @@ const SubReminder = ({
                       <Col span={16}>
                         {showAmount(
                           wireSetup!.minimumAmount as number,
-                          wireSetup!.currency as string,
+                          wireSetup!.currency as string
                         )}
                       </Col>
                     </Row>
@@ -471,7 +471,7 @@ const SubReminder = ({
               </Button>{' '}
               this subscription immediately.
             </div>
-          );
+          )
         } else {
           n = (
             <div
@@ -481,7 +481,7 @@ const SubReminder = ({
                 background: '#fbe9e7',
                 borderRadius: '4px',
                 padding: '6px',
-                marginBottom: '12px',
+                marginBottom: '12px'
               }}
             >
               Your subscription has been created, but not activated, please go
@@ -501,24 +501,24 @@ const SubReminder = ({
               </Button>{' '}
               this subscription immediately.
             </div>
-          );
+          )
         }
 
-        break;
+        break
       case 3:
-        n = 'Your subscription is in pending status, please wait';
-        break;
+        n = 'Your subscription is in pending status, please wait'
+        break
       default:
-        n = '';
+        n = ''
     }
-    return n;
+    return n
     // STATUS[sub?.status as keyof typeof STATUS]
-  };
+  }
 
   if (sub == null || sub.status == 2) {
     // 2: active, only with this status, users can upgrade/downgrad/change
-    return null; // nothing need to be shown on page.
+    return null // nothing need to be shown on page.
   }
-  return getReminder();
+  return getReminder()
   // <div>{STATUS[sub.status as keyof typeof STATUS]}</div>;
-};
+}

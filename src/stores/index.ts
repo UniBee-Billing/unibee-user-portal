@@ -1,7 +1,7 @@
-import { StoreApi, UseBoundStore, create } from 'zustand';
+import { StoreApi, UseBoundStore, create } from 'zustand'
 // import { immer } from "zustand/middleware/immer";
-import { createJSONStorage, persist } from 'zustand/middleware';
-import { IAppConfig, IProfile, TMerchantInfo } from '../shared.types';
+import { createJSONStorage, persist } from 'zustand/middleware'
+import { IAppConfig, IProfile, TMerchantInfo } from '../shared.types'
 // import { createStore } from "zustand";
 
 const INITIAL_PROFILE: IProfile = {
@@ -14,6 +14,7 @@ const INITIAL_PROFILE: IProfile = {
   countryCode: '',
   countryName: '',
   id: null,
+  externalUserId: '',
   phone: '',
   paymentMethod: '',
   linkedIn: '',
@@ -24,13 +25,13 @@ const INITIAL_PROFILE: IProfile = {
   whatsAPP: '',
   otherSocialInfo: '',
   token: '',
-  type: 1,
-};
+  type: 1
+}
 
 interface ProfileSlice extends IProfile {
-  getProfile: () => IProfile;
-  setProfile: (p: IProfile) => void;
-  reset: () => void;
+  getProfile: () => IProfile
+  setProfile: (p: IProfile) => void
+  reset: () => void
   // setProfileField: (field: string, value: any) => void;
 }
 
@@ -40,11 +41,11 @@ export const useProfileStore = create<ProfileSlice>()(
       ...INITIAL_PROFILE,
       getProfile: () => get(),
       setProfile: (p) => set({ ...p }),
-      reset: () => set(INITIAL_PROFILE),
+      reset: () => set(INITIAL_PROFILE)
     }),
-    { name: 'profile' },
-  ),
-);
+    { name: 'profile' }
+  )
+)
 
 // -----------------------------------
 
@@ -57,13 +58,13 @@ const INITIAL_INFO: TMerchantInfo = {
   host: '',
   email: '',
   location: '',
-  phone: '',
-};
+  phone: ''
+}
 
 interface MerchantInfoSlice extends TMerchantInfo {
-  getMerchantInfo: () => TMerchantInfo;
-  setMerchantInfo: (p: TMerchantInfo) => void;
-  reset: () => void;
+  getMerchantInfo: () => TMerchantInfo
+  setMerchantInfo: (p: TMerchantInfo) => void
+  reset: () => void
 }
 
 export const useMerchantInfoStore = create<MerchantInfoSlice>()(
@@ -72,11 +73,11 @@ export const useMerchantInfoStore = create<MerchantInfoSlice>()(
       ...INITIAL_INFO,
       getMerchantInfo: () => get(),
       setMerchantInfo: (p) => set({ ...p }),
-      reset: () => set(INITIAL_INFO),
+      reset: () => set(INITIAL_INFO)
     }),
-    { name: 'merchantInfo' },
-  ),
-);
+    { name: 'merchantInfo' }
+  )
+)
 
 // --------------------------------
 const INITIAL_APP_VALUE: IAppConfig = {
@@ -84,14 +85,14 @@ const INITIAL_APP_VALUE: IAppConfig = {
   isProd: false,
   supportCurrency: [],
   supportTimeZone: [],
-  gateway: [],
-};
+  gateway: []
+}
 
 interface AppConfigSlice extends IAppConfig {
-  getAppConfig: () => IAppConfig;
-  setAppConfig: (a: IAppConfig) => void;
-  setGateway: (g: any) => void;
-  reset: () => void;
+  getAppConfig: () => IAppConfig
+  setAppConfig: (a: IAppConfig) => void
+  setGateway: (g: any) => void
+  reset: () => void
 }
 
 export const useAppConfigStore = create<AppConfigSlice>()(
@@ -101,27 +102,27 @@ export const useAppConfigStore = create<AppConfigSlice>()(
       getAppConfig: () => get(),
       setAppConfig: (a) => set({ ...a }),
       setGateway: (g: any) => {
-        set({ ...get(), gateway: g });
+        set({ ...get(), gateway: g })
       },
-      reset: () => set(INITIAL_APP_VALUE),
+      reset: () => set(INITIAL_APP_VALUE)
     }),
-    { name: 'appConfig' },
-  ),
-);
+    { name: 'appConfig' }
+  )
+)
 
 // ---------------
 interface ISession {
-  expired: boolean;
-  refresh: null | (() => void); // if session is expired when making an async fn call, save this fn here, so after re-login, re-run this fn
+  expired: boolean
+  refresh: null | (() => void) // if session is expired when making an async fn call, save this fn here, so after re-login, re-run this fn
 }
 const INITIAL_SESSION: ISession = {
   expired: true,
-  refresh: null,
-};
+  refresh: null
+}
 interface SessionStoreSlice extends ISession {
-  getSession: () => ISession;
-  setSession: (s: ISession) => void;
-  reset: () => void;
+  getSession: () => ISession
+  setSession: (s: ISession) => void
+  reset: () => void
 }
 
 export const useSessionStore = create<SessionStoreSlice>()(
@@ -130,8 +131,8 @@ export const useSessionStore = create<SessionStoreSlice>()(
       ...INITIAL_SESSION,
       getSession: () => get(),
       setSession: (a) => set({ ...a }),
-      reset: () => set(INITIAL_SESSION),
+      reset: () => set(INITIAL_SESSION)
     }),
-    { name: 'session' },
-  ),
-);
+    { name: 'session' }
+  )
+)
