@@ -1,4 +1,4 @@
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined } from '@ant-design/icons'
 import {
   Button,
   Col,
@@ -10,97 +10,97 @@ import {
   Row,
   Select,
   Spin,
-  message,
-} from 'antd';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { passwordSchema } from '../../helpers';
+  message
+} from 'antd'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { passwordSchema } from '../../helpers'
 import {
   getProfileWithMoreReq,
   logoutReq,
   resetPassReq,
-  saveProfileReq,
-} from '../../requests';
-import { Country, IProfile } from '../../shared.types';
+  saveProfileReq
+} from '../../requests'
+import { Country, IProfile } from '../../shared.types'
 import {
   useAppConfigStore,
   useMerchantInfoStore,
   useProfileStore,
-  useSessionStore,
-} from '../../stores';
-import PaymentSelector from '../ui/paymentSelector';
-import './basicInfo.css';
-import EditCard from './editCard';
+  useSessionStore
+} from '../../stores'
+import PaymentSelector from '../ui/paymentSelector'
+import './basicInfo.css'
+import EditCard from './editCard'
 
-const APP_PATH = import.meta.env.BASE_URL; // default is / (if no --base specified in build cmd)
+const APP_PATH = import.meta.env.BASE_URL // default is / (if no --base specified in build cmd)
 
 const Index = () => {
-  const appConfigStore = useAppConfigStore();
-  const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<IProfile | null>(null);
-  const [form] = Form.useForm();
-  const watchAccountType = Form.useWatch('type', form);
-  const [countryList, setCountryList] = useState<Country[]>([]);
-  const [resetPasswordModal, setResetPasswordModal] = useState(false);
-  const togglePasswordModal = () => setResetPasswordModal(!resetPasswordModal);
-  const profileStore = useProfileStore();
-  const [gatewayId, setGatewayId] = useState(0); // payment gateway is not a antd native radio component, I have to manually update its value here
+  const appConfigStore = useAppConfigStore()
+  const [loading, setLoading] = useState(false)
+  const [profile, setProfile] = useState<IProfile | null>(null)
+  const [form] = Form.useForm()
+  const watchAccountType = Form.useWatch('type', form)
+  const [countryList, setCountryList] = useState<Country[]>([])
+  const [resetPasswordModal, setResetPasswordModal] = useState(false)
+  const togglePasswordModal = () => setResetPasswordModal(!resetPasswordModal)
+  const profileStore = useProfileStore()
+  const [gatewayId, setGatewayId] = useState(0) // payment gateway is not a antd native radio component, I have to manually update its value here
 
   const filterOption = (
     input: string,
-    option?: { label: string; value: string },
-  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+    option?: { label: string; value: string }
+  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 
   const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setGatewayId(Number(e.target.value));
-  };
+    setGatewayId(Number(e.target.value))
+  }
 
   const onSave = async () => {
-    console.log(' saving...', form.getFieldsValue(), '//', gatewayId);
-    let u = JSON.parse(JSON.stringify(form.getFieldsValue()));
-    u.gatewayId = gatewayId;
-    setLoading(true);
-    const [saveProfileRes, err] = await saveProfileReq(u);
-    setLoading(false);
+    console.log(' saving...', form.getFieldsValue(), '//', gatewayId)
+    let u = JSON.parse(JSON.stringify(form.getFieldsValue()))
+    u.gatewayId = gatewayId
+    setLoading(true)
+    const [saveProfileRes, err] = await saveProfileReq(u)
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    message.success('saved');
-    const { user } = saveProfileRes;
-    setGatewayId(user.gatewayId);
-    setProfile(user);
-    profileStore.setProfile(user);
-  };
+    message.success('saved')
+    const { user } = saveProfileRes
+    setGatewayId(user.gatewayId)
+    setProfile(user)
+    profileStore.setProfile(user)
+  }
 
   const fetchData = async () => {
-    setLoading(true);
-    const [res, err] = await getProfileWithMoreReq(fetchData);
-    setLoading(false);
+    setLoading(true)
+    const [res, err] = await getProfileWithMoreReq(fetchData)
+    setLoading(false)
     if (err != null) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    const { user, countryList } = res;
-    setProfile(user);
-    form.setFieldsValue(user);
-    setGatewayId(user.gatewayId);
+    const { user, countryList } = res
+    setProfile(user)
+    form.setFieldsValue(user)
+    setGatewayId(user.gatewayId)
     setCountryList(
       countryList.map((c: any) => ({
         countryCode: c.countryCode,
-        countryName: c.countryName,
-      })),
-    );
-  };
+        countryName: c.countryName
+      }))
+    )
+  }
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   const isCardPaymentSelected =
     appConfigStore.gateway.find(
-      (g) => g.gatewayId == gatewayId && g.gatewayName == 'stripe',
-    ) != null;
+      (g) => g.gatewayId == gatewayId && g.gatewayName == 'stripe'
+    ) != null
 
   return (
     <div>
@@ -167,8 +167,8 @@ const Index = () => {
               rules={[
                 {
                   required: true,
-                  message: 'Please input your first name!',
-                },
+                  message: 'Please input your first name!'
+                }
               ]}
             >
               <Input style={{ width: '300px' }} />
@@ -182,8 +182,8 @@ const Index = () => {
               rules={[
                 {
                   required: true,
-                  message: 'Please input your last name!',
-                },
+                  message: 'Please input your last name!'
+                }
               ]}
             >
               <Input style={{ width: '300px' }} />
@@ -205,8 +205,8 @@ const Index = () => {
               rules={[
                 {
                   required: true,
-                  message: 'Please select your country!',
-                },
+                  message: 'Please select your country!'
+                }
               ]}
             >
               <Select
@@ -217,7 +217,7 @@ const Index = () => {
                 filterOption={filterOption}
                 options={countryList.map((c) => ({
                   label: c.countryName,
-                  value: c.countryCode,
+                  value: c.countryCode
                 }))}
               />
             </Form.Item>
@@ -233,8 +233,8 @@ const Index = () => {
               rules={[
                 {
                   required: watchAccountType == 2, // biz user
-                  message: 'Please input your city!',
-                },
+                  message: 'Please input your city!'
+                }
               ]}
             >
               <Input style={{ width: '300px' }} />
@@ -248,8 +248,8 @@ const Index = () => {
               rules={[
                 {
                   required: watchAccountType == 2, // biz user
-                  message: 'Please input your ZIP code!',
-                },
+                  message: 'Please input your ZIP code!'
+                }
               ]}
             >
               <Input style={{ width: '300px' }} />
@@ -266,8 +266,8 @@ const Index = () => {
               rules={[
                 {
                   required: true,
-                  message: 'Please input your billing address!',
-                },
+                  message: 'Please input your billing address!'
+                }
               ]}
             >
               <Input.TextArea rows={4} style={{ width: '300px' }} />
@@ -281,8 +281,8 @@ const Index = () => {
               rules={[
                 {
                   required: watchAccountType == 2, // biz user
-                  message: 'Please input your company name!',
-                },
+                  message: 'Please input your company name!'
+                }
               ]}
             >
               <Input style={{ width: '300px' }} />
@@ -334,7 +334,7 @@ const Index = () => {
                 position: 'relative',
                 display: 'flex',
                 maxWidth: '560px',
-                height: '100%',
+                height: '100%'
               }}
             >
               <div className="triangle-left" />
@@ -345,7 +345,7 @@ const Index = () => {
                   borderRadius: '6px',
                   padding: '16px',
                   background: '#f5f5f5',
-                  position: 'relative',
+                  position: 'relative'
                   // border: '1px solid #eee',
                 }}
               >
@@ -357,7 +357,26 @@ const Index = () => {
             </div>
           </Col>
         </Row>
-
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              label="Preferred language"
+              name="language"
+              labelCol={{ span: 6 }}
+            >
+              <Select
+                style={{ width: '300px' }}
+                options={[
+                  { value: 'en', label: 'English' },
+                  { value: 'ru', label: 'Russian' },
+                  { value: 'cn', label: 'Chinese' },
+                  { value: 'vi', label: 'Vietnamese' },
+                  { value: 'pt', label: 'Portuguese' }
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
         <Divider
           orientation="left"
           style={{ margin: '32px 0', color: '#757575' }}
@@ -367,17 +386,17 @@ const Index = () => {
         {[
           [
             { label: 'Telegram', name: 'telegram' },
-            { label: 'WhatsApp', name: 'whatsAPP' },
+            { label: 'WhatsApp', name: 'whatsAPP' }
           ],
           [
             { label: 'WeChat', name: 'weChat' },
-            { label: 'LinkedIn', name: 'linkedIn' },
+            { label: 'LinkedIn', name: 'linkedIn' }
           ],
           [
             { label: 'Facebook', name: 'facebook' },
-            { label: 'TikTok', name: 'tikTok' },
+            { label: 'TikTok', name: 'tikTok' }
           ],
-          [{ label: 'Other Social Info', name: 'otherSocialInfo' }],
+          [{ label: 'Other Social Info', name: 'otherSocialInfo' }]
         ].map((s, idx) => (
           <Row key={idx}>
             <Col span={12}>
@@ -417,58 +436,58 @@ const Index = () => {
         </div>
       </Form>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
 
 interface IResetPassProps {
-  email: string;
-  closeModal: () => void;
+  email: string
+  closeModal: () => void
 }
 const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
-  const navigate = useNavigate();
-  const profile = useProfileStore();
-  const merchant = useMerchantInfoStore();
-  const appConfig = useAppConfigStore();
-  const sessionStore = useSessionStore();
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+  const profile = useProfileStore()
+  const merchant = useMerchantInfoStore()
+  const appConfig = useAppConfigStore()
+  const sessionStore = useSessionStore()
+  const [form] = Form.useForm()
+  const [loading, setLoading] = useState(false)
 
   const logout = async () => {
-    const [res, err] = await logoutReq();
+    const [res, err] = await logoutReq()
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    profile.reset();
-    merchant.reset();
-    appConfig.reset();
-    sessionStore.reset();
-    localStorage.removeItem('appConfig');
-    localStorage.removeItem('merchantInfo');
-    localStorage.removeItem('token');
-    localStorage.removeItem('profile');
-    localStorage.removeItem('session');
+    profile.reset()
+    merchant.reset()
+    appConfig.reset()
+    sessionStore.reset()
+    localStorage.removeItem('appConfig')
+    localStorage.removeItem('merchantInfo')
+    localStorage.removeItem('token')
+    localStorage.removeItem('profile')
+    localStorage.removeItem('session')
     navigate(`${APP_PATH}login`, {
-      state: { msg: 'Password reset succeeded, please relogin.' },
-    });
-  };
+      state: { msg: 'Password reset succeeded, please relogin.' }
+    })
+  }
 
   const onConfirm = async () => {
-    const formValues = form.getFieldsValue();
-    setLoading(true);
+    const formValues = form.getFieldsValue()
+    setLoading(true)
     const [res, err] = await resetPassReq(
       formValues.oldPassword,
-      formValues.newPassword,
-    );
-    setLoading(false);
+      formValues.newPassword
+    )
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    await logout();
-  };
+    await logout()
+  }
 
   return (
     <Modal
@@ -488,7 +507,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
           email,
           oldPassword: '',
           newPassword: '',
-          newPassword2: '',
+          newPassword2: ''
         }}
       >
         <Form.Item
@@ -498,8 +517,8 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
           rules={[
             {
               required: true,
-              message: 'Please input your old password!',
-            },
+              message: 'Please input your old password!'
+            }
           ]}
         >
           <Input.Password />
@@ -514,23 +533,23 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
           rules={[
             {
               required: true,
-              message: 'Please input your new password!',
+              message: 'Please input your new password!'
             },
             ({ getFieldValue }) => ({
               validator(rule, value) {
                 if (getFieldValue('oldPassword') == value) {
                   return Promise.reject(
-                    'New password should not be the same as old password.',
-                  );
+                    'New password should not be the same as old password.'
+                  )
                 }
                 if (!passwordSchema.validate(value)) {
                   return Promise.reject(
-                    'At least 8 characters containing lowercase, uppercase, number and special character.',
-                  );
+                    'At least 8 characters containing lowercase, uppercase, number and special character.'
+                  )
                 }
-                return Promise.resolve();
-              },
-            }),
+                return Promise.resolve()
+              }
+            })
           ]}
         >
           <Input.Password />
@@ -543,16 +562,16 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
           rules={[
             {
               required: true,
-              message: 'Please retype your new password!',
+              message: 'Please retype your new password!'
             },
             ({ getFieldValue }) => ({
               validator(rule, value) {
                 if (value == getFieldValue('newPassword')) {
-                  return Promise.resolve();
+                  return Promise.resolve()
                 }
-                return Promise.reject('Please retype the same password');
-              },
-            }),
+                return Promise.reject('Please retype the same password')
+              }
+            })
           ]}
         >
           <Input.Password onPressEnter={form.submit} />
@@ -574,5 +593,5 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
         </Button>
       </div>
     </Modal>
-  );
-};
+  )
+}
