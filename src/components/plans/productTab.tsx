@@ -56,7 +56,7 @@ const Index = () => {
 
   const onTabChange = (newActiveKey: string) => {
     setProductId(newActiveKey)
-    setSearchParams({ product: newActiveKey })
+    setSearchParams({ productId: newActiveKey })
   }
 
   useEffect(() => {

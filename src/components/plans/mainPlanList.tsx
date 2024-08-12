@@ -33,9 +33,6 @@ const Index = ({
   const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   // const [terminateModal, setTerminateModal] = useState(false);
-  // const [activeSub, setActiveSub] = useState<ISubscription | null>(null) // null: when page is loading, no data is ready yet.
-  const isNewUserRef = useRef(true) // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
-  // they have different api call and Modal window
   const [otpModalOpen, setOtpModalOpen] = useState(false) // one-time-payment modal
   const toggleOTP = () => setOtpModalOpen(!otpModalOpen)
   const [otpPlanId, setOtpPlanId] = useState<null | number>(null) // the one-time-payment addon user want to buy
@@ -181,7 +178,7 @@ const Index = ({
   const upgradeCheck = () => {
     return true
 
-    if (isNewUserRef.current) {
+    if (activeSub.current == null) {
       // user has no active sub, this is first-time purchase, not a upgrade
       return true
     }
@@ -265,7 +262,6 @@ const Index = ({
       return
     }
 
-    // isNewUserRef.current ? toggleCreateModal() : toggleUpdateModal()
     activeSub.current == null ? toggleCreateModal() : toggleUpdateModal()
   }
 
@@ -297,7 +293,7 @@ const Index = ({
         isOpen={billingAddressModalOpen}
         closeModal={toggleBillingModal}
         openPreviewModal={
-          isNewUserRef.current ? toggleCreateModal : toggleUpdateModal
+          activeSub.current == null ? toggleCreateModal : toggleUpdateModal
         }
       />
       {cancelSubModalOpen && (
@@ -320,7 +316,7 @@ const Index = ({
       }
       {
         // first time purchase,
-        createModalOpen && isNewUserRef.current && (
+        createModalOpen && activeSub.current == null && (
           <CreateSubModal
             plan={plans.find((p) => p.id == selectedPlan) as IPlan}
             countryList={countryList}
@@ -373,7 +369,7 @@ const Index = ({
           <Button
             type="primary"
             onClick={onPlanConfirm}
-            // disabled={selectedPlan == null || activeSub?.status != 2}
+            // disabled={selectedPlan == null || activeSub.current.status != 2}
             disabled={
               selectedPlan == null ||
               activeSub.current?.status == 0 || // initiating
@@ -384,17 +380,6 @@ const Index = ({
             Buy
           </Button>
         )}
-        {/* 
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <Button
-          type="primary"
-          onClick={() => setTerminateModal(true)}
-          disabled={isNewUserRef.current}
-        >
-          Terminate Subscription
-        </Button>
-        this feature has been moved to /my-subscription page.
-        */}
       </div>
     </div>
   )
