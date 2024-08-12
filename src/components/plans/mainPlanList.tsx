@@ -309,10 +309,10 @@ const Index = ({
       )}
       {
         // update subscription
-        updateModalOpen && !isNewUserRef.current && (
+        updateModalOpen && activeSub.current != null && (
           <UpdatePlanModal
             plan={plans.find((p) => p.id == selectedPlan) as IPlan}
-            subscriptionId={activeSub.current?.subscriptionId}
+            subscriptionId={activeSub.current.subscriptionId}
             closeModal={toggleUpdateModal}
             refresh={fetchData}
           />
