@@ -33,7 +33,7 @@ import PaymentResult from './components/paymentResult'
 // import ProductsUpdate from './components/productUpdate';
 import PlanList from './components/plans'
 import ProfileBasic from './components/profile/basicInfo'
-import ProfileSubscription from './components/profile/subscription'
+import SubscriptionList from './components/profile/subscriptionList'
 import SessionResult from './components/sessionResult'
 import Signup from './components/signup'
 import { initializeReq, logoutReq } from './requests'
@@ -289,7 +289,7 @@ const App: React.FC = () => {
                   />
                   <Route
                     path={`${APP_PATH}my-subscription`}
-                    Component={ProfileSubscription}
+                    Component={SubscriptionList}
                   />
                   <Route
                     path={`${APP_PATH}plans/update`}

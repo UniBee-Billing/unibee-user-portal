@@ -260,8 +260,7 @@ export const getGatewayListReq = async () => {
   }
 }
 
-// to be depreicated
-export const getSublistReq = async (refreshCb: () => void) => {
+export const getSublistReq = async (refreshCb?: () => void) => {
   const profile = useProfileStore.getState()
   const body = {
     userId: profile.id,
@@ -272,7 +271,7 @@ export const getSublistReq = async (refreshCb: () => void) => {
   try {
     const res = await request.post(`/user/subscription/list`, body)
     if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb })
+      session.setSession({ expired: true, refresh: refreshCb ?? null })
       throw new Error('Session expired')
     }
     return [res.data.data.subscriptions, null]
@@ -282,7 +281,6 @@ export const getSublistReq = async (refreshCb: () => void) => {
   }
 }
 
-// to be depreicated
 export const getActiveSub = async () => {
   const profile = useProfileStore.getState()
   try {
@@ -303,12 +301,31 @@ export const getActiveSub = async () => {
   }
 }
 
-// this also imcludes pending sub (we think Pending is a weak version of active)
+// this also includes pending sub (we think Pending is a weak version of active)
 export const getActiveSubReq = async (refreshCb: () => void) => {
   try {
     const res = await request.get(`/user/subscription/current/detail`)
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: refreshCb })
+      throw new ExpiredError('Session expired')
+    }
+    return [res.data.data, null]
+  } catch (err) {
+    let e = err instanceof Error ? err : new Error('Unknown error')
+    return [null, e]
+  }
+}
+
+export const getSubDetailReq = async (
+  subscriptionId: string,
+  refreshCb?: () => void
+) => {
+  try {
+    const res = await request.get(
+      `/user/subscription/detail?subscriptionId=${subscriptionId}`
+    )
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: refreshCb ?? null })
       throw new ExpiredError('Session expired')
     }
     return [res.data.data, null]
@@ -965,4 +982,19 @@ export const getProductListReq = async (count?: number, page?: number) => {
     const e = err instanceof Error ? err : new Error('Unknown error')
     return [null, e]
   }
+}
+
+export const getProductsWithMoreReq = async (refreshCb: () => void) => {
+  const [[products, errProducts], [subscriptions, subErr]] = await Promise.all([
+    getProductListReq(),
+    getSublistReq()
+  ])
+  const err = errProducts || subErr
+  if (null != err) {
+    if (err instanceof ExpiredError) {
+      session.setSession({ expired: true, refresh: refreshCb })
+    }
+    return [null, err]
+  }
+  return [{ products, subscriptions }, null]
 }

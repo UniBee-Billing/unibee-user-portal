@@ -16,32 +16,62 @@ import {
   Tooltip,
   message
 } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import React, { CSSProperties, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { SUBSCRIPTION_STATUS } from '../../constants'
 import { daysBetweenDate, showAmount } from '../../helpers'
-import { getActiveSubReq } from '../../requests'
+import { getSubDetailReq } from '../../requests'
 import '../../shared.css'
 import { DiscountCode, ISubscription } from '../../shared.types'
 import { useAppConfigStore } from '../../stores'
-import EditCardModal from '../modals/editCardModal'
 import CancelSubModal from '../modals/modalCancelPendingSub'
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub'
 import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag'
-import OneTimePaymentHistory from './onetimeHistory'
-import SubHistory from './subHistory'
 
 const APP_PATH = import.meta.env.BASE_URL // default is / (if no --base specified in build cmd)
 
-const Index = () => {
+const Index = ({
+  subDetail,
+  productId,
+  normalizeSub
+}: {
+  subDetail: ISubscription | undefined
+  productId: string
+  normalizeSub: (sub: any) => ISubscription
+}) => {
+  console.log('sub passed from parent(subList): ', subDetail)
   const location = useLocation()
   // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false)
-  const [subscription, setSubscription] = useState<ISubscription | null>(null)
+  const [subscription, setSubscription] = useState<ISubscription | undefined>(
+    subDetail
+  )
   const navigate = useNavigate()
 
+  const refresh = async () => {
+    if (subDetail == null) {
+      return
+    }
+    setLoading(true)
+    const [s, err] = await getSubDetailReq(subDetail.subscriptionId)
+    setLoading(false)
+    if (null != err) {
+      message.error(err.message)
+      return
+    }
+
+    // user might cancel a pending sub, after refresh, backend returns a null, I need to set to null
+    // thus, page will show 'no subscription'
+    if (null == s) {
+      setSubscription(undefined)
+    }
+
+    const sub = normalizeSub(s)
+    setSubscription(sub)
+  }
+
+  /*
   const fetchData = async () => {
     setLoading(true)
     const [s, err] = await getActiveSubReq(fetchData)
@@ -91,16 +121,14 @@ const Index = () => {
           )
       }
     }
-
-    console.log('sub: ', sub)
     setSubscription(sub)
   }
+    */
 
-  const goToChoosePlan = () => navigate(`${APP_PATH}plans`)
+  const goToChoosePlan = () =>
+    navigate(`${APP_PATH}plans?productId=${productId}`)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
+  // useEffect(() => {  }, [])
 
   useEffect(() => {
     if (location.state && location.state.msg) {
@@ -112,38 +140,28 @@ const Index = () => {
     <div>
       <Spin
         spinning={loading}
-        indicator={
-          <LoadingOutlined style={{ fontSize: 32, color: '#FFF' }} spin />
-        }
-        fullscreen
-      />
-      <Divider
-        orientation="left"
-        style={{ margin: '32px 0', color: '#757575' }}
+        size="small"
+        indicator={<LoadingOutlined style={{ fontSize: 32 }} spin />}
       >
-        Current Subscription
-      </Divider>
-      {loading ? null : subscription == null ? (
-        <div className="flex flex-col items-center justify-center">
-          <Empty
-            description="No Subscription"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-          <Button onClick={goToChoosePlan} type="link">
-            Go to choose one
-          </Button>
-        </div>
-      ) : (
-        <>
-          <SubscriptionInfoSection subInfo={subscription} refresh={fetchData} />
-          {subscription.unfinishedSubscriptionPendingUpdate && (
-            <PendingUpdateSection subInfo={subscription} />
-          )}
-        </>
-      )}
-
-      <SubHistory />
-      <OneTimePaymentHistory />
+        {subscription == null ? (
+          <div className="flex flex-col items-center justify-center">
+            <Empty
+              description="No Subscription"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+            <Button onClick={goToChoosePlan} type="link">
+              Go to choose one
+            </Button>
+          </div>
+        ) : (
+          <>
+            <SubscriptionInfoSection subInfo={subscription} refresh={refresh} />
+            {subscription.unfinishedSubscriptionPendingUpdate && (
+              <PendingUpdateSection subInfo={subscription} />
+            )}
+          </>
+        )}
+      </Spin>
     </div>
   )
 }
@@ -571,7 +589,11 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
 
       {subInfo && subInfo.status == 2 && (
         <div className="mx-0 my-6 flex items-center justify-start gap-9">
-          <Button onClick={() => navigate(`${APP_PATH}plans`)}>
+          <Button
+            onClick={() =>
+              navigate(`${APP_PATH}plans?productId=${subInfo.productId}`)
+            }
+          >
             Change Plan
           </Button>
           {/* <Button onClick={toggleEditCardModal}>Edit payment method</Button> */}

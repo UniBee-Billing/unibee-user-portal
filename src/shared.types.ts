@@ -118,6 +118,7 @@ interface ISubscription {
   id: number
   subscriptionId: string
   planId: number
+  productId: number
   userId: number
   status: number
   link: string | undefined

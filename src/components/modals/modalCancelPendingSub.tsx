@@ -1,28 +1,28 @@
-import { Button, Modal, message } from 'antd';
-import { useState } from 'react';
-import { cancelSubReq } from '../../requests';
-import { ISubscription } from '../../shared.types';
+import { Button, Modal, message } from 'antd'
+import { useState } from 'react'
+import { cancelSubReq } from '../../requests'
+import { ISubscription } from '../../shared.types'
 
 interface Props {
-  subInfo: ISubscription | null;
-  closeModal: () => void;
-  refresh: () => void;
+  subInfo: ISubscription | null | undefined
+  closeModal: () => void
+  refresh: () => void
 }
 const Index = ({ subInfo, closeModal, refresh }: Props) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   const onConfirm = async () => {
-    setLoading(true);
-    const [res, err] = await cancelSubReq(subInfo?.subscriptionId as string);
-    setLoading(false);
+    setLoading(true)
+    const [res, err] = await cancelSubReq(subInfo?.subscriptionId as string)
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    message.success(`Subscription cancelled`);
-    closeModal();
-    refresh();
-  };
+    message.success(`Subscription cancelled`)
+    closeModal()
+    refresh()
+  }
 
   return (
     <Modal
@@ -41,7 +41,7 @@ const Index = ({ subInfo, closeModal, refresh }: Props) => {
           justifyContent: 'end',
           alignItems: 'center',
           gap: '18px',
-          marginTop: '24px',
+          marginTop: '24px'
         }}
       >
         <Button onClick={closeModal} disabled={loading}>
@@ -57,7 +57,7 @@ const Index = ({ subInfo, closeModal, refresh }: Props) => {
         </Button>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
