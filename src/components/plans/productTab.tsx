@@ -19,7 +19,7 @@ const Index = () => {
   // todo: combine the following 2 calls into one call
   const fetchData = async () => {
     setLoading(true)
-    const [res, err] = await getProductListReq()
+    const [res, err] = await getProductListReq(fetchData)
     console.log('get productList res: ', res)
     if (null != err) {
       setLoading(false)

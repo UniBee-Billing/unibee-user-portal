@@ -967,14 +967,14 @@ export const onetimepaymentListReq = async (
   }
 }
 
-export const getProductListReq = async (count?: number, page?: number) => {
+export const getProductListReq = async (refreshCb?: () => void) => {
   try {
     const res = await request.post(`/user/product/list`, {
-      count: count ?? 30,
-      page: page ?? 0
+      count: 50,
+      page: 0
     })
     if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
+      session.setSession({ expired: true, refresh: refreshCb ?? null })
       throw new ExpiredError('Session expired')
     }
     return [res.data.data, null]

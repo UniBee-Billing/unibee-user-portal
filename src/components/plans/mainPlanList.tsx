@@ -350,6 +350,7 @@ const Index = ({
               selectedPlan={selectedPlan}
               setSelectedPlan={setSelectedPlan}
               onAddonChange={onAddonChange}
+              statusId={activeSub.current?.status}
               isActive={p.id == activeSub.current?.planId}
               setOtpPlanId={setOtpPlanId} // open one-time-payment modal to confirm: buy this addon?
               toggleOtpModal={toggleOTP}

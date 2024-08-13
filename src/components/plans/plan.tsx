@@ -1,22 +1,24 @@
-import { Button, Checkbox, Input } from 'antd';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
-import React, { useEffect, useState } from 'react';
-import { CURRENCY } from '../../constants';
-import { formatPlanPrice, showAmount } from '../../helpers';
-import { IPlan } from '../../shared.types';
+import { Button, Checkbox, Input } from 'antd'
+import type { CheckboxChangeEvent } from 'antd/es/checkbox'
+import React, { useEffect, useState } from 'react'
+import { CURRENCY } from '../../constants'
+import { formatPlanPrice, showAmount } from '../../helpers'
+import { IPlan } from '../../shared.types'
+import { SubscriptionStatus } from '../ui/statusTag'
 
 interface IPLanProps {
-  plan: IPlan;
-  selectedPlan: number | null;
-  isActive: boolean; // whether current plan is the one user has subscribed(Y: highlight it)
-  setSelectedPlan: (p: number) => void;
+  plan: IPlan
+  selectedPlan: number | null
+  isActive: boolean // whether current plan is the one user has subscribed(Y: highlight it)
+  statusId: number | undefined // used only when isActive: true, highlight the plan with subscription status.
+  setSelectedPlan: (p: number) => void
   onAddonChange: (
     addonId: number,
     quantity: number | null,
-    checked: boolean | null,
-  ) => void;
-  setOtpPlanId: (id: number) => void;
-  toggleOtpModal: () => void;
+    checked: boolean | null
+  ) => void
+  setOtpPlanId: (id: number) => void
+  toggleOtpModal: () => void
 }
 
 const TIME_UNITS = [
@@ -24,61 +26,62 @@ const TIME_UNITS = [
   { label: 'hours', value: 60 * 60 },
   { label: 'days', value: 60 * 60 * 24 },
   { label: 'weeks', value: 60 * 60 * 24 * 7 },
-  { label: 'months(30days)', value: 60 * 60 * 24 * 30 },
-];
+  { label: 'months(30days)', value: 60 * 60 * 24 * 30 }
+]
 
 const getAmount = (amt: number, currency: string) =>
-  amt / CURRENCY[currency].stripe_factor;
+  amt / CURRENCY[currency].stripe_factor
 const secondsToUnit = (sec: number) => {
-  const units = [...TIME_UNITS].sort((a, b) => b.value - a.value);
+  const units = [...TIME_UNITS].sort((a, b) => b.value - a.value)
   for (let i = 0; i < units.length; i++) {
     if (sec % units[i].value === 0) {
-      return [sec / units[i].value, units[i].value]; // if sec is 60 * 60 * 24 * 30 * 3, then return [3, 60 * 60 * 24 * 30 * 3]
+      return [sec / units[i].value, units[i].value] // if sec is 60 * 60 * 24 * 30 * 3, then return [3, 60 * 60 * 24 * 30 * 3]
     }
   }
-  throw Error('Invalid time unit');
-};
+  throw Error('Invalid time unit')
+}
 
 const Index = ({
   plan,
   selectedPlan,
   isActive,
+  statusId,
   setSelectedPlan,
   onAddonChange,
   setOtpPlanId,
-  toggleOtpModal,
+  toggleOtpModal
 }: IPLanProps) => {
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0)
   const addonCheck = (addonId: number) => (e: CheckboxChangeEvent) => {
-    onAddonChange(addonId, null, e.target.checked);
-  };
+    onAddonChange(addonId, null, e.target.checked)
+  }
   const addonQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onAddonChange(Number(e.target.id), Number(e.target.value), null);
-  };
+    onAddonChange(Number(e.target.id), Number(e.target.value), null)
+  }
 
   const trialInfo = () => {
-    let enabled = false;
+    let enabled = false
     const { trialAmount, trialDurationTime, trialDemand, cancelAtTrialEnd } =
-      plan;
-    let amount = Number(trialAmount);
-    let durationTime = Number(trialDurationTime);
-    let requireCardInfo = false;
-    let autoRenew = false;
-    let lengthUnit = 0;
+      plan
+    let amount = Number(trialAmount)
+    let durationTime = Number(trialDurationTime)
+    let requireCardInfo = false
+    let autoRenew = false
+    let lengthUnit = 0
     if (!isNaN(durationTime) && durationTime > 0) {
-      enabled = true;
+      enabled = true
       // amount = getAmount(trialAmount, plan.currency);
-      const [val, unit] = secondsToUnit(durationTime);
-      lengthUnit = unit;
-      durationTime = val;
+      const [val, unit] = secondsToUnit(durationTime)
+      lengthUnit = unit
+      durationTime = val
       // setTrialLengthUnit(unit)
       //  trialDemand?: 'paymentMethod' | '' | boolean // backe
-      requireCardInfo = trialDemand == 'paymentMethod' ? true : false;
+      requireCardInfo = trialDemand == 'paymentMethod' ? true : false
       //   cancelAtTrialEnd?: 0 | 1 | boolean // backend requires this field to be a number of 1 | 0, but to ease the UX, front-end use <Switch />
-      autoRenew = cancelAtTrialEnd == 1 ? false : true;
+      autoRenew = cancelAtTrialEnd == 1 ? false : true
     }
     if (!enabled) {
-      return null;
+      return null
     }
     return (
       <div className=" text-sm text-gray-500">
@@ -91,41 +94,46 @@ const Index = ({
         <div>{requireCardInfo && 'Require bank card'}</div>
         <div>{autoRenew && 'Auto renew'}</div>
       </div>
-    );
-  };
+    )
+  }
 
   useEffect(() => {
-    let amount = plan.amount;
+    let amount = plan.amount
     if (plan.addons != null && plan.addons.length > 0) {
       plan.addons.forEach((a) => {
         if (a.checked && Number.isInteger(Number(a.quantity))) {
-          amount += Number(a.amount) * Number(a.quantity);
+          amount += Number(a.amount) * Number(a.quantity)
         }
-      });
+      })
       if (isNaN(amount)) {
-        amount = plan.amount;
+        amount = plan.amount
       }
     }
-    setTotalAmount(amount);
-  }, [plan]);
+    setTotalAmount(amount)
+  }, [plan])
 
   // console.log('plan detail: ', plan);
 
   const onOtpClick = (planId: number) => () => {
-    console.log('plan addon clicked: ', planId);
-    setOtpPlanId(planId);
-    toggleOtpModal();
-  };
+    console.log('plan addon clicked: ', planId)
+    setOtpPlanId(planId)
+    toggleOtpModal()
+  }
 
   // this is a main plan and has a addon array
   const hasAddonInfo =
-    plan.type == 1 && plan.addons != null && plan.addons.length > 0;
+    plan.type == 1 && plan.addons != null && plan.addons.length > 0
 
   return (
     <div>
       <div className="flex h-8 items-center justify-center">
         {isActive ? (
-          <span style={{ color: 'orange' }}>My Subscription</span>
+          <>
+            <span style={{ color: 'orange', marginRight: '12px' }}>
+              My Subscription
+            </span>{' '}
+            {statusId != null && SubscriptionStatus(statusId)}
+          </>
         ) : null}
       </div>
       <div
@@ -138,7 +146,7 @@ const Index = ({
           boxShadow:
             selectedPlan == plan.id
               ? 'rgba(0, 0, 0, 0.35) 0px 5px 15px'
-              : 'unset',
+              : 'unset'
         }}
       >
         <div style={{ fontSize: '28px' }}>{plan.planName}</div>
@@ -153,7 +161,7 @@ const Index = ({
                   display: 'flex',
                   width: '100%',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
+                  justifyContent: 'space-between'
                 }}
               >
                 <Checkbox onChange={addonCheck(a.id)} checked={a.checked}>
@@ -164,14 +172,14 @@ const Index = ({
                           width: '120px',
                           textOverflow: 'ellipsis',
                           overflow: 'hidden',
-                          whiteSpace: 'nowrap',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         {a.planName}
                       </div>
                       <div style={{ fontSize: '11px' }}>{` ${showAmount(
                         a.amount,
-                        a.currency,
+                        a.currency
                       )}/${a.intervalCount == 1 ? '' : a.intervalCount}${
                         a.intervalUnit
                       }`}</div>
@@ -221,7 +229,7 @@ const Index = ({
         </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
