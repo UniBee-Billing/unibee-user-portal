@@ -10,7 +10,7 @@ interface IPLanProps {
   plan: IPlan
   selectedPlan: number | null
   isActive: boolean // whether current plan is the one user has subscribed(Y: highlight it)
-  statusId: number | undefined // used only when isActive: true, highlight the plan with subscription status.
+  statusId?: number | undefined // used only when isActive: true, highlight the plan with subscription status. It's not used(and meaningless) for one-time plan
   setSelectedPlan: (p: number) => void
   onAddonChange: (
     addonId: number,
