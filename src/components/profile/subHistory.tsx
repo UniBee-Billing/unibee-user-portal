@@ -1,53 +1,63 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import { Col, Divider, Pagination, Popover, Row, Spin, message } from 'antd';
-import Table, { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { formatDate, showAmount } from '../../helpers';
-import { getSubHistoryReq } from '../../requests';
-import { usePagination } from '../hooks';
+import { LoadingOutlined } from '@ant-design/icons'
+import { Col, Divider, Pagination, Popover, Row, Spin, message } from 'antd'
+import Table, { ColumnsType } from 'antd/es/table'
+import dayjs from 'dayjs'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { formatDate, showAmount } from '../../helpers'
+import { getProductListReq, getSubHistoryReq } from '../../requests'
+import { usePagination } from '../hooks'
 
-import { ISubHistoryItem } from '../../shared.types.ts';
-import { SubHistoryStatus, SubscriptionStatus } from '../ui/statusTag.tsx';
+import { IProduct, ISubHistoryItem } from '../../shared.types.ts'
+import { SubHistoryStatus, SubscriptionStatus } from '../ui/statusTag.tsx'
 // import { SubscriptionStatus } from '../ui/statusTag';
 
-const PAGE_SIZE = 10;
-const APP_PATH = import.meta.env.BASE_URL;
+const PAGE_SIZE = 10
+const APP_PATH = import.meta.env.BASE_URL
 
 const Index = () => {
-  const [loading, setLoading] = useState(false);
-  const { page, onPageChangeNoParams } = usePagination();
-  const [total, setTotal] = useState(0);
-  const navigate = useNavigate();
-  const [subHistory, setSubHistory] = useState<ISubHistoryItem[]>([]);
+  const [loading, setLoading] = useState(false)
+  const { page, onPageChangeNoParams } = usePagination()
+  const [total, setTotal] = useState(0)
+  const navigate = useNavigate()
+  const [subHistory, setSubHistory] = useState<ISubHistoryItem[]>([])
+  const [productList, setProductList] = useState<IProduct[]>([])
+  const [loadignProducts, setLoadingProducts] = useState(false)
 
-  const columns: ColumnsType<ISubHistoryItem> = [
+  const getColumns = (): ColumnsType<ISubHistoryItem> => [
+    {
+      title: 'Product',
+      dataIndex: 'product',
+      key: 'product',
+      render: (_, record) => {
+        const product = productList.find((p) => p.id == record.plan.productId)
+        return product != null ? product.productName : ''
+      }
+    },
     {
       title: 'Item Name',
       dataIndex: 'itemName',
       key: 'itemName',
       width: 180,
-      render: (_, record) =>
-        record.plan == null ? null : record.plan.planName,
+      render: (_, record) => (record.plan == null ? null : record.plan.planName)
     },
     {
       title: 'Start Time',
       dataIndex: 'periodStart',
       key: 'periodStart',
-      render: (d) => (d == 0 || d == null ? '―' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d) => (d == 0 || d == null ? '―' : formatDate(d)) // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
     {
       title: 'End Time',
       dataIndex: 'periodEnd',
       key: 'periodEnd',
-      render: (d) => (d == 0 || d == null ? '―' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d) => (d == 0 || d == null ? '―' : formatDate(d)) // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (s) => SubHistoryStatus(s),
+      render: (s) => SubHistoryStatus(s)
     },
     {
       title: 'Addons',
@@ -72,7 +82,7 @@ const Index = () => {
                       {a.quantity} ={' '}
                       {showAmount(
                         a.addonPlan.amount * a.quantity,
-                        a.addonPlan.currency,
+                        a.addonPlan.currency
                       )}
                     </Col>
                   </Row>
@@ -84,20 +94,20 @@ const Index = () => {
               {addons.length}
             </span>
           </Popover>
-        ),
+        )
     },
     {
       title: 'Subscription Id',
       dataIndex: 'subscriptionId',
       key: 'subscriptionId',
-      width: 140,
+      width: 140
       // render: (subId) => (subId == '' || subId == null ?  : { subId }),
     },
     {
       title: 'Created at',
       dataIndex: 'createTime',
       key: 'createTime',
-      render: (d, _) => (d === 0 ? '―' : formatDate(d, true)),
+      render: (d, _) => (d === 0 ? '―' : formatDate(d, true))
     },
     {
       title: 'Invoice Id',
@@ -114,32 +124,47 @@ const Index = () => {
           >
             {invoiceId}
           </div>
-        ),
+        )
       // render: (status, _) => UserStatus(status)
     },
-    { title: 'Payment Id', dataIndex: 'paymentId', key: 'paymentId' },
-  ];
+    { title: 'Payment Id', dataIndex: 'paymentId', key: 'paymentId' }
+  ]
 
   const getSubHistory = async () => {
-    setLoading(true);
+    setLoading(true)
     const [res, err] = await getSubHistoryReq({
       page,
-      count: PAGE_SIZE,
-    });
-    setLoading(false);
+      count: PAGE_SIZE
+    })
+    setLoading(false)
     if (err != null) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    console.log('sub his res: ', res);
-    const { subscriptionTimeLines, total } = res;
-    setSubHistory(subscriptionTimeLines ?? []);
-    setTotal(total);
-  };
+    console.log('sub his res: ', res)
+    const { subscriptionTimeLines, total } = res
+    setSubHistory(subscriptionTimeLines ?? [])
+    setTotal(total)
+  }
+
+  const getProductList = async () => {
+    setLoadingProducts(true)
+    const [res, err] = await getProductListReq()
+    setLoadingProducts(false)
+    if (null != err) {
+      return
+    }
+    console.log('product list: ', res)
+    setProductList(res.products ?? [])
+  }
 
   useEffect(() => {
-    getSubHistory();
-  }, [page]);
+    getSubHistory()
+  }, [page])
+
+  useEffect(() => {
+    getProductList()
+  }, [])
 
   return (
     <div>
@@ -149,23 +174,37 @@ const Index = () => {
       >
         Subscription and Add-on History
       </Divider>
-      <Table
-        columns={columns}
-        dataSource={subHistory}
-        rowKey={'uniqueId'}
-        rowClassName="clickable-tbl-row"
-        pagination={false}
-        scroll={{ x: 1280 }}
-        onRow={(record, rowIndex) => {
-          return {
-            onClick: (event) => {},
-          };
-        }}
-        loading={{
-          spinning: loading,
-          indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />,
-        }}
-      />
+      {loadignProducts ? (
+        <Spin
+          indicator={<LoadingOutlined spin />}
+          size="large"
+          style={{
+            width: '100%',
+            height: '320px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        />
+      ) : (
+        <Table
+          columns={getColumns()}
+          dataSource={subHistory}
+          rowKey={'uniqueId'}
+          rowClassName="clickable-tbl-row"
+          pagination={false}
+          scroll={{ x: 1280 }}
+          onRow={(record, rowIndex) => {
+            return {
+              onClick: (event) => {}
+            }
+          }}
+          loading={{
+            spinning: loading,
+            indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />
+          }}
+        />
+      )}
       <div className="mt-6 flex justify-end">
         <Pagination
           style={{ marginTop: '16px' }}
@@ -182,7 +221,7 @@ const Index = () => {
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

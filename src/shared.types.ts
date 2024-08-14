@@ -91,6 +91,7 @@ interface IProduct {
 
 interface IPlan {
   id: number
+  productId: number
   planName: string
   description: string
   type: number // 1: main plan, 2: add-on, 3: one-time-payment addon
