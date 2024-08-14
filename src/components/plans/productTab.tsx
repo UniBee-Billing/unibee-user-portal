@@ -6,9 +6,9 @@ import { getProductListReq, getSublistReq } from '../../requests'
 import { IProduct, ISubscription } from '../../shared.types'
 import MainPlanList from './mainPlanList'
 
-const Index = () => {
+const Index = ({ productList }: { productList: IProduct[] }) => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [productList, setProductList] = useState<IProduct[]>([])
+  // const [productList, setProductList] = useState<IProduct[]>([])
   const [loading, setLoading] = useState(false)
   // const appConfigStore = useAppConfigStore();
   const [productId, setProductId] = useState(
@@ -16,24 +16,14 @@ const Index = () => {
   ) // set default tab
   const [subList, setSubList] = useState<ISubscription[]>([])
 
-  // todo: combine the following 2 calls into one call
   const fetchData = async () => {
     setLoading(true)
-    const [res, err] = await getProductListReq(fetchData)
-    console.log('get productList res: ', res)
-    if (null != err) {
-      setLoading(false)
-      message.error(err.message)
-      return
-    }
-
     const [subs, subErr] = await getSublistReq()
+    setLoading(false)
     if (null != subErr) {
-      setLoading(false)
-      message.error(err.message)
+      message.error(subErr.message)
       return
     }
-    setLoading(false)
     console.log('sub list res: ', subs)
     setSubList(
       subs == null
@@ -49,9 +39,6 @@ const Index = () => {
             return activeSub
           })
     )
-
-    const productList = res.products ?? []
-    setProductList(productList)
   }
 
   const onTabChange = (newActiveKey: string) => {
@@ -63,8 +50,6 @@ const Index = () => {
     fetchData()
   }, [])
 
-  // it's better to fetch all plans in this component, then pass them to 2 children
-  // maybe later
   return (
     <div>
       <Spin

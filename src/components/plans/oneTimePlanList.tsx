@@ -1,24 +1,18 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd'
+import { Button, Empty, Spin, message } from 'antd'
 import update from 'immutability-helper'
 import React, { useEffect, useRef, useState } from 'react'
+import { PlanType } from '../../constants'
 import { showAmount } from '../../helpers'
-import {
-  getActiveSubWithMore,
-  getCountryList,
-  getPlanList
-} from '../../requests'
-import { Country, IPlan, ISubscription } from '../../shared.types'
-import { useAppConfigStore, useProfileStore } from '../../stores'
+import { getCountryList, getPlanList } from '../../requests'
+import { Country, IPlan, IProduct, ISubscription } from '../../shared.types'
+import { useProfileStore } from '../../stores'
 import OTPBuyListModal from '../modals/addonBuyListModal'
 import BillingAddressModal from '../modals/billingAddressModal'
-import CancelSubModal from '../modals/modalCancelPendingSub'
-import CreateSubModal from '../modals/modalCreateSub'
-import UpdatePlanModal from '../modals/modalUpdateSub'
 import OTPModal from '../modals/onetimePaymentModal2'
 import Plan from './plan'
 
-const Index = () => {
+const Index = ({ productList }: { productList: IProduct[] }) => {
   const profileStore = useProfileStore()
   // const appConfigStore = useAppConfigStore();
   const [plans, setPlans] = useState<IPlan[]>([])
@@ -100,13 +94,16 @@ const Index = () => {
 
   const fetchData = async () => {
     setLoading(true)
-    const [res, err] = await getPlanList({ type: [3] })
+    const [res, err] = await getPlanList({
+      type: [PlanType.OnetimePayment],
+      productIds: productList.map((p) => p.id)
+    })
     setLoading(false)
     if (null != err) {
       message.error(err.message)
       return
     }
-    console.log('add on list: ', res)
+    console.log('one-time-addon list: ', res)
     // setPlans(localPlans.filter((p) => p.type == 1));
     let localPlans: IPlan[] =
       res == null

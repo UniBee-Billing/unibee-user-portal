@@ -70,3 +70,9 @@ export const DISCOUNT_CODE_STATUS: { [key: number]: string } = {
   3: 'Inactive',
   4: 'Expired'
 }
+
+export enum PlanType {
+  MainPlan = 1,
+  Addon = 2,
+  OnetimePayment = 3
+}

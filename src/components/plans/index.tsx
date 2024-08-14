@@ -1,16 +1,18 @@
 import { LoadingOutlined } from '@ant-design/icons'
 import type { TabsProps } from 'antd'
-import { Tabs } from 'antd'
-import React, { useState } from 'react'
+import { message, Spin, Tabs } from 'antd'
+import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { getProductListReq } from '../../requests'
+import { IProduct } from '../../shared.types'
 import { useProfileStore } from '../../stores'
 import OnetimePlanList from './oneTimePlanList'
 import ProductTab from './productTab'
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const profileStore = useProfileStore()
-  // const appConfigStore = useAppConfigStore();
+  const [loading, setLoading] = useState(false)
+  const [productList, setProductList] = useState<IProduct[]>([])
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') ?? 'plans')
 
   const onChange = (key: string) => {
@@ -18,25 +20,66 @@ const Index = () => {
     setSearchParams({ tab: key })
   }
 
+  const getProductList = async () => {
+    setLoading(true)
+    const [res, err] = await getProductListReq(getProductList)
+    setLoading(false)
+    console.log('get productList res: ', res)
+    if (null != err) {
+      message.error(err.message)
+      return
+    }
+    setProductList(res.products ?? [])
+  }
+
+  useEffect(() => {
+    getProductList()
+  }, [])
+  /*
   const tabItems: TabsProps['items'] = [
     {
       key: 'plans',
       label: 'Plans',
-      children: <ProductTab />
+      children: <ProductTab productList={productList}/>
     },
     {
       key: 'one-time-addons',
       label: 'One-time Addons',
-      children: <OnetimePlanList />
+      children: <OnetimePlanList productList={productList}/>
     }
   ]
+    */
 
-  // it's better to fetch all plans in this component, then pass them to 2 children
-  // maybe later
   return (
-    <div>
-      <Tabs activeKey={activeTab} items={tabItems} onChange={onChange} />
-    </div>
+    <Spin
+      indicator={<LoadingOutlined />}
+      size="large"
+      spinning={loading}
+      style={{
+        width: '100%',
+        height: '320px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <Tabs
+        activeKey={activeTab}
+        items={[
+          {
+            key: 'plans',
+            label: 'Plans',
+            children: <ProductTab productList={productList} />
+          },
+          {
+            key: 'one-time-addons',
+            label: 'One-time Addons',
+            children: <OnetimePlanList productList={productList} />
+          }
+        ]}
+        onChange={onChange}
+      />
+    </Spin>
   )
 }
 

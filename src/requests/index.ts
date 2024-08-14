@@ -337,17 +337,17 @@ export const getSubDetailReq = async (
 
 export const getPlanList = async ({
   type,
-  productId
+  productIds
 }: {
   type?: number[]
-  productId?: number
+  productIds?: number[]
 }) => {
   try {
     const res = await request.post(`/user/plan/list`, {
       page: 0,
       count: 100,
       type,
-      productId // default is 0, if omitted
+      productIds
     })
     if (res.data.code == 61) {
       // session.setSession({ expired: true, refresh: null });
@@ -365,7 +365,10 @@ export const getActiveSubWithMore = async (
   refreshCb: () => void
 ) => {
   const [[subscriptions, errSubDetail], [plans, errPlanList]] =
-    await Promise.all([getActiveSub(), getPlanList({ productId })])
+    await Promise.all([
+      getActiveSub(),
+      getPlanList({ productIds: [productId] })
+    ])
   const err = errSubDetail || errPlanList
   if (null != err) {
     if (err instanceof ExpiredError) {
