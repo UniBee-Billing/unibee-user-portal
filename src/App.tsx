@@ -110,7 +110,12 @@ const App: React.FC = () => {
       message.error(err.message)
       return
     }
-    sessionStore.reset()
+    // sessionStore.reset()
+    sessionStore.setSession({
+      expired: true,
+      refresh: null,
+      redirectToLogin: true
+    })
     profileStore.reset()
     merchantStore.reset()
     appConfigStore.reset()
@@ -166,8 +171,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (sessionStore.expired) {
-      if (null == profileStore.id) {
-        // is it better to use email?
+      if (sessionStore.redirectToLogin) {
         navigate(`${APP_PATH}login`)
       } else {
         setOpenLoginModal(true)
@@ -175,7 +179,7 @@ const App: React.FC = () => {
     } else {
       setOpenLoginModal(false)
     }
-  }, [sessionStore.expired])
+  }, [sessionStore])
 
   return (
     <>

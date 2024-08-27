@@ -115,10 +115,15 @@ export const useAppConfigStore = create<AppConfigSlice>()(
 // ---------------
 interface ISession {
   expired: boolean
+  // you are at /my-account, then logout, you are now at /login, if you click GO-BACK button in browser,
+  // you'll go to /my-account, but there'll be many "session expired" error, page structure is there, only content is blank
+  // redirectToLogin is to force you to be at /login if you have logged out.
+  redirectToLogin?: boolean
   refresh: null | (() => void) // if session is expired when making an async fn call, save this fn here, so after re-login, re-run this fn
 }
 const INITIAL_SESSION: ISession = {
   expired: true,
+  redirectToLogin: false,
   refresh: null
 }
 interface SessionStoreSlice extends ISession {

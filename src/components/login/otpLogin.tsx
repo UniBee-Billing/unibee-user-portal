@@ -1,59 +1,59 @@
-import { Button, Form, Input, message } from 'antd';
-import { useEffect, useState } from 'react';
-import OtpInput from 'react-otp-input';
-import { useNavigate } from 'react-router-dom';
-import { emailValidate } from '../../helpers';
+import { Button, Form, Input, message } from 'antd'
+import { useEffect, useState } from 'react'
+import OtpInput from 'react-otp-input'
+import { useNavigate } from 'react-router-dom'
+import { emailValidate } from '../../helpers'
 import {
   getAppConfigReq,
   initializeReq,
   loginWithOTPReq,
-  loginWithOTPVerifyReq,
-} from '../../requests';
+  loginWithOTPVerifyReq
+} from '../../requests'
 import {
   useAppConfigStore,
   useMerchantInfoStore,
   useProfileStore,
-  useSessionStore,
-} from '../../stores';
-import { useCountdown } from '../hooks';
+  useSessionStore
+} from '../../stores'
+import { useCountdown } from '../hooks'
 
-const APP_PATH = import.meta.env.BASE_URL;
+const APP_PATH = import.meta.env.BASE_URL
 
 const Index = ({
   email,
   onEmailChange,
-  triggeredByExpired,
+  triggeredByExpired
 }: {
-  email: string;
-  onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  triggeredByExpired: boolean;
+  email: string
+  onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  triggeredByExpired: boolean
 }) => {
-  const [currentStep, setCurrentStep] = useState(0); // 0: input email, 1: input code
-  const [errMailMsg, setErrMailMsg] = useState('');
-  const [sendingMailaddr, setSendingMailaddr] = useState(false);
-  const [countVal, counting, startCount, stopCounter] = useCountdown(60);
+  const [currentStep, setCurrentStep] = useState(0) // 0: input email, 1: input code
+  const [errMailMsg, setErrMailMsg] = useState('')
+  const [sendingMailaddr, setSendingMailaddr] = useState(false)
+  const [countVal, counting, startCount, stopCounter] = useCountdown(60)
 
-  const goBackForward = () => setCurrentStep((currentStep + 1) % 2);
+  const goBackForward = () => setCurrentStep((currentStep + 1) % 2)
 
   const sendMailaddress = async () => {
     if (email.trim() == '' || !emailValidate(email)) {
-      setErrMailMsg('Invalid email adderss!');
-      return Promise.reject(new Error('Invalid email address'));
+      setErrMailMsg('Invalid email adderss!')
+      return Promise.reject(new Error('Invalid email address'))
     }
 
-    setSendingMailaddr(true);
-    setErrMailMsg('');
-    const [loginRes, err] = await loginWithOTPReq(email);
-    setSendingMailaddr(false);
+    setSendingMailaddr(true)
+    setErrMailMsg('')
+    const [loginRes, err] = await loginWithOTPReq(email)
+    setSendingMailaddr(false)
     if (null != err) {
-      let e = err instanceof Error ? err : new Error('Unkown error');
-      setErrMailMsg(e.message);
-      return Promise.reject(e);
+      let e = err instanceof Error ? err : new Error('Unkown error')
+      setErrMailMsg(e.message)
+      return Promise.reject(e)
     }
-    stopCounter();
-    startCount();
-    message.success('Code sent, please check your email');
-  };
+    stopCounter()
+    startCount()
+    message.success('Code sent, please check your email')
+  }
 
   return (
     <div>
@@ -76,43 +76,43 @@ const Index = ({
         />
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
 
 interface IMailFormProps {
-  email: string;
-  onEmailChange: (evt: React.ChangeEvent<HTMLInputElement>) => void;
-  goForward: () => void;
-  sendMailaddress: () => Promise<any>;
+  email: string
+  onEmailChange: (evt: React.ChangeEvent<HTMLInputElement>) => void
+  goForward: () => void
+  sendMailaddress: () => Promise<any>
 }
 const MailForm = ({
   email,
   onEmailChange,
   goForward,
-  sendMailaddress,
+  sendMailaddress
 }: IMailFormProps) => {
-  const [submitting, setSubmitting] = useState(false);
-  const [errMsg, setErrMsg] = useState('');
+  const [submitting, setSubmitting] = useState(false)
+  const [errMsg, setErrMsg] = useState('')
 
   const submit = async () => {
     try {
-      setSubmitting(true);
-      const res = await sendMailaddress();
-      console.log('send mail addre res: ', res);
-      setSubmitting(false);
-      goForward();
+      setSubmitting(true)
+      const res = await sendMailaddress()
+      console.log('send mail addre res: ', res)
+      setSubmitting(false)
+      goForward()
     } catch (err) {
-      setSubmitting(false);
+      setSubmitting(false)
       if (err instanceof Error) {
-        console.log('err sending mailaddress: ', err.message);
-        setErrMsg(err.message);
+        console.log('err sending mailaddress: ', err.message)
+        setErrMsg(err.message)
       } else {
-        setErrMsg('Unknown error');
+        setErrMsg('Unknown error')
       }
     }
-  };
+  }
 
   return (
     <Form
@@ -129,8 +129,8 @@ const MailForm = ({
         rules={[
           {
             required: true,
-            message: 'Please input your email!',
-          },
+            message: 'Please input your email!'
+          }
         ]}
       >
         <Input value={email} onChange={onEmailChange} onPressEnter={submit} />
@@ -140,7 +140,7 @@ const MailForm = ({
       <Form.Item
         wrapperCol={{
           offset: 8,
-          span: 16,
+          span: 16
         }}
       >
         <Button
@@ -154,22 +154,22 @@ const MailForm = ({
         </Button>
       </Form.Item>
     </Form>
-  );
-};
+  )
+}
 
 // ---------------------------------------------------
 
 interface IOtpFormProps {
-  email: string;
-  errMailMsg: string;
-  counting: boolean;
-  countVal: number;
-  sendMailaddress: () => Promise<any>;
-  goBack: () => void;
-  triggeredByExpired: boolean;
+  email: string
+  errMailMsg: string
+  counting: boolean
+  countVal: number
+  sendMailaddress: () => Promise<any>
+  goBack: () => void
+  triggeredByExpired: boolean
 }
 
-const NUM_INPUTS = 6;
+const NUM_INPUTS = 6
 
 const OTPForm = ({
   email,
@@ -178,62 +178,66 @@ const OTPForm = ({
   countVal,
   sendMailaddress,
   goBack,
-  triggeredByExpired,
+  triggeredByExpired
 }: IOtpFormProps) => {
-  const navigate = useNavigate();
-  const merchantStore = useMerchantInfoStore();
-  const sessionStore = useSessionStore();
-  const appConfigStore = useAppConfigStore();
-  const profileStore = useProfileStore();
-  const [submitting, setSubmitting] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [errMsg, setErrMsg] = useState('');
+  const navigate = useNavigate()
+  const merchantStore = useMerchantInfoStore()
+  const sessionStore = useSessionStore()
+  const appConfigStore = useAppConfigStore()
+  const profileStore = useProfileStore()
+  const [submitting, setSubmitting] = useState(false)
+  const [otp, setOtp] = useState('')
+  const [errMsg, setErrMsg] = useState('')
 
   const onOTPchange = (value: string) => {
-    setOtp(value.toUpperCase());
-  };
+    setOtp(value.toUpperCase())
+  }
 
   const sendCode = async () => {
     if (otp.length != NUM_INPUTS) {
-      setErrMsg('Invalid code');
-      return;
+      setErrMsg('Invalid code')
+      return
     }
-    setErrMsg('');
-    setSubmitting(true);
-    const [loginRes, err] = await loginWithOTPVerifyReq(email, otp);
+    setErrMsg('')
+    setSubmitting(true)
+    const [loginRes, err] = await loginWithOTPVerifyReq(email, otp)
     if (null != err) {
-      setSubmitting(false);
-      setErrMsg(err.message);
-      return;
+      setSubmitting(false)
+      setErrMsg(err.message)
+      return
     }
-    const { user, token } = loginRes;
-    localStorage.setItem('token', token);
-    user.token = token;
-    profileStore.setProfile(user);
-    sessionStore.setSession({ expired: false, refresh: null });
+    const { user, token } = loginRes
+    localStorage.setItem('token', token)
+    user.token = token
+    profileStore.setProfile(user)
+    sessionStore.setSession({
+      expired: false,
+      refresh: null,
+      redirectToLogin: false
+    })
 
-    const [initRes, errInit] = await initializeReq();
-    setSubmitting(false);
+    const [initRes, errInit] = await initializeReq()
+    setSubmitting(false)
     if (null != errInit) {
-      setErrMsg(errInit.message);
-      return;
+      setErrMsg(errInit.message)
+      return
     }
 
-    const { appConfig, gateways, merchantInfo } = initRes;
-    appConfigStore.setAppConfig(appConfig);
-    appConfigStore.setGateway(gateways);
-    merchantStore.setMerchantInfo(merchantInfo);
+    const { appConfig, gateways, merchantInfo } = initRes
+    appConfigStore.setAppConfig(appConfig)
+    appConfigStore.setGateway(gateways)
+    merchantStore.setMerchantInfo(merchantInfo)
 
     if (triggeredByExpired) {
-      sessionStore.refresh && sessionStore.refresh();
-      message.success('Login succeeded');
+      sessionStore.refresh && sessionStore.refresh()
+      message.success('Login succeeded')
     } else {
       navigate(`${APP_PATH}my-subscription`, {
-        state: { from: 'login' },
-      });
+        state: { from: 'login' }
+      })
     }
-    sessionStore.setSession({ expired: false, refresh: null });
-  };
+    sessionStore.setSession({ expired: false, refresh: null })
+  }
 
   return (
     <Form
@@ -241,13 +245,13 @@ const OTPForm = ({
       // onFinish={submit}
       name="login_OTP_code"
       labelCol={{
-        span: 6,
+        span: 6
       }}
       wrapperCol={{
-        span: 18,
+        span: 18
       }}
       style={{
-        maxWidth: 600,
+        maxWidth: 600
       }}
       autoComplete="off"
     >
@@ -266,7 +270,7 @@ const OTPForm = ({
           border: '1px solid gray',
           borderRadius: '6px',
           textAlign: 'center',
-          fontSize: '36px',
+          fontSize: '36px'
         }}
         renderSeparator={<span style={{ width: '36px' }}></span>}
         renderInput={(props) => <input {...props} />}
@@ -299,5 +303,5 @@ const OTPForm = ({
         </div>
       </div>
     </Form>
-  );
-};
+  )
+}
