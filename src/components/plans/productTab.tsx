@@ -61,7 +61,12 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
           items={productList.map((p) => ({
             label: p.productName,
             key: p.id.toString(),
-            children: <MainPlanList productId={p.id} subList={subList} />,
+            children: (
+              <MainPlanList
+                productId={p.id}
+                activeSub={subList.find((s) => s.productId == p.id)}
+              />
+            ),
             icon:
               subList.find((s) => s.productId == p.id) != null ? (
                 <StarOutlined />

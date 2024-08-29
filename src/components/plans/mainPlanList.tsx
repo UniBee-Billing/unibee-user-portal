@@ -16,14 +16,12 @@ import Plan from './plan'
 
 const Index = ({
   productId,
-  subList
+  activeSub
 }: {
   productId: number
-  subList: ISubscription[]
+  activeSub: ISubscription | undefined
 }) => {
   const profileStore = useProfileStore()
-  // const appConfigStore = useAppConfigStore();
-  const activeSub = useRef(subList.find((s) => s.productId == productId)) // undefined means: no active sub in this product
   const [plans, setPlans] = useState<IPlan[]>([])
   const [otpPlans, setOtpPlans] = useState<IPlan[]>([]) // one-time-payment plan,
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null) // null: not selected
@@ -149,22 +147,20 @@ const Index = ({
     // opt plans
     setOtpPlans(localPlans.filter((p) => p.type == 3))
 
-    if (activeSub.current != null) {
-      const planIdx = plans.findIndex(
-        (p: any) => p.id == activeSub.current?.planId
-      )
+    if (activeSub != null) {
+      const planIdx = plans.findIndex((p: any) => p.id == activeSub.planId)
       // let's say we have planA(which has addonA1, addonA2, addonA3), planB, planC, user has subscribed to planA, and selected addonA1, addonA3
       // I need to find the index of addonA1,3 in planA.addons array,
       // then set their {quantity, checked: true} props on planA.addons, these props value are from subscription.addons array.
       if (planIdx != -1 && plans[planIdx].addons != null) {
         for (let i = 0; i < plans[planIdx].addons!.length; i++) {
-          const addonIdx = activeSub.current.addons.findIndex(
+          const addonIdx = activeSub.addons.findIndex(
             (subAddon) => subAddon.addonPlanId == plans[planIdx].addons![i].id
           )
           if (addonIdx != -1) {
             plans[planIdx].addons![i].checked = true
             plans[planIdx].addons![i].quantity =
-              activeSub.current.addons[addonIdx].quantity
+              activeSub.addons[addonIdx].quantity
           }
         }
       }
@@ -176,14 +172,14 @@ const Index = ({
   }
 
   const upgradeCheck = () => {
-    return true
+    // return true
 
-    if (activeSub.current == null) {
+    if (activeSub == null) {
       // user has no active sub, this is first-time purchase, not a upgrade
       return true
     }
     console.log('upgrade check, planList in this product: ', plans)
-    const currentPlan = plans.find((p) => p.id == activeSub.current?.planId)
+    const currentPlan = plans.find((p) => p.id == activeSub.planId)
     const upgradePlan = plans.find((p) => p.id == selectedPlan)
     console.log(
       'current/upgrade: ',
@@ -191,7 +187,7 @@ const Index = ({
       '//',
       upgradePlan,
       '/active sub: ',
-      activeSub.current
+      activeSub
     )
 
     if (currentPlan?.currency != upgradePlan?.currency) {
@@ -262,7 +258,7 @@ const Index = ({
       return
     }
 
-    activeSub.current == null ? toggleCreateModal() : toggleUpdateModal()
+    activeSub == null ? toggleCreateModal() : toggleUpdateModal()
   }
 
   useEffect(() => {
@@ -279,13 +275,13 @@ const Index = ({
         }
         fullscreen
       />
-      <SubReminder sub={activeSub.current} toggleModal={toggleCancelSubModal} />
+      <SubReminder sub={activeSub} toggleModal={toggleCancelSubModal} />
       {/* <Button onClick={toggleBuyRecordModal} type="link">
         addon purchase record
       </Button> */}
-      {buyRecordModalOpen && activeSub.current && (
+      {buyRecordModalOpen && activeSub && (
         <OTPBuyListModal
-          subscriptionId={activeSub.current?.subscriptionId}
+          subscriptionId={activeSub.subscriptionId}
           closeModal={toggleBuyRecordModal}
         />
       )}
@@ -293,22 +289,22 @@ const Index = ({
         isOpen={billingAddressModalOpen}
         closeModal={toggleBillingModal}
         openPreviewModal={
-          activeSub.current == null ? toggleCreateModal : toggleUpdateModal
+          activeSub == null ? toggleCreateModal : toggleUpdateModal
         }
       />
       {cancelSubModalOpen && (
         <CancelSubModal
-          subInfo={activeSub.current}
+          subInfo={activeSub}
           closeModal={toggleCancelSubModal}
           refresh={fetchData}
         />
       )}
       {
         // update subscription
-        updateModalOpen && activeSub.current != null && (
+        updateModalOpen && activeSub != null && (
           <UpdatePlanModal
             plan={plans.find((p) => p.id == selectedPlan) as IPlan}
-            subscriptionId={activeSub.current.subscriptionId}
+            subscriptionId={activeSub.subscriptionId}
             closeModal={toggleUpdateModal}
             refresh={fetchData}
           />
@@ -316,7 +312,7 @@ const Index = ({
       }
       {
         // first time purchase,
-        createModalOpen && activeSub.current == null && (
+        createModalOpen && activeSub == null && (
           <CreateSubModal
             plan={plans.find((p) => p.id == selectedPlan) as IPlan}
             countryList={countryList}
@@ -326,11 +322,11 @@ const Index = ({
           />
         )
       }
-      {otpModalOpen && (
+      {otpModalOpen && activeSub != null && (
         <OTPModal
           closeModal={toggleOTP}
           plan={otpPlans.find((p) => p.id == otpPlanId)}
-          subscriptionId={activeSub.current!.subscriptionId}
+          subscriptionId={activeSub?.subscriptionId}
         />
       )}
 
@@ -350,8 +346,8 @@ const Index = ({
               selectedPlan={selectedPlan}
               setSelectedPlan={setSelectedPlan}
               onAddonChange={onAddonChange}
-              statusId={activeSub.current?.status}
-              isActive={p.id == activeSub.current?.planId}
+              statusId={activeSub?.status}
+              isActive={p.id == activeSub?.planId}
               setOtpPlanId={setOtpPlanId} // open one-time-payment modal to confirm: buy this addon?
               toggleOtpModal={toggleOTP}
             />
@@ -373,9 +369,9 @@ const Index = ({
             // disabled={selectedPlan == null || activeSub.current.status != 2}
             disabled={
               selectedPlan == null ||
-              activeSub.current?.status == 0 || // initiating
-              activeSub.current?.status == 1 || // created (not paid)
-              activeSub.current?.status == 3 // pending (payment in processing)
+              activeSub?.status == 0 || // initiating
+              activeSub?.status == 1 || // created (not paid)
+              activeSub?.status == 3 // pending (payment in processing)
             }
           >
             Buy
