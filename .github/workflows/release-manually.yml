@@ -1,8 +1,9 @@
-name: Release latest version
+name: Release the latest version
 
 on:
-  repository_dispatch:
-    types: [release]
+  push:
+    tags:
+      - 'v[0-9]+\.[0-9]+\.[0-9]+' 
 
 permissions:
   contents: write
@@ -24,18 +25,11 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: 'unibee/admin-portal:${{ github.event.client_payload.version }}'
-
-      - name: Tag version
-        uses: anothrNick/github-tag-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: false
-          CUSTOM_TAG: ${{ github.event.client_payload.version }}
+          tags: unibee/admin-portal:${{ github.ref_name }}
 
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ github.event.client_payload.version }}
-          name: Release ${{ github.event.client_payload.version }}
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           generateReleaseNotes: true
