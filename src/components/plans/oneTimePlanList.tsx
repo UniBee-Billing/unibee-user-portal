@@ -105,7 +105,7 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
     }
     console.log('one-time-addon list: ', res)
     // setPlans(localPlans.filter((p) => p.type == 1));
-    let localPlans: IPlan[] =
+    const localPlans: IPlan[] =
       res == null
         ? []
         : res.map((p: any) => {

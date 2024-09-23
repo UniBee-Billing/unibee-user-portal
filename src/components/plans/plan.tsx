@@ -63,7 +63,7 @@ const Index = ({
     let enabled = false
     const { trialAmount, trialDurationTime, trialDemand, cancelAtTrialEnd } =
       plan
-    let amount = Number(trialAmount)
+    const amount = Number(trialAmount)
     let durationTime = Number(trialDurationTime)
     let requireCardInfo = false
     let autoRenew = false

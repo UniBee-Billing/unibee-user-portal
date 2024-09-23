@@ -133,7 +133,7 @@ const Index = ({
     }
       */
 
-    let localPlans: IPlan[] =
+    const localPlans: IPlan[] =
       plans == null
         ? []
         : plans.map((p: any) => {

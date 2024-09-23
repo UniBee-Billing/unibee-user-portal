@@ -57,7 +57,7 @@ const Index = () => {
 
   const onSave = async () => {
     console.log(' saving...', form.getFieldsValue(), '//', gatewayId)
-    let u = JSON.parse(JSON.stringify(form.getFieldsValue()))
+    const u = JSON.parse(JSON.stringify(form.getFieldsValue()))
     u.gatewayId = gatewayId
     setLoading(true)
     const [saveProfileRes, err] = await saveProfileReq(u)

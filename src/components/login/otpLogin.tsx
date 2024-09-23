@@ -46,7 +46,7 @@ const Index = ({
     const [loginRes, err] = await loginWithOTPReq(email)
     setSendingMailaddr(false)
     if (null != err) {
-      let e = err instanceof Error ? err : new Error('Unkown error')
+      const e = err instanceof Error ? err : new Error('Unkown error')
       setErrMailMsg(e.message)
       return Promise.reject(e)
     }
