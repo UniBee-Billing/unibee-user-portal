@@ -1,20 +1,20 @@
 // import { EditFilled, MinusOutlined, PlusOutlined } from '@ant-design/icons'
-import { Button, Col, Modal, Row } from 'antd';
-import dayjs from 'dayjs';
-import React from 'react';
-import { REFUND_STATUS } from '../../constants';
-import { showAmount } from '../../helpers';
-import { TRefund } from '../../shared.types';
-import { useAppConfigStore } from '../../stores';
+import { Button, Col, Modal, Row } from 'antd'
+import dayjs from 'dayjs'
+import React from 'react'
+import { REFUND_STATUS } from '../../constants'
+import { showAmount } from '../../helpers'
+import { TRefund } from '../../shared.types'
+import { useAppConfigStore } from '../../stores'
 
 interface Props {
-  detail: TRefund;
-  closeModal: () => void;
-  ignoreAmtFactor: boolean;
+  detail: TRefund
+  closeModal: () => void
+  ignoreAmtFactor: boolean
 }
 
 const Index = ({ detail, closeModal, ignoreAmtFactor }: Props) => {
-  const appConfigStore = useAppConfigStore();
+  const appConfigStore = useAppConfigStore()
 
   return (
     <Modal
@@ -94,7 +94,7 @@ const Index = ({ detail, closeModal, ignoreAmtFactor }: Props) => {
         </div>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

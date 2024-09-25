@@ -2,8 +2,8 @@ import { LoadingOutlined, StarOutlined } from '@ant-design/icons'
 import { Spin, Tabs, message } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getProductListReq, getSublistReq } from '../../requests'
-import { IProduct, ISubscription } from '../../shared.types'
+import { getSublistReq } from '../../requests'
+import { IProduct, ISubAddon, ISubscription } from '../../shared.types'
 import MainPlanList from './mainPlanList'
 
 const Index = ({ productList }: { productList: IProduct[] }) => {
@@ -28,7 +28,7 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
     setSubList(
       subs == null
         ? []
-        : subs.map((sub: any) => {
+        : subs.map((sub: ISubscription & { addonParams: ISubAddon[] }) => {
             // const { id, status, planId, productId } = s.subscription
             // return { id, status, planId, productId }
             const activeSub = { ...sub.subscription }

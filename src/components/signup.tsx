@@ -5,88 +5,86 @@ import {
   message,
   Radio,
   RadioChangeEvent,
-  Select,
-  Tabs,
-} from 'antd';
-import React, { useEffect, useState } from 'react';
-import OtpInput from 'react-otp-input';
-import { useNavigate } from 'react-router-dom';
-import { emailValidate, passwordSchema } from '../helpers';
-import { getCountryList, signUpReq, signUpVerifyReq } from '../requests';
-import { Country } from '../shared.types';
-import AppFooter from './appFooter';
-import AppHeader from './appHeader';
-import { useCountdown } from './hooks';
+  Select
+} from 'antd'
+import React, { useEffect, useState } from 'react'
+import OtpInput from 'react-otp-input'
+import { useNavigate } from 'react-router-dom'
+import { emailValidate, passwordSchema } from '../helpers'
+import { getCountryList, signUpReq, signUpVerifyReq } from '../requests'
+import { Country } from '../shared.types'
+import AppFooter from './appFooter'
+import AppHeader from './appHeader'
+import { useCountdown } from './hooks'
 
-const APP_PATH = import.meta.env.BASE_URL;
-const API_URL = import.meta.env.VITE_API_URL;
+const APP_PATH = import.meta.env.BASE_URL
 
 const Index = () => {
-  const navigate = useNavigate();
-  const [form] = Form.useForm();
-  const [accountType, setAccountType] = useState('1'); // 1: individual, 2: business, backend use number, front-end uses string
-  const [countryList, setCountryList] = useState<Country[]>([]);
-  const [currentStep, setCurrentStep] = useState(0); // 0: signup-basic-info  |  1: enter verfication code
-  const [submitting, setSubmitting] = useState(false);
-  const [countVal, isCounting, startCountdown, stopCounter] = useCountdown(60);
-  const [otp, setOtp] = useState('');
+  const navigate = useNavigate()
+  const [form] = Form.useForm()
+  const [accountType, setAccountType] = useState('1') // 1: individual, 2: business, backend use number, front-end uses string
+  const [countryList, setCountryList] = useState<Country[]>([])
+  const [currentStep, setCurrentStep] = useState(0) // 0: signup-basic-info  |  1: enter verfication code
+  const [submitting, setSubmitting] = useState(false)
+  const [countVal, isCounting, startCountdown, stopCounter] = useCountdown(60)
+  const [otp, setOtp] = useState('')
   const onOTPchange = (value: string) => {
-    setOtp(value.toUpperCase());
-  };
+    setOtp(value.toUpperCase())
+  }
 
   const filterOption = (
     input: string,
-    option?: { label: string; value: string },
-  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+    option?: { label: string; value: string }
+  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 
   const onAccountTypeChange = (evt: RadioChangeEvent) =>
-    setAccountType(evt.target.value);
+    setAccountType(evt.target.value)
 
-  const goLogin = () => navigate(`${APP_PATH}login`);
+  const goLogin = () => navigate(`${APP_PATH}login`)
 
   // send basic signup info
   const onSubmitBasicInfo = async () => {
-    const body = JSON.parse(JSON.stringify(form.getFieldsValue()));
-    body.type = Number(accountType);
+    const body = JSON.parse(JSON.stringify(form.getFieldsValue()))
+    body.type = Number(accountType)
     if (accountType == '1') {
-      delete body.companyName;
-      delete body.vATNumber;
-      delete body.address;
-      delete body.city;
-      delete body.zipCode;
+      delete body.companyName
+      delete body.vATNumber
+      delete body.address
+      delete body.city
+      delete body.zipCode
     }
-    console.log('signup info: ', body);
+    console.log('signup info: ', body)
     // return;
-    setSubmitting(true);
-    const [res, err] = await signUpReq(body);
-    setSubmitting(false);
-    console.log('signup res: ', res);
+    setSubmitting(true)
+    const [res, err] = await signUpReq(body)
+    setSubmitting(false)
+    console.log('signup res: ', res)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    message.success('Verification code sent.');
-    setCurrentStep(1);
-    stopCounter();
-    startCountdown();
-  };
+    message.success('Verification code sent.')
+    setCurrentStep(1)
+    stopCounter()
+    startCountdown()
+  }
 
   // send verification code
   const onSubmitCode = async () => {
-    setSubmitting(true);
-    const [res, err] = await signUpVerifyReq({
+    setSubmitting(true)
+    const [_, err] = await signUpVerifyReq({
       email: form.getFieldValue('email'),
-      verificationCode: otp,
-    });
-    setSubmitting(false);
+      verificationCode: otp
+    })
+    setSubmitting(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
     navigate(`${APP_PATH}login`, {
-      state: { msg: 'Thanks for your sign-up.' },
-    });
-  };
+      state: { msg: 'Thanks for your sign-up.' }
+    })
+  }
 
   const signUpForm = (name: string) => (
     <div
@@ -107,8 +105,8 @@ const Index = () => {
           rules={[
             {
               required: true,
-              message: 'Please input your first name!',
-            },
+              message: 'Please input your first name!'
+            }
           ]}
         >
           <Input />
@@ -120,8 +118,8 @@ const Index = () => {
           rules={[
             {
               required: true,
-              message: 'Please input yourn last name!',
-            },
+              message: 'Please input yourn last name!'
+            }
           ]}
         >
           <Input />
@@ -133,16 +131,16 @@ const Index = () => {
           rules={[
             {
               required: true,
-              message: 'Please input your Email!',
+              message: 'Please input your Email!'
             },
-            ({ getFieldValue }) => ({
-              validator(rule, value) {
+            () => ({
+              validator(_, value) {
                 if (value != null && value != '' && emailValidate(value)) {
-                  return Promise.resolve();
+                  return Promise.resolve()
                 }
-                return Promise.reject('Invalid email address');
-              },
-            }),
+                return Promise.reject('Invalid email address')
+              }
+            })
           ]}
         >
           <Input />
@@ -155,8 +153,8 @@ const Index = () => {
             rules={[
               {
                 required: true,
-                message: 'Please input your company name!',
-              },
+                message: 'Please input your company name!'
+              }
             ]}
           >
             <Input />
@@ -189,8 +187,8 @@ const Index = () => {
           rules={[
             {
               required: true,
-              message: 'Please select your country!',
-            },
+              message: 'Please select your country!'
+            }
           ]}
         >
           <Select
@@ -201,7 +199,7 @@ const Index = () => {
             filterOption={filterOption}
             options={countryList.map((c) => ({
               label: c.countryName,
-              value: c.countryCode,
+              value: c.countryCode
             }))}
           />
         </Form.Item>
@@ -213,8 +211,8 @@ const Index = () => {
             rules={[
               {
                 required: true,
-                message: 'Please input your city name!',
-              },
+                message: 'Please input your city name!'
+              }
             ]}
           >
             <Input />
@@ -228,8 +226,8 @@ const Index = () => {
             rules={[
               {
                 required: true,
-                message: 'Please input your zipcode!',
-              },
+                message: 'Please input your zipcode!'
+              }
             ]}
           >
             <Input />
@@ -243,8 +241,8 @@ const Index = () => {
             rules={[
               {
                 required: true,
-                message: 'Please input your company address!',
-              },
+                message: 'Please input your company address!'
+              }
             ]}
           >
             <Input.TextArea rows={3} />
@@ -258,18 +256,18 @@ const Index = () => {
           rules={[
             {
               required: true,
-              message: 'Please input your password!',
+              message: 'Please input your password!'
             },
-            ({ getFieldValue }) => ({
-              validator(rule, value) {
+            () => ({
+              validator(_, value) {
                 if (!passwordSchema.validate(value)) {
                   return Promise.reject(
-                    'At least 8 characters containing lowercase, uppercase, number and special character.',
-                  );
+                    'At least 8 characters containing lowercase, uppercase, number and special character.'
+                  )
                 }
-                return Promise.resolve();
-              },
-            }),
+                return Promise.resolve()
+              }
+            })
           ]}
         >
           <Input.Password />
@@ -282,16 +280,16 @@ const Index = () => {
           rules={[
             {
               required: true,
-              message: 'Please retype your password!',
+              message: 'Please retype your password!'
             },
             ({ getFieldValue }) => ({
-              validator(rule, value) {
+              validator(value) {
                 if (value == getFieldValue('password')) {
-                  return Promise.resolve();
+                  return Promise.resolve()
                 }
-                return Promise.reject('Please retype the same password');
-              },
-            }),
+                return Promise.reject('Please retype the same password')
+              }
+            })
           ]}
         >
           <Input.Password onPressEnter={form.submit} />
@@ -300,7 +298,7 @@ const Index = () => {
         <Form.Item
           wrapperCol={{
             offset: 11,
-            span: 8,
+            span: 8
           }}
         >
           <Button type="primary" onClick={form.submit} loading={submitting}>
@@ -309,25 +307,25 @@ const Index = () => {
         </Form.Item>
       </Form>
     </div>
-  );
+  )
 
   useEffect(() => {
     const getCountries = async () => {
-      const [vatCountryList, err] = await getCountryList();
+      const [vatCountryList, err] = await getCountryList()
       if (null != err) {
-        message.error('Getting country list err');
-        return;
+        message.error('Getting country list err')
+        return
       }
-      setCountryList(vatCountryList);
-    };
-    getCountries();
-  }, []);
+      setCountryList(vatCountryList)
+    }
+    getCountries()
+  }, [])
 
   return (
     <div
       style={{
         height: 'calc(100vh - 132px)',
-        overflowY: 'auto',
+        overflowY: 'auto'
       }}
     >
       <AppHeader />
@@ -337,7 +335,7 @@ const Index = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          marginTop: '60px',
+          marginTop: '60px'
         }}
       >
         <h1 className="mb-9 mt-16">Customer Sign-up</h1>
@@ -351,7 +349,7 @@ const Index = () => {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            paddingTop: '24px',
+            paddingTop: '24px'
           }}
         >
           {currentStep == 0 ? (
@@ -362,7 +360,7 @@ const Index = () => {
               </Radio.Group>
               <div className=" my-4"></div>
               {signUpForm(
-                accountType == '1' ? 'individual-signup' : 'business-signup',
+                accountType == '1' ? 'individual-signup' : 'business-signup'
               )}
             </>
           ) : (
@@ -378,7 +376,7 @@ const Index = () => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  height: '78px',
+                  height: '78px'
                 }}
               >
                 <h3>
@@ -397,7 +395,7 @@ const Index = () => {
                   border: '1px solid gray',
                   borderRadius: '6px',
                   textAlign: 'center',
-                  fontSize: '36px',
+                  fontSize: '36px'
                 }}
                 renderSeparator={<span style={{ width: '36px' }}></span>}
                 renderInput={(props) => <input {...props} />}
@@ -408,7 +406,7 @@ const Index = () => {
                   justifyContent: 'center',
                   alignItems: 'center',
                   flexDirection: 'column',
-                  marginTop: '36px',
+                  marginTop: '36px'
                 }}
               >
                 <Button
@@ -433,7 +431,7 @@ const Index = () => {
                       display: 'flex',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      maxWidth: '180px',
+                      maxWidth: '180px'
                     }}
                   >
                     <Button
@@ -464,7 +462,7 @@ const Index = () => {
               display: 'flex',
               color: '#757575',
               justifyContent: 'center',
-              alignItems: 'center',
+              alignItems: 'center'
               // margin: "-12px 0 18px 0",
             }}
           >
@@ -477,7 +475,7 @@ const Index = () => {
       </div>
       <AppFooter />
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

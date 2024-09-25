@@ -1,5 +1,5 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import type { InputRef } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons'
+import type { InputRef } from 'antd'
 import {
   Button,
   Col,
@@ -9,32 +9,31 @@ import {
   Row,
   Select,
   Spin,
-  message,
-} from 'antd';
-import update from 'immutability-helper';
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CURRENCY } from '../../constants';
-import { showAmount } from '../../helpers';
+  message
+} from 'antd'
+import update from 'immutability-helper'
+import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { showAmount } from '../../helpers'
 import {
   createPreviewReq,
   createSubscriptionReq,
   markWireCompleteReq,
-  vatNumberCheckReq,
-} from '../../requests';
-import { Country, IPlan, IPreview } from '../../shared.types';
-import { useAppConfigStore, useProfileStore } from '../../stores';
-import PaymentSelector from '../ui/paymentSelector';
-import './modalCreateSub.css';
+  vatNumberCheckReq
+} from '../../requests'
+import { Country, IPlan, IPreview } from '../../shared.types'
+import { useAppConfigStore, useProfileStore } from '../../stores'
+import PaymentSelector from '../ui/paymentSelector'
+import './modalCreateSub.css'
 
-const APP_PATH = import.meta.env.BASE_URL;
+const APP_PATH = import.meta.env.BASE_URL
 
 interface Props {
-  plan: IPlan;
-  countryList: Country[];
-  userCountryCode: string;
-  defaultVatNumber: string;
-  closeModal: () => void;
+  plan: IPlan
+  countryList: Country[]
+  userCountryCode: string
+  defaultVatNumber: string
+  closeModal: () => void
 }
 
 const Index = ({
@@ -42,108 +41,108 @@ const Index = ({
   countryList,
   userCountryCode,
   defaultVatNumber,
-  closeModal,
+  closeModal
 }: Props) => {
-  const navigate = useNavigate();
-  const appConfig = useAppConfigStore();
-  const profileStore = useProfileStore();
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [preview, setPreview] = useState<IPreview | null>(null);
-  const [vatNumber, setVatNumber] = useState(defaultVatNumber);
-  const [selectedCountry, setSelectedCountry] = useState(userCountryCode);
-  const vatChechkingRef = useRef(false);
-  const discountChkingRef = useRef(false);
-  const discountInputRef = useRef<InputRef>(null);
-  const [discountChecking, setDiscountChecking] = useState(false);
-  const [vatChecking, setVatChecking] = useState(false);
+  const navigate = useNavigate()
+  const appConfig = useAppConfigStore()
+  const profileStore = useProfileStore()
+  const [loading, setLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [preview, setPreview] = useState<IPreview | null>(null)
+  const [vatNumber, setVatNumber] = useState(defaultVatNumber)
+  const [selectedCountry, setSelectedCountry] = useState(userCountryCode)
+  const vatChechkingRef = useRef(false)
+  const discountChkingRef = useRef(false)
+  const discountInputRef = useRef<InputRef>(null)
+  const [discountChecking, setDiscountChecking] = useState(false)
+  const [vatChecking, setVatChecking] = useState(false)
 
-  const subscriptionId = useRef(''); // fore wire transfer, we need this Id(after creating sub) to mark transfer as complete
+  const subscriptionId = useRef('') // fore wire transfer, we need this Id(after creating sub) to mark transfer as complete
 
   // set card payment as default gateway
   const [gatewayId, setGatewayId] = useState<undefined | number>(
-    appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId,
-  );
+    appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId
+  )
   const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setGatewayId(Number(e.target.value));
-  };
+    setGatewayId(Number(e.target.value))
+  }
 
   // is wire-transfer selected? Yes, then extra step is needed
-  const [wireConfirmStep, setWireConfirmStep] = useState(false);
+  const [wireConfirmStep, setWireConfirmStep] = useState(false)
   const wireSetup = appConfig.gateway.find(
-    (g) => g.gatewayName == 'wire_transfer',
-  );
-  const isWireSelected = wireSetup != null && wireSetup.gatewayId == gatewayId;
+    (g) => g.gatewayName == 'wire_transfer'
+  )
+  const isWireSelected = wireSetup != null && wireSetup.gatewayId == gatewayId
 
   const onVatChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setVatNumber(e.target.value);
+    setVatNumber(e.target.value)
 
   // vat number and vatCountry are exclusive to each other,
   // when one is selected/input, the other need to be disabled(or cleared)
   const onCountryChange = (value: string) => {
-    setSelectedCountry(value);
-  };
+    setSelectedCountry(value)
+  }
   const filterOption = (
     input: string,
-    option?: { label: string; value: string },
-  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+    option?: { label: string; value: string }
+  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 
   const getDiscountDesc = () => {
     if (preview == null) {
-      return '';
+      return ''
     }
     if (preview.discountMessage != '') {
-      return <span className=" text-red-700">{preview.discountMessage}</span>;
+      return <span className=" text-red-700">{preview.discountMessage}</span>
     }
     // return '';
     if (preview.discount == null) {
-      return '';
+      return ''
     }
-    const code = preview.discount;
+    const code = preview.discount
     let amt =
       code.discountType == 1 // 1: percentage, 2: fixed amt
         ? String(code.discountPercentage / 100) + '% off'
-        : showAmount(code.discountAmount, code.currency) + ' off';
-    amt += `, number of billing cycles you can use this code: ${code.cycleLimit == 0 ? 'unlimited' : code.cycleLimit}`;
-    return `${amt}`;
-  };
+        : showAmount(code.discountAmount, code.currency) + ' off'
+    amt += `, number of billing cycles you can use this code: ${code.cycleLimit == 0 ? 'unlimited' : code.cycleLimit}`
+    return `${amt}`
+  }
 
   const createPreview = async () => {
     if (null == gatewayId) {
-      message.error('Please select your payment method.');
-      return;
+      message.error('Please select your payment method.')
+      return
     }
 
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
-        : [];
+        : []
 
     // return;
-    setLoading(true);
+    setLoading(true)
     const [previewRes, err] = await createPreviewReq(
       plan.id,
       addons.map((a) => ({
         quantity: a.quantity as number,
-        addonPlanId: a.id,
+        addonPlanId: a.id
       })),
       vatNumber,
       selectedCountry,
       gatewayId as number,
       createPreview,
-      discountInputRef.current?.input?.value,
-    );
-    setLoading(false);
-    console.log('previewRes: ', previewRes);
+      discountInputRef.current?.input?.value
+    )
+    setLoading(false)
+    console.log('previewRes: ', previewRes)
     if (null != err) {
-      message.error(err.message);
-      return false;
+      message.error(err.message)
+      return false
     }
 
-    setDiscountChecking(false);
-    setPreview(previewRes);
-    return true;
-  };
+    setDiscountChecking(false)
+    setPreview(previewRes)
+    return true
+  }
 
   // although we have a Apply button to check discount code, but users might not click it,
   // so onBlur is used to force check.
@@ -153,128 +152,128 @@ const Index = ({
     // if onBlur is happening on Cancel button, that means users want to close the Modal
     // then, we don't need to createPreview
     if (evt.relatedTarget?.classList.contains('cancel-btn-wrapper')) {
-      return;
+      return
     }
     // Apply button's job is also to createPreview, it's duplicate onblur's job
     if (evt.relatedTarget?.classList.contains('apply-btn-wrapper')) {
-      return;
+      return
     }
 
-    setDiscountChecking(true);
+    setDiscountChecking(true)
     if (evt.relatedTarget?.classList.contains('confirm-btn-wrapper')) {
-      discountChkingRef.current = true;
+      discountChkingRef.current = true
     }
-    await createPreview(); // I should insert **ref.current = true/false into createPreview
-    discountChkingRef.current = false;
-    setDiscountChecking(false);
-    setSubmitting(false);
-  };
+    await createPreview() // I should insert **ref.current = true/false into createPreview
+    discountChkingRef.current = false
+    setDiscountChecking(false)
+    setSubmitting(false)
+  }
 
   // discount's Apply button onClick handler
   // refactor this with the above into one
   const onDiscountChecking2: React.MouseEventHandler<HTMLElement> = async (
-    evt,
+    _
   ) => {
-    setDiscountChecking(true);
-    discountChkingRef.current = true;
-    await createPreview(); // I should insert **ref.current = true/false into createPreview
-    discountChkingRef.current = false;
-    setDiscountChecking(false);
-    setSubmitting(false);
-  };
+    setDiscountChecking(true)
+    discountChkingRef.current = true
+    await createPreview() // I should insert **ref.current = true/false into createPreview
+    discountChkingRef.current = false
+    setDiscountChecking(false)
+    setSubmitting(false)
+  }
 
   const onCodeEnter = async () => {
-    discountChkingRef.current = true;
-    setDiscountChecking(true);
-    await createPreview(); // I should insert **ref.current = true/false into createPreview
-    discountChkingRef.current = false;
-    setDiscountChecking(false);
-  };
+    discountChkingRef.current = true
+    setDiscountChecking(true)
+    await createPreview() // I should insert **ref.current = true/false into createPreview
+    discountChkingRef.current = false
+    setDiscountChecking(false)
+  }
 
   const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
     if (evt.relatedTarget?.classList.contains('cancel-btn-wrapper')) {
-      closeModal();
-      return;
+      closeModal()
+      return
     }
 
-    setVatChecking(true);
+    setVatChecking(true)
     if (evt.relatedTarget?.classList.contains('confirm-btn-wrapper')) {
-      vatChechkingRef.current = true;
+      vatChechkingRef.current = true
     }
 
     if (vatNumber == '') {
-      setVatChecking(false);
-      vatChechkingRef.current = false;
-      await createPreview();
-      return;
+      setVatChecking(false)
+      vatChechkingRef.current = false
+      await createPreview()
+      return
     }
 
-    setSubmitting(true);
-    const [vatNumberValidate, err] = await vatNumberCheckReq(vatNumber);
-    setVatChecking(false);
+    setSubmitting(true)
+    const [vatNumberValidate, err] = await vatNumberCheckReq(vatNumber)
+    setVatChecking(false)
     if (null != err) {
-      message.error(err.message);
-      setSubmitting(false);
-      vatChechkingRef.current = false;
-      return;
+      message.error(err.message)
+      setSubmitting(false)
+      vatChechkingRef.current = false
+      return
     }
-    vatChechkingRef.current = false;
+    vatChechkingRef.current = false
     const newPreview = update(preview, {
-      vatNumberValidate: { $set: vatNumberValidate },
-    });
-    setPreview(newPreview);
+      vatNumberValidate: { $set: vatNumberValidate }
+    })
+    setPreview(newPreview)
     if (!vatNumberValidate.valid) {
-      setSubmitting(false);
-      message.error('Invalid VAT, please re-type or leave it blank.');
-      return;
+      setSubmitting(false)
+      message.error('Invalid VAT, please re-type or leave it blank.')
+      return
     }
 
-    await createPreview();
-    setSubmitting(false);
-  };
+    await createPreview()
+    setSubmitting(false)
+  }
 
   const confirmCheck = () => {
     if (preview == null) {
-      return false;
+      return false
     }
     if (preview.vatNumberValidate != null && !preview.vatNumberValidate.valid) {
-      message.error('Invalid VAT number');
-      return false;
+      message.error('Invalid VAT number')
+      return false
     }
     if (preview.discountMessage != '') {
-      message.error('Invalid discount code');
-      return false;
+      message.error('Invalid discount code')
+      return false
     }
-    return true;
-  };
+    return true
+  }
 
   const onConfirm = async () => {
     if (!confirmCheck()) {
-      return;
+      return
     }
 
     if (wireConfirmStep) {
-      setLoading(true);
-      const [res, err] = await markWireCompleteReq(subscriptionId.current);
-      setLoading(false);
+      setLoading(true)
+      const [res, err] = await markWireCompleteReq(subscriptionId.current)
+      setLoading(false)
       if (null != err) {
-        message.error(err.message);
-        return;
+        message.error(err.message)
+        return
       }
-      console.log('mark wire complete res: ', res);
-      closeModal();
-      message.success('Subscription created.');
-      navigate(`${APP_PATH}my-subscription`);
-      return;
+      console.log('mark wire complete res: ', res)
+      closeModal()
+      message.success('Subscription created.')
+      navigate(`${APP_PATH}my-subscription`)
+      return
     }
 
     if (vatChechkingRef.current || discountChkingRef.current) {
-      return;
+      return
     }
 
     if (null == gatewayId) {
-      message.error('Please select a payment method.');
-      return;
+      message.error('Please select a payment method.')
+      return
     }
 
     // this is a trial-enabled plan, and requires billing info, card info
@@ -284,20 +283,20 @@ const Index = ({
         gatewayId
       ) {
         message.error(
-          'This payment method is not supported to enable the trial.',
-        );
-        return;
+          'This payment method is not supported to enable the trial.'
+        )
+        return
       }
     }
 
     if (isWireSelected) {
       const wire = appConfig.gateway.find(
-        (g) => g.gatewayName == 'wire_transfer',
-      );
+        (g) => g.gatewayName == 'wire_transfer'
+      )
       // console.log('total amt/wire-mim amt: ', wire, '//', preview?.totalAmount);
       if (wire?.currency != preview?.currency) {
-        message.error(`Wire transfer currency is ${wire?.currency}`);
-        return;
+        message.error(`Wire transfer currency is ${wire?.currency}`)
+        return
       }
       if (wire!.minimumAmount! > preview!.totalAmount) {
         message.error(
@@ -305,77 +304,77 @@ const Index = ({
           ${showAmount(
             wire!.minimumAmount as number,
             wire!.currency as string,
-            false,
-          )}`,
-        );
-        return;
+            false
+          )}`
+        )
+        return
       }
     }
 
     const addons =
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
-        : [];
-    setSubmitting(true);
+        : []
+    setSubmitting(true)
     const [createSubRes, err] = await createSubscriptionReq(
       plan.id,
       addons.map((a) => ({
         quantity: a.quantity as number,
-        addonPlanId: a.id,
+        addonPlanId: a.id
       })),
       preview?.totalAmount as number,
       preview?.currency as string,
       selectedCountry, // preview?.vatCountryCode as string,
       vatNumber, // preview?.vatNumber as string,
       gatewayId,
-      discountInputRef.current?.input?.value,
-    );
-    console.log('create sub res: ', createSubRes);
-    setSubmitting(false);
+      discountInputRef.current?.input?.value
+    )
+    console.log('create sub res: ', createSubRes)
+    setSubmitting(false)
     if (err != null) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
 
     // user has updated either one of them, need to update the local store. Backend will also update these values.
     if (defaultVatNumber != vatNumber || userCountryCode != selectedCountry) {
       const p = update(profileStore.getProfile(), {
         vATNumber: { $set: vatNumber },
-        countryCode: { $set: selectedCountry },
-      });
-      console.log('new profile: ', p);
-      profileStore.setProfile(p);
+        countryCode: { $set: selectedCountry }
+      })
+      console.log('new profile: ', p)
+      profileStore.setProfile(p)
     }
 
     if (isWireSelected) {
       console.log(
         'setting sub id after create sub: ',
-        createSubRes.subscription.subscriptionId,
-      );
-      subscriptionId.current = createSubRes.subscription.subscriptionId;
-      setWireConfirmStep(!wireConfirmStep);
-      return;
+        createSubRes.subscription.subscriptionId
+      )
+      subscriptionId.current = createSubRes.subscription.subscriptionId
+      setWireConfirmStep(!wireConfirmStep)
+      return
     }
 
-    const { link, paid } = createSubRes;
+    const { link } = createSubRes
     if (link != '' && link != null) {
-      window.open(link, '_blank');
+      window.open(link, '_blank')
     }
-    navigate(`${APP_PATH}my-subscription`);
-  };
+    navigate(`${APP_PATH}my-subscription`)
+  }
 
   const onClose = () => {
-    closeModal();
+    closeModal()
     if (wireConfirmStep) {
-      message.success('Subscription created.');
-      navigate(`${APP_PATH}my-subscription`);
+      message.success('Subscription created.')
+      navigate(`${APP_PATH}my-subscription`)
     }
-  };
+  }
 
   // payment method change will cause VAT re-calclulation
   useEffect(() => {
-    createPreview();
-  }, [selectedCountry, gatewayId]);
+    createPreview()
+  }, [selectedCountry, gatewayId])
 
   // console.log('discount/vat checking: ', discountChecking, '//', vatChecking);
   return (
@@ -424,7 +423,7 @@ const Index = ({
                   <Col span={4}>
                     {showAmount(
                       i.unitAmountExcludingTax * i.quantity,
-                      i.currency,
+                      i.currency
                     )}
                   </Col>
                 </Row>
@@ -467,7 +466,7 @@ const Index = ({
                       filterOption={filterOption}
                       options={countryList.map((c) => ({
                         label: c.countryName,
-                        value: c.countryCode,
+                        value: c.countryCode
                       }))}
                     />
                   </Col>
@@ -729,7 +728,7 @@ const Index = ({
         </div>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

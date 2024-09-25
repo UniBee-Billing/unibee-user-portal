@@ -1,12 +1,8 @@
 // import { Link } from "react-router-dom";
 
-import { Button, Result } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { Result } from 'antd'
 
 export default function NotFound() {
-  const navigate = useNavigate();
-  const goBack = () => navigate('/plans');
-
   return (
     <Result
       status="404"
@@ -18,5 +14,5 @@ export default function NotFound() {
         </Button>
       } */
     />
-  );
+  )
 }

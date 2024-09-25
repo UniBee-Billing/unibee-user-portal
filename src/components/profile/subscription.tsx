@@ -38,7 +38,7 @@ const Index = ({
 }: {
   subDetail: ISubscription | undefined
   productId: string
-  normalizeSub: (sub: any) => ISubscription
+  normalizeSub: (sub: ISubscription) => ISubscription
 }) => {
   console.log('sub passed from parent(subList): ', subDetail)
   const location = useLocation()
@@ -314,9 +314,6 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
 
   const [cancelSubModalOpen, setCancelSubModalOpen] = useState(false)
   const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen)
-
-  const [editCardModalOpen, setEditCardModalOpen] = useState(false)
-  const toggleEditCardModal = () => setEditCardModalOpen(!editCardModalOpen)
 
   const discountAmt = (code: DiscountCode) => {
     if (code.discountType == 1) {

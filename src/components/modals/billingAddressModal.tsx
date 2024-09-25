@@ -1,24 +1,20 @@
-import { Button, Form, Input, Modal, Select, message } from 'antd';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getCountryList, saveProfileReq } from '../../requests';
-import { Country, IProfile } from '../../shared.types';
-import { useAppConfigStore, useProfileStore } from '../../stores';
-
-const APP_PATH = import.meta.env.BASE_URL;
+import { Button, Form, Input, Modal, Select, message } from 'antd'
+import { useEffect, useState } from 'react'
+import { getCountryList, saveProfileReq } from '../../requests'
+import { Country, IProfile } from '../../shared.types'
+import { useProfileStore } from '../../stores'
 
 interface Props {
-  isOpen: boolean;
-  closeModal: () => void;
-  openPreviewModal: () => void;
+  isOpen: boolean
+  closeModal: () => void
+  openPreviewModal: () => void
 }
 const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
   // const appConfigStore = useAppConfigStore();
-  const navigate = useNavigate();
-  const profile = useProfileStore.getState();
-  const [form] = Form.useForm();
-  const [countryList, setCountryList] = useState<Country[]>([]);
-  const [loading, setLoading] = useState(false);
+  const profile = useProfileStore.getState()
+  const [form] = Form.useForm()
+  const [countryList, setCountryList] = useState<Country[]>([])
+  const [loading, setLoading] = useState(false)
 
   const hiddenFields = [
     'id',
@@ -31,54 +27,55 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
     'facebook',
     'tikTok',
     'otherSocialInfo',
-    'paymentMethod',
-  ];
+    'paymentMethod'
+  ]
 
   const onConfirm = async () => {
-    const user: IProfile = form.getFieldsValue();
-    setLoading(true);
-    const [saveProfileRes, err] = await saveProfileReq(user);
-    setLoading(false);
+    const user: IProfile = form.getFieldsValue()
+    setLoading(true)
+    const [_, err] = await saveProfileReq(user)
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    message.success('saved');
-    profile.setProfile(user);
-    closeModal();
-    openPreviewModal();
-  };
+    message.success('saved')
+    profile.setProfile(user)
+    closeModal()
+    openPreviewModal()
+  }
 
   const filterOption = (
     input: string,
-    option?: { label: string; value: string },
-  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+    option?: { label: string; value: string }
+  ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 
   useEffect(() => {
     const fetchData = async () => {
-      const [list, err] = await getCountryList();
+      const [list, err] = await getCountryList()
       if (null != err) {
-        message.error(err.message);
-        return;
+        message.error(err.message)
+        return
       }
       setCountryList(
-        list.map((c: any) => ({
+        list.map((c: Country) => ({
           countryCode: c.countryCode,
-          countryName: c.countryName,
-        })),
-      );
-    };
-    fetchData();
-  }, []);
+          countryName: c.countryName
+        }))
+      )
+    }
+    fetchData()
+  }, [])
 
-  const countryCode = Form.useWatch('countryCode', form);
+  const countryCode = Form.useWatch('countryCode', form)
   useEffect(() => {
-    countryCode &&
+    if (countryCode) {
       form.setFieldValue(
         'countryName',
-        countryList.find((c) => c.countryCode == countryCode)!.countryName,
-      );
-  }, [countryCode]);
+        countryList.find((c) => c.countryCode == countryCode)!.countryName
+      )
+    }
+  }, [countryCode])
 
   return (
     <Modal
@@ -93,13 +90,13 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
         form={form}
         name="basic"
         labelCol={{
-          span: 5,
+          span: 5
         }}
         wrapperCol={{
-          span: 16,
+          span: 16
         }}
         style={{
-          maxWidth: 600,
+          maxWidth: 600
         }}
         initialValues={profile}
         autoComplete="off"
@@ -127,8 +124,8 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           rules={[
             {
               required: true,
-              message: 'Please input your phone!',
-            },
+              message: 'Please input your phone!'
+            }
           ]}
         >
           <Input />
@@ -140,8 +137,8 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           rules={[
             {
               required: true,
-              message: 'Please select your country!',
-            },
+              message: 'Please select your country!'
+            }
           ]}
         >
           <Select
@@ -152,7 +149,7 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
             filterOption={filterOption}
             options={countryList.map((c) => ({
               label: c.countryName,
-              value: c.countryCode,
+              value: c.countryCode
             }))}
           />
         </Form.Item>
@@ -163,8 +160,8 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           rules={[
             {
               required: true,
-              message: 'Please input your billing address!',
-            },
+              message: 'Please input your billing address!'
+            }
           ]}
         >
           <Input />
@@ -176,7 +173,7 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
           justifyContent: 'end',
           alignItems: 'center',
           gap: '18px',
-          marginTop: '24px',
+          marginTop: '24px'
         }}
       >
         <Button onClick={closeModal} disabled={loading}>
@@ -192,7 +189,7 @@ const Index = ({ isOpen, closeModal, openPreviewModal }: Props) => {
         </Button>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

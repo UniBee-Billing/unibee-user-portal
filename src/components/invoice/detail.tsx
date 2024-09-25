@@ -1,56 +1,55 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Col, Row, Spin, message } from 'antd';
-import React, { CSSProperties, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { INVOICE_STATUS } from '../../constants';
-import { normalizeAmt, showAmount } from '../../helpers';
-import { getInvoiceDetailReq } from '../../requests';
-import { IProfile, UserInvoice } from '../../shared.types';
-import { useProfileStore } from '../../stores';
-import InvoiceItemDetailModal from '../modals/invoiceDetailModal';
-import { InvoiceStatus } from '../ui/statusTag';
+import { LoadingOutlined } from '@ant-design/icons'
+import { Button, Col, Row, Spin, message } from 'antd'
+import React, { CSSProperties, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { normalizeAmt, showAmount } from '../../helpers'
+import { getInvoiceDetailReq } from '../../requests'
+import { UserInvoice } from '../../shared.types'
+import { useProfileStore } from '../../stores'
+import InvoiceItemDetailModal from '../modals/invoiceDetailModal'
+import { InvoiceStatus } from '../ui/statusTag'
 // import InvoiceItemsModal from './invoiceModal'; // to be revmoed, not used anymore
 
-const APP_PATH = import.meta.env.BASE_URL; // if not specified in build command, default is /
+const APP_PATH = import.meta.env.BASE_URL // if not specified in build command, default is /
 const rowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  height: '32px',
-};
-const colStyle: CSSProperties = { fontWeight: 'bold' };
+  height: '32px'
+}
+const colStyle: CSSProperties = { fontWeight: 'bold' }
 
 const Index = () => {
-  const userProfle = useProfileStore();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [invoiceDetail, setInvoiceDetail] = useState<UserInvoice | null>(null);
-  const [showInvoiceItems, setShowInvoiceItems] = useState(false);
-  const toggleInvoiceItems = () => setShowInvoiceItems(!showInvoiceItems);
+  const userProfle = useProfileStore()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [invoiceDetail, setInvoiceDetail] = useState<UserInvoice | null>(null)
+  const [showInvoiceItems, setShowInvoiceItems] = useState(false)
+  const toggleInvoiceItems = () => setShowInvoiceItems(!showInvoiceItems)
 
-  const goBack = () => navigate(`${APP_PATH}invoice/list`);
+  const goBack = () => navigate(`${APP_PATH}invoice/list`)
 
   const fetchData = async () => {
-    const pathName = window.location.pathname.split('/');
-    const ivId = pathName.pop();
+    const pathName = window.location.pathname.split('/')
+    const ivId = pathName.pop()
     if (ivId == null) {
-      message.error('Invalid invoice');
-      return;
+      message.error('Invalid invoice')
+      return
     }
 
-    setLoading(true);
-    const [invoice, err] = await getInvoiceDetailReq(ivId, fetchData);
-    setLoading(false);
+    setLoading(true)
+    const [invoice, err] = await getInvoiceDetailReq(ivId, fetchData)
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    normalizeAmt([invoice]);
-    setInvoiceDetail(invoice);
-  };
+    normalizeAmt([invoice])
+    setInvoiceDetail(invoice)
+  }
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   return (
     <div>
@@ -89,7 +88,7 @@ const Index = () => {
             : showAmount(
                 invoiceDetail?.totalAmount,
                 invoiceDetail?.currency,
-                true,
+                true
               )}
           <span className="text-xs text-gray-500">
             {invoiceDetail == null
@@ -157,7 +156,7 @@ const Index = () => {
           style={{
             height: 'calc(100vh - 460px)',
             width: '100%',
-            marginTop: '24px',
+            marginTop: '24px'
           }}
         >
           <p>
@@ -169,7 +168,7 @@ const Index = () => {
         <Button onClick={goBack}>Go Back</Button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

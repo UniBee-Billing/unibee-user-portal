@@ -1,7 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import { Button, Col, Empty, Modal, Popover, Row, Spin, message } from 'antd'
+import { Button, Col, Empty, Popover, Row, Spin, message } from 'antd'
 import update from 'immutability-helper'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { showAmount } from '../../helpers'
 import { getActiveSubWithMore, getCountryList } from '../../requests'
 import { Country, IPlan, ISubscription } from '../../shared.types'
@@ -88,7 +88,7 @@ const Index = ({
       return
     }
     setCountryList(
-      list.map((c: any) => ({
+      list.map((c: Country) => ({
         countryCode: c.countryCode,
         countryName: c.countryName
       }))
@@ -104,7 +104,7 @@ const Index = ({
       return
     }
 
-    const { subscriptions, plans } = res
+    const { plans } = res
     // let sub
     /*
     if (subscriptions != null && subscriptions[0] != null) {
@@ -133,10 +133,10 @@ const Index = ({
     }
       */
 
-    let localPlans: IPlan[] =
+    const localPlans: IPlan[] =
       plans == null
         ? []
-        : plans.map((p: any) => {
+        : plans.map((p: IPlan) => {
             return {
               ...p.plan,
               addons: p.addons,
@@ -148,7 +148,7 @@ const Index = ({
     setOtpPlans(localPlans.filter((p) => p.type == 3))
 
     if (activeSub != null) {
-      const planIdx = plans.findIndex((p: any) => p.id == activeSub.planId)
+      const planIdx = plans.findIndex((p: IPlan) => p.id == activeSub.planId)
       // let's say we have planA(which has addonA1, addonA2, addonA3), planB, planC, user has subscribed to planA, and selected addonA1, addonA3
       // I need to find the index of addonA1,3 in planA.addons array,
       // then set their {quantity, checked: true} props on planA.addons, these props value are from subscription.addons array.
@@ -203,7 +203,7 @@ const Index = ({
       return false
     }
     if (currentPlan?.intervalUnit == upgradePlan?.intervalUnit) {
-      if (currentPlan?.intervalCount! > upgradePlan?.intervalCount!) {
+      if (currentPlan!.intervalCount > upgradePlan!.intervalCount!) {
         // we are selecting plan, itvCount always exist
         message.error(
           `Upgrade from a ${currentPlan?.intervalCount}/${currentPlan?.intervalUnit} plan to a ${upgradePlan?.intervalCount}/${upgradePlan?.intervalUnit} is not supported.`
@@ -258,7 +258,11 @@ const Index = ({
       return
     }
 
-    activeSub == null ? toggleCreateModal() : toggleUpdateModal()
+    if (activeSub == null) {
+      toggleCreateModal()
+    } else {
+      toggleUpdateModal()
+    }
   }
 
   useEffect(() => {

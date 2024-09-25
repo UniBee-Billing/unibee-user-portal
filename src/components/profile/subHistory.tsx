@@ -1,15 +1,14 @@
 import { LoadingOutlined } from '@ant-design/icons'
 import { Col, Divider, Pagination, Popover, Row, Spin, message } from 'antd'
 import Table, { ColumnsType } from 'antd/es/table'
-import dayjs from 'dayjs'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { formatDate, showAmount } from '../../helpers'
 import { getProductListReq, getSubHistoryReq } from '../../requests'
 import { usePagination } from '../hooks'
 
-import { IProduct, ISubHistoryItem } from '../../shared.types.ts'
-import { SubHistoryStatus, SubscriptionStatus } from '../ui/statusTag.tsx'
+import { IProduct, ISubAddon, ISubHistoryItem } from '../../shared.types.ts'
+import { SubHistoryStatus } from '../ui/statusTag.tsx'
 // import { SubscriptionStatus } from '../ui/statusTag';
 
 const PAGE_SIZE = 10
@@ -72,17 +71,17 @@ const Index = () => {
             title="Addon breakdown"
             content={
               <div style={{ width: '280px' }}>
-                {addons.map((a: any, idx: number) => (
+                {addons.map((a: ISubAddon, idx: number) => (
                   <Row key={idx}>
                     <Col span={10} className=" font-bold text-gray-500">
-                      {a.addonPlan.planName}
+                      {a.addonPlan?.planName}
                     </Col>
                     <Col span={14}>
-                      {showAmount(a.addonPlan.amount, a.addonPlan.currency)} ×{' '}
+                      {showAmount(a.addonPlan!.amount, a.addonPlan!.currency)} ×{' '}
                       {a.quantity} ={' '}
                       {showAmount(
-                        a.addonPlan.amount * a.quantity,
-                        a.addonPlan.currency
+                        a.addonPlan!.amount * a.quantity,
+                        a.addonPlan!.currency
                       )}
                     </Col>
                   </Row>
@@ -194,9 +193,9 @@ const Index = () => {
           rowClassName="clickable-tbl-row"
           pagination={false}
           scroll={{ x: 1280 }}
-          onRow={(record, rowIndex) => {
+          onRow={() => {
             return {
-              onClick: (event) => {}
+              onClick: () => {}
             }
           }}
           loading={{

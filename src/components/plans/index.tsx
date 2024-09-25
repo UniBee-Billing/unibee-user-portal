@@ -1,11 +1,9 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import type { TabsProps } from 'antd'
 import { message, Spin, Tabs } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getProductListReq } from '../../requests'
 import { IProduct } from '../../shared.types'
-import { useProfileStore } from '../../stores'
 import OnetimePlanList from './oneTimePlanList'
 import ProductTab from './productTab'
 

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { getProductsWithMoreReq } from '../../requests'
 import '../../shared.css'
-import { IProduct, ISubscription } from '../../shared.types'
+import { IProduct, ISubAddon, ISubscription } from '../../shared.types'
 import OneTimePaymentHistory from './onetimeHistory'
 import SubHistory from './subHistory'
 import Subscription from './subscription'
@@ -16,16 +16,17 @@ const Index = () => {
   const [productList, setProductList] = useState<IProduct[]>([])
   const [productId, setProductId] = useState('0') // productId is the active tab key
 
-  const normalizeSub = (s: any): ISubscription => {
-    const sub = {
+  const normalizeSub = (s: ISubscription): ISubscription => {
+    const sub: ISubscription = {
       ...s.subscription,
       plan: s.plan,
       latestInvoice: s.latestInvoice,
       addons:
         s.addons == null
           ? []
-          : s.addons.map((a: any) => ({
+          : s.addons.map((a) => ({
               ...a.addonPlan,
+              ...a,
               quantity: a.quantity
             })),
       user: s.user,
@@ -36,11 +37,12 @@ const Index = () => {
       if (sub.unfinishedSubscriptionPendingUpdate.updateAddons != null) {
         sub.unfinishedSubscriptionPendingUpdate.updateAddons =
           sub.unfinishedSubscriptionPendingUpdate.updateAddons.map(
-            (a: any) => ({
-              ...a.addonPlan,
-              quantity: a.quantity,
-              addonPlanId: a.addonPlan.id
-            })
+            (a) =>
+              ({
+                ...a.addonPlan,
+                quantity: a.quantity,
+                addonPlanId: a.addonPlan?.id
+              }) as ISubAddon
           )
       }
     }

@@ -1,43 +1,42 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Form, Pagination, Table, message } from 'antd';
-import { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { PAYMENT_TYPE } from '../../constants';
-import { formatDate, showAmount } from '../../helpers';
-import { getPaymentListReq } from '../../requests';
-import '../../shared.css';
-import { PaymentItem } from '../../shared.types';
-import { useAppConfigStore } from '../../stores';
-import { usePagination } from '../hooks';
-import { PaymentStatus } from '../ui/statusTag';
-import RefundModal from './refundModal';
+import { LoadingOutlined } from '@ant-design/icons'
+import { Button, Pagination, Table, message } from 'antd'
+import { ColumnsType } from 'antd/es/table'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { PAYMENT_TYPE } from '../../constants'
+import { formatDate, showAmount } from '../../helpers'
+import { getPaymentListReq } from '../../requests'
+import '../../shared.css'
+import { PaymentItem } from '../../shared.types'
+import { useAppConfigStore } from '../../stores'
+import { usePagination } from '../hooks'
+import { PaymentStatus } from '../ui/statusTag'
+import RefundModal from './refundModal'
 
-const PAGE_SIZE = 10;
-const APP_PATH = import.meta.env.BASE_URL;
+const PAGE_SIZE = 10
+const APP_PATH = import.meta.env.BASE_URL
 
 const Index = () => {
-  const { page, onPageChange } = usePagination();
-  const [total, setTotal] = useState(0);
-  const appConfig = useAppConfigStore();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [paymentList, setPaymentList] = useState<PaymentItem[]>([]);
-  const [paymentIdx, setPaymentIdx] = useState(-1);
-  const [refundModalOpen, setRefundModalOpen] = useState(false);
-  const toggleRefundModal = () => setRefundModalOpen(!refundModalOpen);
+  const { page, onPageChange } = usePagination()
+  const [total, setTotal] = useState(0)
+  const appConfig = useAppConfigStore()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [paymentList, setPaymentList] = useState<PaymentItem[]>([])
+  const [paymentIdx, setPaymentIdx] = useState(-1)
+  const [refundModalOpen, setRefundModalOpen] = useState(false)
+  const toggleRefundModal = () => setRefundModalOpen(!refundModalOpen)
 
   const columns: ColumnsType<PaymentItem> = [
     {
       title: 'Transaction Id',
       dataIndex: 'transactionId',
-      key: 'transactionId',
+      key: 'transactionId'
     },
     {
       title: 'External Id',
       dataIndex: 'externalTransactionId',
-      key: 'exTxId',
+      key: 'exTxId'
     },
     {
       title: 'Total Amount',
@@ -48,20 +47,20 @@ const Index = () => {
           <span>{showAmount(amt, pay.currency)}</span>
         </div>
       ),
-      sorter: (a, b) => a.totalAmount - b.totalAmount,
+      sorter: (a, b) => a.totalAmount - b.totalAmount
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (s) => PaymentStatus(s),
+      render: (s) => PaymentStatus(s)
     },
     {
       title: 'Type',
       dataIndex: 'timelineType',
       key: 'timelineType',
       render: (s) => {
-        const title = PAYMENT_TYPE[s as keyof typeof PAYMENT_TYPE];
+        const title = PAYMENT_TYPE[s as keyof typeof PAYMENT_TYPE]
         if (s == 1) {
           // refund
           return (
@@ -72,17 +71,17 @@ const Index = () => {
             >
               {title}
             </Button>
-          );
+          )
         } else if (s == 0) {
           // regular payment
-          return title;
+          return title
         }
-      },
+      }
     },
     {
       title: 'Sub Id',
       dataIndex: 'subscriptionId',
-      key: 'subscriptionId',
+      key: 'subscriptionId'
     },
     {
       title: 'Payment Gateway',
@@ -92,7 +91,7 @@ const Index = () => {
         <span>
           {appConfig.gateway.find((g) => g.gatewayId == gatewayId)?.gatewayName}
         </span>
-      ),
+      )
     },
     {
       title: 'Invoice Id',
@@ -110,39 +109,39 @@ const Index = () => {
           >
             {iv}
           </Button>
-        ),
+        )
     },
     {
       title: 'Created at',
       dataIndex: 'createTime',
       key: 'createTime',
-      render: (d) => formatDate(d, true), // (d * 1000).format('YYYY-MMM-DD'),
-    },
-  ];
+      render: (d) => formatDate(d, true) // (d * 1000).format('YYYY-MMM-DD'),
+    }
+  ]
 
   const fetchData = async () => {
-    setLoading(true);
+    setLoading(true)
     const [res, err] = await getPaymentListReq(
       {
         page,
-        count: PAGE_SIZE,
+        count: PAGE_SIZE
         // ...searchTerm,
       },
-      fetchData,
-    );
-    setLoading(false);
+      fetchData
+    )
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    const { paymentTimeline, total } = res;
-    setPaymentList(paymentTimeline ?? []);
-    setTotal(total);
-  };
+    const { paymentTimeline, total } = res
+    setPaymentList(paymentTimeline ?? [])
+    setTotal(total)
+  }
 
   useEffect(() => {
-    fetchData();
-  }, [page]);
+    fetchData()
+  }, [page])
 
   return (
     <div>
@@ -163,21 +162,21 @@ const Index = () => {
         pagination={false}
         loading={{
           spinning: loading,
-          indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />,
+          indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />
         }}
-        onRow={(record, rowIndex) => {
+        onRow={(_, rowIndex) => {
           return {
             onClick: (event) => {
               if (
                 event.target instanceof Element &&
                 event.target.closest('.btn-refunded-payment') != null
               ) {
-                setPaymentIdx(rowIndex as number);
-                toggleRefundModal();
-                return;
+                setPaymentIdx(rowIndex as number)
+                toggleRefundModal()
+                return
               }
-            },
-          };
+            }
+          }
         }}
       />
       <div className="mx-0 my-4 flex items-center justify-end">
@@ -195,7 +194,7 @@ const Index = () => {
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

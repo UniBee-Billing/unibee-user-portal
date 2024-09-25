@@ -1,93 +1,93 @@
-import { Button, Col, Form, InputNumber, Modal, Row, message } from 'antd';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { showAmount } from '../../helpers';
-import { addonPaymentReq, getCountryList } from '../../requests';
-import { Country, IPlan, IProfile } from '../../shared.types';
-import { useAppConfigStore, useProfileStore } from '../../stores';
-import PaymentSelector from '../ui/paymentSelector';
+import { Button, Col, Form, InputNumber, Modal, Row, message } from 'antd'
+import { useEffect, useState } from 'react'
+import { showAmount } from '../../helpers'
+import { addonPaymentReq, getCountryList } from '../../requests'
+import { Country, IPlan } from '../../shared.types'
+import { useAppConfigStore } from '../../stores'
+import PaymentSelector from '../ui/paymentSelector'
 
 interface Props {
-  plan: IPlan | undefined;
-  subscriptionId: string;
-  closeModal: () => void;
+  plan: IPlan | undefined
+  subscriptionId: string
+  closeModal: () => void
 }
 const Index = ({ closeModal, plan, subscriptionId }: Props) => {
-  const appConfig = useAppConfigStore();
-  const [form] = Form.useForm();
-  const [countryList, setCountryList] = useState<Country[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [quantity, setQuantity] = useState(1);
+  const appConfig = useAppConfigStore()
+  const [form] = Form.useForm()
+  const [countryList, setCountryList] = useState<Country[]>([])
+  const [loading, setLoading] = useState(false)
+  const [quantity, setQuantity] = useState(1)
 
   const [gatewayId, setGatewayId] = useState<undefined | number>(
-    appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId,
-  );
+    appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId
+  )
   const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setGatewayId(Number(e.target.value));
-  };
+    setGatewayId(Number(e.target.value))
+  }
 
   const onQuantityChange = (value: number | null) =>
-    setQuantity(value as number);
+    setQuantity(value as number)
 
   const onConfirm = async () => {
     if (gatewayId == undefined) {
-      message.error('Please choose a payment method!');
-      return;
+      message.error('Please choose a payment method!')
+      return
     }
     if (plan == undefined) {
-      return;
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     const [paymentRes, err] = await addonPaymentReq({
       addonId: plan!.id,
       subscriptionId,
       quantity,
-      returnUrl: `${window.location.origin}/payment-result`,
-    });
-    setLoading(false);
+      returnUrl: `${window.location.origin}/payment-result`
+    })
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    console.log('payment res: ', paymentRes);
+    console.log('payment res: ', paymentRes)
     if (paymentRes.paid) {
-      closeModal();
-      message.success('Payment succeeded');
-      return;
+      closeModal()
+      message.success('Payment succeeded')
+      return
     }
 
-    window.open(paymentRes.link, '_blank');
-    closeModal();
+    window.open(paymentRes.link, '_blank')
+    closeModal()
     // Do I need to refresh the parent?
     // Yes, if there are some unpaid fee, parent need to show it.
-  };
+  }
 
   useEffect(() => {
     const fetchData = async () => {
-      const [list, err] = await getCountryList();
+      const [list, err] = await getCountryList()
       if (null != err) {
-        message.error(err.message);
-        return;
+        message.error(err.message)
+        return
       }
       setCountryList(
-        list.map((c: any) => ({
+        list.map((c: Country) => ({
           countryCode: c.countryCode,
-          countryName: c.countryName,
-        })),
-      );
-    };
-    fetchData();
-  }, []);
+          countryName: c.countryName
+        }))
+      )
+    }
+    fetchData()
+  }, [])
 
-  const countryCode = Form.useWatch('countryCode', form);
+  const countryCode = Form.useWatch('countryCode', form)
   useEffect(() => {
-    countryCode &&
+    if (countryCode) {
       form.setFieldValue(
         'countryName',
-        countryList.find((c) => c.countryCode == countryCode)!.countryName,
-      );
-  }, [countryCode]);
+        countryList.find((c) => c.countryCode == countryCode)!.countryName
+      )
+    }
+  }, [countryCode])
 
   return (
     <Modal
@@ -158,7 +158,7 @@ const Index = ({ closeModal, plan, subscriptionId }: Props) => {
         </div>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

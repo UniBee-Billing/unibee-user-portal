@@ -29,7 +29,7 @@ interface IProfile {
   language: string // en | ru | cn | vi | pt,      English | Russian | Chinese | Vietnamese | Portuguese
 }
 
-type TGateway = {
+export type TGateway = {
   gatewayId?: number
   gatewayKey?: string
   gatewayName: 'paypal' | 'changelly' | 'stripe' | 'wire_transfer'
@@ -107,16 +107,19 @@ interface IPlan {
   trialAmount: number
   trialDemand: string
   trialDurationTime: number
+  plan?: IPlan
 }
 
-interface ISubAddon extends IPlan {
+export interface ISubAddon extends IPlan {
   // when update subscription plan, I need to know which addons users have selected,
   // then apply them on the plan
   quantity: number
+  addonPlan?: IPlan
   addonPlanId: number
 }
 
 interface ISubscription {
+  subscription: ISubscription
   id: number
   subscriptionId: string
   planId: number
@@ -166,7 +169,7 @@ interface ISubHistoryItem {
   planId: number
   plan: IPlan
   quantity: number
-  addons: { quantity: number; addonPlan: IPlan }[]
+  addons: IAddon[]
   gatewayId: number
   createTime: number
 }
@@ -349,6 +352,8 @@ export type {
   Country,
   DiscountCode,
   IAppConfig,
+  InvoiceItem,
+  InvoiceItemTotal,
   IOneTimeHistoryItem,
   IPlan,
   IPreview,
@@ -356,8 +361,6 @@ export type {
   IProfile,
   ISubHistoryItem,
   ISubscription,
-  InvoiceItem,
-  InvoiceItemTotal,
   PaymentItem,
   TMerchantInfo,
   TRefund,
