@@ -1,44 +1,41 @@
-import { Button, Col, Modal, Row, message } from 'antd';
-import dayjs from 'dayjs';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { showAmount } from '../../helpers';
-import { terminateOrResumeSubReq } from '../../requests';
-import { ISubscription } from '../../shared.types';
-
-const APP_PATH = import.meta.env.BASE_URL;
+import { Button, Col, Modal, Row, message } from 'antd'
+import dayjs from 'dayjs'
+import { useState } from 'react'
+import { showAmount } from '../../helpers'
+import { terminateOrResumeSubReq } from '../../requests'
+import { ISubscription } from '../../shared.types'
 
 interface Props {
-  isOpen: boolean;
-  subInfo: ISubscription | null;
-  action: 'CANCEL' | 'UN-CANCEL';
-  closeModal: () => void;
-  refresh: () => void;
+  isOpen: boolean
+  subInfo: ISubscription | null
+  action: 'CANCEL' | 'UN-CANCEL'
+  closeModal: () => void
+  refresh: () => void
 }
 const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   const onConfirm = async () => {
-    setLoading(true);
-    const [res, err] = await terminateOrResumeSubReq({
+    setLoading(true)
+    const [_, err] = await terminateOrResumeSubReq({
       subscriptionId: subInfo?.subscriptionId as string,
-      action,
-    });
-    setLoading(false);
+      action
+    })
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
     message.success(
       `Subscription ${
         action == 'UN-CANCEL'
           ? 'resumed'
           : 'cancelled at the end of this billing cycle.'
-      }`,
-    );
-    closeModal();
-    refresh();
-  };
+      }`
+    )
+    closeModal()
+    refresh()
+  }
 
   return (
     <Modal
@@ -56,7 +53,7 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
             <span>at the end of this billing cycle </span>
             <span className=" text-red-500">
               {dayjs((subInfo?.currentPeriodEnd as number) * 1000).format(
-                'YYYY-MMM-DD',
+                'YYYY-MMM-DD'
               )}
             </span>
             &nbsp;?
@@ -92,7 +89,7 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
         </Col>
         <Col span={6}>
           {dayjs((subInfo?.currentPeriodEnd as number) * 1000).format(
-            'YYYY-MMM-DD',
+            'YYYY-MMM-DD'
           )}
         </Col>
       </Row>
@@ -102,7 +99,7 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
           justifyContent: 'end',
           alignItems: 'center',
           gap: '18px',
-          marginTop: '24px',
+          marginTop: '24px'
         }}
       >
         <Button onClick={closeModal} disabled={loading}>
@@ -118,7 +115,7 @@ const ResumeSub = ({ isOpen, subInfo, action, closeModal, refresh }: Props) => {
         </Button>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default ResumeSub;
+export default ResumeSub

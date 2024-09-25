@@ -1,7 +1,7 @@
-import { StoreApi, UseBoundStore, create } from 'zustand'
+import { create } from 'zustand'
 // import { immer } from "zustand/middleware/immer";
-import { createJSONStorage, persist } from 'zustand/middleware'
-import { IAppConfig, IProfile, TMerchantInfo } from '../shared.types'
+import { persist } from 'zustand/middleware'
+import { IAppConfig, IProfile, TGateway, TMerchantInfo } from '../shared.types'
 // import { createStore } from "zustand";
 
 const INITIAL_PROFILE: IProfile = {
@@ -93,7 +93,7 @@ const INITIAL_APP_VALUE: IAppConfig = {
 interface AppConfigSlice extends IAppConfig {
   getAppConfig: () => IAppConfig
   setAppConfig: (a: IAppConfig) => void
-  setGateway: (g: any) => void
+  setGateway: (g: TGateway[]) => void
   reset: () => void
 }
 
@@ -103,7 +103,7 @@ export const useAppConfigStore = create<AppConfigSlice>()(
       ...INITIAL_APP_VALUE,
       getAppConfig: () => get(),
       setAppConfig: (a) => set({ ...a }),
-      setGateway: (g: any) => {
+      setGateway: (g: TGateway[]) => {
         set({ ...get(), gateway: g })
       },
       reset: () => set(INITIAL_APP_VALUE)

@@ -1,30 +1,30 @@
-import { Col, Row } from 'antd';
-import React from 'react';
-import { showAmount } from '../../helpers';
-import { useAppConfigStore } from '../../stores';
-import PayPalIcon from './icon/PayPal.svg?react';
-import AmexIcon from './icon/amex.svg?react';
-import BitcoinIcon from './icon/bitcoin-btc-logo.svg?react';
-import EthIcon from './icon/ethereum-eth-logo.svg?react';
-import LitecoinIcon from './icon/litecoin-ltc-logo.svg?react';
-import MastercardIcon from './icon/mastercard.svg?react';
-import UsdtIcon from './icon/tether-usdt-logo.svg?react';
-import VisaIcon from './icon/visa.svg?react';
-import WireIcon from './icon/wire-transfer-1.svg?react';
+import { Col, Row } from 'antd'
+import React, { ReactNode } from 'react'
+import { showAmount } from '../../helpers'
+import { useAppConfigStore } from '../../stores'
+import PayPalIcon from './icon/PayPal.svg?react'
+import AmexIcon from './icon/amex.svg?react'
+import BitcoinIcon from './icon/bitcoin-btc-logo.svg?react'
+import EthIcon from './icon/ethereum-eth-logo.svg?react'
+import LitecoinIcon from './icon/litecoin-ltc-logo.svg?react'
+import MastercardIcon from './icon/mastercard.svg?react'
+import UsdtIcon from './icon/tether-usdt-logo.svg?react'
+import VisaIcon from './icon/visa.svg?react'
+import WireIcon from './icon/wire-transfer-1.svg?react'
 
 enum PAYMENT_METHODS {
   stripe = 'stripe',
   paypal = 'paypal',
   changelly = 'changelly',
-  wire_transfer = 'wire_transfer',
+  wire_transfer = 'wire_transfer'
 }
 
 const PAYMENTS: {
   [key in PAYMENT_METHODS]: {
-    label: string;
-    order: number;
-    logo: any;
-  };
+    label: string
+    order: number
+    logo: ReactNode
+  }
 } = {
   stripe: {
     label: 'Bank Cards',
@@ -33,7 +33,7 @@ const PAYMENTS: {
         {c}
       </div>
     )),
-    order: 1,
+    order: 1
   },
   paypal: {
     label: 'PayPal',
@@ -42,7 +42,7 @@ const PAYMENTS: {
         {c}
       </div>
     )),
-    order: 2,
+    order: 2
   },
   changelly: {
     label: 'Crypto',
@@ -51,9 +51,9 @@ const PAYMENTS: {
         <div key={idx} className="flex h-5 w-5 items-center">
           {c}
         </div>
-      ),
+      )
     ),
-    order: 3,
+    order: 3
   },
   wire_transfer: {
     label: 'Wire Transfer',
@@ -62,32 +62,32 @@ const PAYMENTS: {
         {c}
       </div>
     )),
-    order: 4,
-  },
-};
+    order: 4
+  }
+}
 
 const Index = ({
   selected,
   onSelect,
   showWTtips,
-  disabled,
+  disabled
 }: {
-  selected: number | undefined;
-  onSelect: React.ChangeEventHandler<HTMLInputElement>;
-  showWTtips?: boolean;
-  disabled?: boolean;
+  selected: number | undefined
+  onSelect: React.ChangeEventHandler<HTMLInputElement>
+  showWTtips?: boolean
+  disabled?: boolean
 }) => {
-  const appConfig = useAppConfigStore();
+  const appConfig = useAppConfigStore()
   const gateways = appConfig.gateway
     .map((g) => ({
       ...g,
       label: PAYMENTS[g.gatewayName as PAYMENT_METHODS].label,
       logo: PAYMENTS[g.gatewayName as PAYMENT_METHODS].logo,
-      order: PAYMENTS[g.gatewayName as PAYMENT_METHODS].order,
+      order: PAYMENTS[g.gatewayName as PAYMENT_METHODS].order
     }))
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => a.order - b.order)
 
-  const wire = gateways.find((g) => g.gatewayName == 'wire_transfer');
+  const wire = gateways.find((g) => g.gatewayName == 'wire_transfer')
 
   return (
     <div className="flex flex-col gap-3">
@@ -115,7 +115,7 @@ const Index = ({
               {g.logo}
             </div>
           </label>
-        );
+        )
       })}
       {wire != null && selected == wire.gatewayId && showWTtips && (
         <div>
@@ -134,7 +134,7 @@ const Index = ({
             <Col className=" text-xs text-gray-400" span={14}>
               {showAmount(
                 wire.minimumAmount as number,
-                wire.currency as string,
+                wire.currency as string
               )}
             </Col>
           </Row>
@@ -157,7 +157,7 @@ const Index = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

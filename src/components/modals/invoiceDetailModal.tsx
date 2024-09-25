@@ -1,39 +1,38 @@
-import { Button, Col, Divider, Modal, Row } from 'antd';
-import dayjs from 'dayjs';
-import React, { useState } from 'react';
-import { CURRENCY, REFUND_STATUS } from '../../constants';
-import { ramdonString, showAmount } from '../../helpers';
-import { IProfile, InvoiceItem, UserInvoice } from '../../shared.types';
+import { Button, Col, Divider, Modal, Row } from 'antd'
+import dayjs from 'dayjs'
+import { useState } from 'react'
+import { REFUND_STATUS } from '../../constants'
+import { ramdonString, showAmount } from '../../helpers'
+import { IProfile, InvoiceItem, UserInvoice } from '../../shared.types'
 
 interface Props {
-  user: IProfile | null;
-  detail: UserInvoice;
-  closeModal: () => void;
+  user: IProfile | null
+  detail: UserInvoice
+  closeModal: () => void
 }
 
-const Index = ({ user, detail, closeModal }: Props) => {
-  console.log('invoice detai: ', detail);
-  const [loading, setLoading] = useState(false);
+const Index = ({ detail, closeModal }: Props) => {
+  console.log('invoice detai: ', detail)
+  const [loading] = useState(false)
   // const appConfigStore = useAppConfigStore();
   if (detail != null) {
-    detail.lines &&
-      detail.lines.forEach((item) => {
-        item.id = ramdonString(8);
-      });
+    detail.lines?.forEach((item) => {
+      item.id = ramdonString(8)
+    })
   }
 
-  const [invoiceList, setInvoiceList] = useState<InvoiceItem[]>(detail.lines);
+  const [invoiceList] = useState<InvoiceItem[]>(detail.lines)
 
   const getUserName = (iv: UserInvoice) => {
     if (iv.userAccount == null) {
-      return '';
+      return ''
     }
     return (
       <a
         href={`mailto: ${iv.userAccount.email}`}
       >{`${iv.userAccount.firstName} ${iv.userAccount.lastName}`}</a>
-    );
-  };
+    )
+  }
 
   return (
     <Modal
@@ -82,7 +81,7 @@ const Index = ({ user, detail, closeModal }: Props) => {
               {showAmount(
                 detail.refund.refundAmount,
                 detail.refund.currency,
-                true,
+                true
               )}
             </Col>
             <Col span={8}>{detail.refund.refundComment}</Col>
@@ -111,7 +110,7 @@ const Index = ({ user, detail, closeModal }: Props) => {
         </Col>
       </Row>
       {invoiceList &&
-        invoiceList.map((v, i) => (
+        invoiceList.map((v) => (
           <Row
             key={v.id}
             style={{ margin: '8px 0', display: 'flex', alignItems: 'center' }}
@@ -129,7 +128,7 @@ const Index = ({ user, detail, closeModal }: Props) => {
               {showAmount(
                 (v.unitAmountExcludingTax as number) * v.quantity,
                 v.currency,
-                true,
+                true
               )}
             </Col>
           </Row>
@@ -191,7 +190,7 @@ const Index = ({ user, detail, closeModal }: Props) => {
         </div>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

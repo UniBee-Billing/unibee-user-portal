@@ -1,65 +1,64 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import { Divider, Pagination, Tag, message } from 'antd';
-import Table, { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import React, { ReactElement, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { formatDate, showAmount } from '../../helpers';
-import { getOnetimePaymentHistoryReq } from '../../requests';
-import { IOneTimeHistoryItem } from '../../shared.types';
-import { usePagination } from '../hooks';
-import { PaymentStatus } from '../ui/statusTag';
+import { LoadingOutlined } from '@ant-design/icons'
+import { Divider, Pagination, message } from 'antd'
+import Table, { ColumnsType } from 'antd/es/table'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { formatDate } from '../../helpers'
+import { getOnetimePaymentHistoryReq } from '../../requests'
+import { IOneTimeHistoryItem } from '../../shared.types'
+import { usePagination } from '../hooks'
+import { PaymentStatus } from '../ui/statusTag'
 
-const PAGE_SIZE = 10;
-const APP_PATH = import.meta.env.BASE_URL;
+const PAGE_SIZE = 10
+const APP_PATH = import.meta.env.BASE_URL
 
 const Index = () => {
-  const [loading, setLoading] = useState(false);
-  const { page, onPageChangeNoParams } = usePagination();
-  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false)
+  const { page, onPageChangeNoParams } = usePagination()
+  const [total, setTotal] = useState(0)
   const [onetimeHistory, setOneTimeHistory] = useState<IOneTimeHistoryItem[]>(
-    [],
-  );
-  const navigate = useNavigate();
+    []
+  )
+  const navigate = useNavigate()
   const fetchData = async () => {
-    setLoading(true);
+    setLoading(true)
     const [res, err] = await getOnetimePaymentHistoryReq({
       page,
-      count: PAGE_SIZE,
-    });
-    setLoading(false);
+      count: PAGE_SIZE
+    })
+    setLoading(false)
     if (err != null) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    console.log('onetime his res: ', res);
-    const { paymentItems, total } = res;
-    setOneTimeHistory(paymentItems ?? []);
-    setTotal(total);
-  };
+    console.log('onetime his res: ', res)
+    const { paymentItems, total } = res
+    setOneTimeHistory(paymentItems ?? [])
+    setTotal(total)
+  }
 
   const columns: ColumnsType<IOneTimeHistoryItem> = [
     {
       title: 'Item Name',
       dataIndex: 'name',
-      key: 'name',
+      key: 'name'
     },
     {
       title: 'Purchase Time',
       dataIndex: 'createTime',
       key: 'createTime',
-      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)), // dayjs(d * 1000).format('YYYY-MMM-DD'),
+      render: (d) => (d == 0 || d == null ? 'N/A' : formatDate(d)) // dayjs(d * 1000).format('YYYY-MMM-DD'),
     },
     {
       title: 'Quantity',
       dataIndex: 'quantity',
-      key: 'quantity',
+      key: 'quantity'
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => PaymentStatus(status),
+      render: (status) => PaymentStatus(status)
     },
     {
       title: 'Invoice Id',
@@ -75,18 +74,18 @@ const Index = () => {
           >
             {ivId}
           </div>
-        ),
+        )
     },
     {
       title: 'Payment Id',
       dataIndex: 'paymentId',
-      key: 'paymentId',
-    },
-  ];
+      key: 'paymentId'
+    }
+  ]
 
   useEffect(() => {
-    fetchData();
-  }, [page]);
+    fetchData()
+  }, [page])
 
   return (
     <>
@@ -103,14 +102,14 @@ const Index = () => {
         rowClassName="clickable-tbl-row"
         pagination={false}
         // scroll={{ x: true, y: 640 }}
-        onRow={(record, rowIndex) => {
+        onRow={() => {
           return {
-            onClick: (event) => {},
-          };
+            onClick: () => {}
+          }
         }}
         loading={{
           spinning: loading,
-          indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />,
+          indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />
         }}
       />
       <div className="mt-6 flex justify-end">
@@ -129,7 +128,7 @@ const Index = () => {
         />
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

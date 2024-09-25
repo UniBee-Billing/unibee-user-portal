@@ -3,7 +3,6 @@ import { Button, Empty, Spin, message } from 'antd'
 import update from 'immutability-helper'
 import React, { useEffect, useRef, useState } from 'react'
 import { PlanType } from '../../constants'
-import { showAmount } from '../../helpers'
 import { getCountryList, getPlanList } from '../../requests'
 import { Country, IPlan, IProduct, ISubscription } from '../../shared.types'
 import { useProfileStore } from '../../stores'
@@ -16,20 +15,19 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
   const profileStore = useProfileStore()
   // const appConfigStore = useAppConfigStore();
   const [plans, setPlans] = useState<IPlan[]>([])
-  const [otpPlans, setOtpPlans] = useState<IPlan[]>([])
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null) // selected planId, null: not selected
-  const [countryList, setCountryList] = useState<Country[]>([])
+  const [_, setCountryList] = useState<Country[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false) // create subscription Modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false) // update subscription Modal
   const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   // const [terminateModal, setTerminateModal] = useState(false);
-  const [activeSub, setActiveSub] = useState<ISubscription | null>(null) // null: when page is loading, no data is ready yet.
+  const [activeSub] = useState<ISubscription | null>(null) // null: when page is loading, no data is ready yet.
   const isNewUserRef = useRef(true) // new user can only create sub, old user(already has a sub) can only upgrade/downgrade/change sub.
   // they have different api call and Modal window
   const [otpModalOpen, setOtpModalOpen] = useState(false) // one-time-payment modal
   const toggleOTP = () => setOtpModalOpen(!otpModalOpen)
-  const [otpPlanId, setOtpPlanId] = useState<null | number>(null) // the one-time-payment addon user want to buy
+  const [_otpPlanId, setOtpPlanId] = useState<null | number>(null) // the one-time-payment addon user want to buy
 
   const [buyRecordModalOpen, setBuyRecordModalOpen] = useState(false)
   const toggleBuyRecordModal = () => setBuyRecordModalOpen(!buyRecordModalOpen)
@@ -85,7 +83,7 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
       return
     }
     setCountryList(
-      list.map((c: any) => ({
+      list.map((c: Country) => ({
         countryCode: c.countryCode,
         countryName: c.countryName
       }))
@@ -105,10 +103,10 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
     }
     console.log('one-time-addon list: ', res)
     // setPlans(localPlans.filter((p) => p.type == 1));
-    let localPlans: IPlan[] =
+    const localPlans: IPlan[] =
       res == null
         ? []
-        : res.map((p: any) => {
+        : res.map((p: IPlan) => {
             return {
               ...p.plan
             }

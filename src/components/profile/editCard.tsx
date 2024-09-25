@@ -2,8 +2,8 @@ import {
   LoadingOutlined,
   MinusOutlined,
   PlusOutlined,
-  SyncOutlined,
-} from '@ant-design/icons';
+  SyncOutlined
+} from '@ant-design/icons'
 import {
   Button,
   Col,
@@ -12,111 +12,125 @@ import {
   Row,
   Spin,
   Tooltip,
-  message,
-} from 'antd';
-import { useEffect, useState } from 'react';
+  message
+} from 'antd'
+import { useEffect, useState } from 'react'
 import {
   addPaymentMethodReq,
   changeGlobalPaymentMethodReq,
   getPaymentMethodListReq,
-  removePaymentMethodReq,
-} from '../../requests';
+  removePaymentMethodReq
+} from '../../requests'
 
 type TCard = {
-  id: string;
-  type: string;
-  brand: string;
-  country: string;
-  expiredAt: string;
-  last4: string;
-};
+  id: string
+  type: string
+  brand: string
+  country: string
+  expiredAt: string
+  last4: string
+}
 
 interface Props {
-  defaultPaymentId: string | undefined;
-  refresh: () => void;
+  defaultPaymentId: string | undefined
+  refresh: () => void
 }
+
+interface MethodData {
+  brand: string
+  country: string
+  expYear: number
+  expMonth: number
+}
+
+interface Method {
+  id: string
+  type: string
+  data: MethodData
+}
+
 const Index = ({ defaultPaymentId, refresh }: Props) => {
   // const appConfigStore = useAppConfigStore();
-  const [loading, setLoading] = useState(false);
-  const [cards, setCards] = useState<TCard[]>([]);
-  const [paymentId, setDefaultPaymentMethod] = useState(defaultPaymentId);
+  const [loading, setLoading] = useState(false)
+  const [cards, setCards] = useState<TCard[]>([])
+  const [paymentId, setDefaultPaymentMethod] = useState(defaultPaymentId)
 
   // set default payment card for auto-billing
   const onConfirm = async () => {
     if (paymentId == undefined || paymentId == '') {
-      return;
+      return
     }
-    setLoading(true);
+    setLoading(true)
     const [changePaymentMethodRes, err] = await changeGlobalPaymentMethodReq({
-      paymentMethodId: paymentId,
-    });
-    setLoading(false);
+      paymentMethodId: paymentId
+    })
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    console.log('changePaymentMethodRes: ', changePaymentMethodRes);
-    message.success('Your auto payment card changed');
-  };
+    console.log('changePaymentMethodRes: ', changePaymentMethodRes)
+    message.success('Your auto payment card changed')
+  }
 
   const addCard = async () => {
-    setLoading(true);
+    setLoading(true)
     const [addCardRes, err] = await addPaymentMethodReq({
-      redirectUrl: `${window.location.origin}/add-payment-method-result`,
-    });
-    setLoading(false);
+      redirectUrl: `${window.location.origin}/add-payment-method-result`
+    })
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    window.open(addCardRes.url, '_blank');
-  };
+    window.open(addCardRes.url, '_blank')
+  }
 
   const removeCard = async (paymentMethodId: string) => {
-    setLoading(true);
-    const [res, err] = await removePaymentMethodReq({
-      paymentMethodId,
-    });
+    setLoading(true)
+    const [_, err] = await removePaymentMethodReq({
+      paymentMethodId
+    })
     if (null != err) {
-      message.error(err.message);
-      setLoading(false);
-      return;
+      message.error(err.message)
+      setLoading(false)
+      return
     }
-    refresh();
-    fetchCards();
-  };
+    refresh()
+    fetchCards()
+  }
 
   const onPaymentMethodChange: React.ChangeEventHandler<HTMLInputElement> = (
-    evt,
+    evt
   ) => {
-    setDefaultPaymentMethod(evt.target.value);
-  };
+    setDefaultPaymentMethod(evt.target.value)
+  }
 
   const fetchCards = async () => {
-    setLoading(true);
-    const [methodList, err] = await getPaymentMethodListReq(fetchCards);
-    setLoading(false);
+    setLoading(true)
+    const [methodList, err] = await getPaymentMethodListReq(fetchCards)
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    const cards = methodList.map((m: any) => ({
+    const cards = methodList.map((m: Method) => ({
       id: m.id,
       type: m.type,
       ...m.data,
-      expiredAt: m.data.expYear + '-' + m.data.expMonth,
-    }));
-    setCards(cards);
+      expiredAt: m.data.expYear + '-' + m.data.expMonth
+    }))
+    setCards(cards)
     // there are cardA(default), B, and C, user clicked and selected B, but didn't click 'set as auto payment card', then refresh the list.
     // I have to reset A as default, otherwise, user might think B is the new default.
     if (defaultPaymentId != paymentId) {
-      setDefaultPaymentMethod(defaultPaymentId);
+      setDefaultPaymentMethod(defaultPaymentId)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchCards();
-  }, [defaultPaymentId]);
+    fetchCards()
+  }, [defaultPaymentId])
 
   return (
     <div>
@@ -162,7 +176,7 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
                 display: 'flex',
                 alignItems: 'center',
                 cursor: 'pointer',
-                fontWeight: paymentId == c.id ? 'bold' : 'unset',
+                fontWeight: paymentId == c.id ? 'bold' : 'unset'
               }}
             >
               <Col span={4}>
@@ -240,7 +254,7 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

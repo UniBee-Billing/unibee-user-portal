@@ -1,8 +1,4 @@
-import {
-  DesktopOutlined,
-  LogoutOutlined,
-  PieChartOutlined
-} from '@ant-design/icons'
+import { LogoutOutlined, PieChartOutlined } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { Layout, Menu, message, theme } from 'antd'
 import React, { useEffect, useState } from 'react'
@@ -95,7 +91,10 @@ const App: React.FC = () => {
     key: string
     needNavigate?: boolean
   }) => {
-    needNavigate && navigate(`${APP_PATH}${key.substring(1)}`) // remove the leading '/' character, coz APP_PATH already has it
+    if (needNavigate) {
+      navigate(`${APP_PATH}${key.substring(1)}`) // remove the leading '/' character, coz APP_PATH already has it
+    }
+
     setActiveMenuItem([key])
     const pathItem = key.split('/').filter((k) => !!k) // remove the empty leading item
     if (pathItem.length == 2) {
@@ -105,7 +104,7 @@ const App: React.FC = () => {
   }
 
   const logout = async () => {
-    const [res, err] = await logoutReq()
+    const [_, err] = await logoutReq()
     if (null != err) {
       message.error(err.message)
       return

@@ -1,10 +1,9 @@
 import { Button, Form, Input, message } from 'antd'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import OtpInput from 'react-otp-input'
 import { useNavigate } from 'react-router-dom'
 import { emailValidate } from '../../helpers'
 import {
-  getAppConfigReq,
   initializeReq,
   loginWithOTPReq,
   loginWithOTPVerifyReq
@@ -30,7 +29,7 @@ const Index = ({
 }) => {
   const [currentStep, setCurrentStep] = useState(0) // 0: input email, 1: input code
   const [errMailMsg, setErrMailMsg] = useState('')
-  const [sendingMailaddr, setSendingMailaddr] = useState(false)
+  const [_, setSendingMailaddr] = useState(false)
   const [countVal, counting, startCount, stopCounter] = useCountdown(60)
 
   const goBackForward = () => setCurrentStep((currentStep + 1) % 2)
@@ -43,10 +42,10 @@ const Index = ({
 
     setSendingMailaddr(true)
     setErrMailMsg('')
-    const [loginRes, err] = await loginWithOTPReq(email)
+    const [_, err] = await loginWithOTPReq(email)
     setSendingMailaddr(false)
     if (null != err) {
-      let e = err instanceof Error ? err : new Error('Unkown error')
+      const e = err instanceof Error ? err : new Error('Unkown error')
       setErrMailMsg(e.message)
       return Promise.reject(e)
     }
@@ -85,7 +84,7 @@ interface IMailFormProps {
   email: string
   onEmailChange: (evt: React.ChangeEvent<HTMLInputElement>) => void
   goForward: () => void
-  sendMailaddress: () => Promise<any>
+  sendMailaddress: () => Promise<unknown>
 }
 const MailForm = ({
   email,
@@ -164,7 +163,7 @@ interface IOtpFormProps {
   errMailMsg: string
   counting: boolean
   countVal: number
-  sendMailaddress: () => Promise<any>
+  sendMailaddress: () => Promise<unknown>
   goBack: () => void
   triggeredByExpired: boolean
 }
@@ -229,7 +228,7 @@ const OTPForm = ({
     merchantStore.setMerchantInfo(merchantInfo)
 
     if (triggeredByExpired) {
-      sessionStore.refresh && sessionStore.refresh()
+      sessionStore.refresh?.()
       message.success('Login succeeded')
     } else {
       navigate(`${APP_PATH}my-subscription`, {
