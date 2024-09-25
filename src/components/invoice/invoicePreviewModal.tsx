@@ -1,7 +1,7 @@
-import { Button, Modal } from 'antd';
+import { Button, Modal } from 'antd'
 interface Props {
-  ivLink: string;
-  closeModal: () => void;
+  ivLink: string
+  closeModal: () => void
 }
 
 const Index = ({ ivLink, closeModal }: Props) => {
@@ -19,7 +19,7 @@ const Index = ({ ivLink, closeModal }: Props) => {
         style={{
           height: 'calc(100vh - 460px)',
           width: '100%',
-          marginTop: '24px',
+          marginTop: '24px'
         }}
       >
         <p>
@@ -35,7 +35,7 @@ const Index = ({ ivLink, closeModal }: Props) => {
         </div>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

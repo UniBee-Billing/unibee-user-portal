@@ -1,5 +1,5 @@
-import { Modal } from 'antd';
-import LoginContainer from './loginContainer';
+import { Modal } from 'antd'
+import LoginContainer from './loginContainer'
 
 const Index = ({ email }: { email: string }) => {
   return (
@@ -12,7 +12,7 @@ const Index = ({ email }: { email: string }) => {
     >
       <LoginContainer triggeredByExpired={true} initialEmail={email} />
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

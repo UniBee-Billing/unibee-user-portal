@@ -2,73 +2,66 @@ import {
   DownloadOutlined,
   EyeOutlined,
   LoadingOutlined,
-  SyncOutlined,
-} from '@ant-design/icons';
-import {
-  Button,
-  Pagination,
-  Space,
-  Table,
-  Tooltip,
-  message,
-} from 'antd';
-import { ColumnsType } from 'antd/es/table';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { formatDate, showAmount } from '../../helpers';
-import { downloadInvoice, getInvoiceListReq } from '../../requests';
-import '../../shared.css';
-import { UserInvoice } from '../../shared.types';
-import { usePagination } from '../hooks';
-import RefundModal from '../payment/refundModal';
-import { InvoiceStatus } from '../ui/statusTag';
-import PreviewModal from './invoicePreviewModal';
+  SyncOutlined
+} from '@ant-design/icons'
+import { Button, Pagination, Space, Table, Tooltip, message } from 'antd'
+import { ColumnsType } from 'antd/es/table'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { formatDate, showAmount } from '../../helpers'
+import { downloadInvoice, getInvoiceListReq } from '../../requests'
+import '../../shared.css'
+import { UserInvoice } from '../../shared.types'
+import { usePagination } from '../hooks'
+import RefundModal from '../payment/refundModal'
+import { InvoiceStatus } from '../ui/statusTag'
+import PreviewModal from './invoicePreviewModal'
 
-const PAGE_SIZE = 10;
-const APP_PATH = import.meta.env.BASE_URL;
+const PAGE_SIZE = 10
+const APP_PATH = import.meta.env.BASE_URL
 
 const Index = () => {
-  const { page, onPageChange } = usePagination();
-  const [total, setTotal] = useState(0);
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [invoiceList, setInvoiceList] = useState<UserInvoice[]>([]);
-  const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const togglePreviewModal = () => setPreviewModalOpen(!previewModalOpen);
-  const [previewLink, setPreviewLink] = useState('');
-  const [refundModalOpen, setRefundModalOpen] = useState(false);
-  const [invoiceIdx, setInvoiceIdx] = useState(-1);
-  const toggleRefundModal = () => setRefundModalOpen(!refundModalOpen);
+  const { page, onPageChange } = usePagination()
+  const [total, setTotal] = useState(0)
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [invoiceList, setInvoiceList] = useState<UserInvoice[]>([])
+  const [previewModalOpen, setPreviewModalOpen] = useState(false)
+  const togglePreviewModal = () => setPreviewModalOpen(!previewModalOpen)
+  const [previewLink, setPreviewLink] = useState('')
+  const [refundModalOpen, setRefundModalOpen] = useState(false)
+  const [invoiceIdx, setInvoiceIdx] = useState(-1)
+  const toggleRefundModal = () => setRefundModalOpen(!refundModalOpen)
 
   const openPreview = (ivLink: string) => {
-    setPreviewLink(ivLink);
-    togglePreviewModal();
-  };
+    setPreviewLink(ivLink)
+    togglePreviewModal()
+  }
 
   const fetchData = async () => {
-    setLoading(true);
+    setLoading(true)
     const [res, err] = await getInvoiceListReq(
       {
         page,
-        count: PAGE_SIZE,
+        count: PAGE_SIZE
       },
-      fetchData,
-    );
-    setLoading(false);
+      fetchData
+    )
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    const { invoices, total } = res;
-    setInvoiceList(invoices ?? []);
-    setTotal(total);
-  };
+    const { invoices, total } = res
+    setInvoiceList(invoices ?? [])
+    setTotal(total)
+  }
 
   const columns: ColumnsType<UserInvoice> = [
     {
       title: 'Id',
       dataIndex: 'invoiceId',
-      key: 'invoiceId',
+      key: 'invoiceId'
     },
     {
       title: 'Total Amount',
@@ -82,13 +75,13 @@ const Index = () => {
           >{` (tax: ${showAmount(iv.taxAmount, iv.currency)})`}</span>
         </div>
       ),
-      sorter: (a, b) => a.totalAmount - b.totalAmount,
+      sorter: (a, b) => a.totalAmount - b.totalAmount
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (s, iv) => InvoiceStatus(s, iv.refund != null),
+      render: (s, iv) => InvoiceStatus(s, iv.refund != null)
     },
     {
       title: 'Document Type',
@@ -106,7 +99,7 @@ const Index = () => {
           >
             Credit Note
           </Button>
-        ),
+        )
     },
     {
       title: 'Issue date',
@@ -117,7 +110,7 @@ const Index = () => {
           ? d == 0
             ? ''
             : formatDate(d)
-          : formatDate(iv.refund.refundTime), // dayjs(d * 1000).format('YYYY-MMM-DD'),
+          : formatDate(iv.refund.refundTime) // dayjs(d * 1000).format('YYYY-MMM-DD'),
       // sorter: (a, b) => a.periodStart - b.periodStart,
     },
     {
@@ -170,13 +163,13 @@ const Index = () => {
             </Tooltip>
           </span>
         </Space>
-      ),
-    },
-  ];
+      )
+    }
+  ]
 
   useEffect(() => {
-    fetchData();
-  }, [page]);
+    fetchData()
+  }, [page])
 
   return (
     <div>
@@ -198,7 +191,7 @@ const Index = () => {
         pagination={false}
         loading={{
           spinning: loading,
-          indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />,
+          indicator: <LoadingOutlined style={{ fontSize: 32 }} spin />
         }}
         onRow={(iv, rowIndex) => {
           return {
@@ -207,19 +200,19 @@ const Index = () => {
                 evt.target instanceof Element &&
                 evt.target.closest('.btn-preview-download-iv') != null
               ) {
-                return;
+                return
               }
               if (
                 evt.target instanceof Element &&
                 evt.target.closest('.btn-refund-modal-wrapper') != null
               ) {
-                setInvoiceIdx(rowIndex as number);
-                toggleRefundModal();
-                return;
+                setInvoiceIdx(rowIndex as number)
+                toggleRefundModal()
+                return
               }
-              navigate(`${APP_PATH}invoice/${iv.invoiceId}`);
-            },
-          };
+              navigate(`${APP_PATH}invoice/${iv.invoiceId}`)
+            }
+          }
         }}
       />
       <div className="mx-0 my-4 flex items-center justify-end">
@@ -237,7 +230,7 @@ const Index = () => {
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
