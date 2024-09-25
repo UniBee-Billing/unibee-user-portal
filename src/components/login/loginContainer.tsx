@@ -1,30 +1,34 @@
-import type { RadioChangeEvent } from 'antd';
-import { Button, Radio } from 'antd';
-import React, { ChangeEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import OTPLogin from './otpLogin';
-import PasswordLogin from './passwordLogin';
+import type { RadioChangeEvent } from 'antd'
+import { Button, Radio } from 'antd'
+import React, { ChangeEvent, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import OTPLogin from './otpLogin'
+import PasswordLogin from './passwordLogin'
 
-const APP_PATH = import.meta.env.BASE_URL;
+const APP_PATH = import.meta.env.BASE_URL
 
 const Index = ({
   triggeredByExpired,
-  initialEmail,
+  initialEmail
 }: {
-  triggeredByExpired: boolean;
-  initialEmail: string;
+  triggeredByExpired: boolean
+  initialEmail: string
 }) => {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState(initialEmail); // email need to be shared on passwordLogin and OtpLogin, so it has to be defined in parent.
+  const navigate = useNavigate()
+  const [email, setEmail] = useState(initialEmail) // email need to be shared on passwordLogin and OtpLogin, so it has to be defined in parent.
   const onEmailChange = (evt: ChangeEvent<HTMLInputElement> | string) => {
-    typeof evt == 'string' ? setEmail(evt) : setEmail(evt.target.value);
-  };
+    if (typeof evt === 'string') {
+      setEmail(evt)
+    } else {
+      setEmail(evt.target.value)
+    }
+  }
 
-  const [loginType, setLoginType] = useState<'password' | 'OTP'>('password');
+  const [loginType, setLoginType] = useState<'password' | 'OTP'>('password')
 
   const onLoginTypeChange = (e: RadioChangeEvent) =>
-    setLoginType(e.target.value);
-  const goSignup = () => navigate(`${APP_PATH}signup`);
+    setLoginType(e.target.value)
+  const goSignup = () => navigate(`${APP_PATH}signup`)
 
   return (
     <div className="flex h-full items-center justify-center ">
@@ -33,7 +37,7 @@ const Index = ({
         <Radio.Group
           options={[
             { label: 'Password', value: 'password' },
-            { label: 'OTP', value: 'OTP' },
+            { label: 'OTP', value: 'OTP' }
           ]}
           onChange={onLoginTypeChange}
           value={loginType}
@@ -49,7 +53,7 @@ const Index = ({
             border: '1px solid #e0e0e0',
             borderRadius: '8px',
             marginTop: '36px',
-            background: '#FFF',
+            background: '#FFF'
           }}
         >
           {loginType == 'password' ? (
@@ -71,7 +75,7 @@ const Index = ({
             display: 'flex',
             color: '#757575',
             justifyContent: 'center',
-            alignItems: 'center',
+            alignItems: 'center'
           }}
         >
           Don't have an account?
@@ -81,7 +85,7 @@ const Index = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

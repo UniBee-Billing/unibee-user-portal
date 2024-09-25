@@ -38,11 +38,6 @@ export const SUBSCRIPTION_HISTORY_STATUS: { [key: number]: string } = {
   4: 'Expired'
 }
 
-export const GATEWAY_TYPE: { [key: number]: string } = {
-  1: 'Card',
-  2: 'Crypto'
-}
-
 export const INVOICE_STATUS: { [key: number]: string } = {
   0: 'Initiating', // this status only exist for a very short period, users/admin won't even know it exist
   1: 'Pending', // admin manually create an invoice, ready for edit, but not published yet, users won't see it, won't receive email.

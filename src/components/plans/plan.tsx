@@ -1,7 +1,6 @@
 import { Button, Checkbox, Input } from 'antd'
 import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import React, { useEffect, useState } from 'react'
-import { CURRENCY } from '../../constants'
 import { formatPlanPrice, showAmount } from '../../helpers'
 import { IPlan } from '../../shared.types'
 import { SubscriptionStatus } from '../ui/statusTag'
@@ -29,8 +28,6 @@ const TIME_UNITS = [
   { label: 'months(30days)', value: 60 * 60 * 24 * 30 }
 ]
 
-const getAmount = (amt: number, currency: string) =>
-  amt / CURRENCY[currency].stripe_factor
 const secondsToUnit = (sec: number) => {
   const units = [...TIME_UNITS].sort((a, b) => b.value - a.value)
   for (let i = 0; i < units.length; i++) {

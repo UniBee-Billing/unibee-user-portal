@@ -1,55 +1,62 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Col, Modal, Row, Spin, message } from 'antd';
-import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
-import { showAmount } from '../../helpers';
-import { onetimepaymentListReq } from '../../requests';
-import { IPlan } from '../../shared.types';
+import { LoadingOutlined } from '@ant-design/icons'
+import { Button, Col, Modal, Row, Spin, message } from 'antd'
+import dayjs from 'dayjs'
+import { useEffect, useState } from 'react'
+import { showAmount } from '../../helpers'
+import { onetimepaymentListReq } from '../../requests'
+import { IPlan } from '../../shared.types'
 
 type TBuyRecord = {
-  addon: IPlan;
-  addonId: number;
-  createTime: number;
-  id: number;
-  quantity: number;
+  addon: IPlan
+  addonId: number
+  createTime: number
+  id: number
+  quantity: number
   payment: null | {
-    userId: number;
-    failureReason: string;
-    gatewayId: number;
-    link: string;
-    paidTime: number;
-    totalAmount: number;
-    currency: string;
-    status: 10 | 20 | 30 | 40; // 10-pending，20-success，30-failure, 40-cancel
-  };
-  status: 1 | 2 | 3 | 4; // 1-create, 2-paid, 3-cancel, 4-expired
-  subscriptionId: string;
-};
+    userId: number
+    failureReason: string
+    gatewayId: number
+    link: string
+    paidTime: number
+    totalAmount: number
+    currency: string
+    status: 10 | 20 | 30 | 40 // 10-pending，20-success，30-failure, 40-cancel
+  }
+  status: 1 | 2 | 3 | 4 // 1-create, 2-paid, 3-cancel, 4-expired
+  subscriptionId: string
+}
 
 interface Props {
-  subscriptionId: string;
-  closeModal: () => void;
+  subscriptionId: string
+  closeModal: () => void
 }
+
+interface OneTimePayment {
+  createTime: number
+}
+
 const Index = ({ subscriptionId, closeModal }: Props) => {
-  const [loading, setLoading] = useState(false);
-  const [buyList, setBuyList] = useState<TBuyRecord[]>([]);
+  const [loading, setLoading] = useState(false)
+  const [buyList, setBuyList] = useState<TBuyRecord[]>([])
 
   const fetchData = async () => {
-    setLoading(true);
-    const [list, err] = await onetimepaymentListReq(subscriptionId, fetchData);
-    list.sort((a: any, b: any) => b.createTime - a.createTime);
-    console.log('purchase list res: ', list);
-    setLoading(false);
+    setLoading(true)
+    const [list, err] = await onetimepaymentListReq(subscriptionId, fetchData)
+    list.sort(
+      (a: OneTimePayment, b: OneTimePayment) => b.createTime - a.createTime
+    )
+    console.log('purchase list res: ', list)
+    setLoading(false)
     if (null != err) {
-      message.error(err.message);
-      return;
+      message.error(err.message)
+      return
     }
-    setBuyList(list);
-  };
+    setBuyList(list)
+  }
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   return (
     <Modal
@@ -80,7 +87,7 @@ const Index = ({ subscriptionId, closeModal }: Props) => {
                 height: '42px',
                 display: 'flex',
                 alignItems: 'center',
-                cursor: 'pointer',
+                cursor: 'pointer'
               }}
             >
               <Col span={4}>{c.addon.planName}</Col>
@@ -117,7 +124,7 @@ const Index = ({ subscriptionId, closeModal }: Props) => {
         </Button>
       </div>
     </Modal>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

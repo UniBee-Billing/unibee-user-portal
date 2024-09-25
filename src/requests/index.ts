@@ -42,7 +42,7 @@ type TSignupReq = {
 }
 export const signUpReq = async (body: TSignupReq) => {
   try {
-    const res = await request.post(`/user/auth/sso/register`, body)
+    await request.post(`/user/auth/sso/register`, body)
     return [null, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -57,7 +57,7 @@ type TSignupVerifyReq = {
 }
 export const signUpVerifyReq = async (body: TSignupVerifyReq) => {
   try {
-    const res = await request.post(`/user/auth/sso/registerVerify`, body)
+    await request.post(`/user/auth/sso/registerVerify`, body)
     return [null, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -82,7 +82,7 @@ export const loginWithPasswordReq = async (body: TPassLogin) => {
 
 export const loginWithOTPReq = async (email: string) => {
   try {
-    const res = await request.post(`/user/auth/sso/loginOTP`, {
+    await request.post(`/user/auth/sso/loginOTP`, {
       email
     })
     return [null, null]
@@ -161,7 +161,7 @@ export const forgetPassVerifyReq = async (
 
 export const logoutReq = async () => {
   try {
-    const res = await request.post(`/user/logout`, {})
+    await request.post(`/user/logout`, {})
     return [null, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -810,7 +810,6 @@ export const getPaymentMethodListReq = async (refreshCb: () => void) => {
 
 export const addPaymentMethodReq = async ({
   currency,
-  subscriptionId,
   redirectUrl
 }: {
   currency?: string

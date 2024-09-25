@@ -1,5 +1,4 @@
 import {
-  FacebookOutlined,
   GithubOutlined,
   LinkedinOutlined,
   TwitterOutlined,

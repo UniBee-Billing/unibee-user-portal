@@ -1,13 +1,9 @@
-import { Result, Spin, message } from 'antd';
+import { Result, message } from 'antd';
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 // import axios from "axios";
-import { LoadingOutlined } from '@ant-design/icons';
-import { checkOnetimePaymentReq, checkPaymentReq } from '../requests';
-import { useProfileStore } from '../stores';
+import { checkOnetimePaymentReq } from '../requests';
 
-const APP_PATH = import.meta.env.BASE_URL;
-const API_URL = import.meta.env.VITE_API_URL;
 // http://localhost:5173/payment-result?subId=sub20240109hcHUQ1kvcxwICk3&success=true&session_id=cs_test_a193gxY4JlOESP2C8jMHNQmrIJJiLtjl8JSIRFokQHSw9ylF905bdj0Jfw
 
 const STATUS: { [key: number]: string } = {
@@ -18,9 +14,7 @@ const STATUS: { [key: number]: string } = {
 };
 
 export default function PaymentResult() {
-  const profileStore = useProfileStore();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [payStatus, setPayStatus] = useState<number | null>(null);
   const [invoiceId, setInvoiceId] = useState('');
   const paymentId = searchParams.get('paymentId');
@@ -33,7 +27,7 @@ export default function PaymentResult() {
       message.error(err.message);
       return;
     }
-    const { user, payment, gateway, invoice } = chkPayemntRes;
+    const { payment } = chkPayemntRes;
     setPayStatus(payment.status);
     setInvoiceId(payment.invoiceId);
   };

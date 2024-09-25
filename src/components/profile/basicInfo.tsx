@@ -86,7 +86,7 @@ const Index = () => {
     form.setFieldsValue(user)
     setGatewayId(user.gatewayId)
     setCountryList(
-      countryList.map((c: any) => ({
+      countryList.map((c: Country) => ({
         countryCode: c.countryCode,
         countryName: c.countryName
       }))
@@ -463,7 +463,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
   const [loading, setLoading] = useState(false)
 
   const logout = async () => {
-    const [res, err] = await logoutReq()
+    const [_, err] = await logoutReq()
     if (null != err) {
       message.error(err.message)
       return
@@ -485,7 +485,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
   const onConfirm = async () => {
     const formValues = form.getFieldsValue()
     setLoading(true)
-    const [res, err] = await resetPassReq(
+    const [_, err] = await resetPassReq(
       formValues.oldPassword,
       formValues.newPassword
     )
@@ -544,7 +544,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
               message: 'Please input your new password!'
             },
             ({ getFieldValue }) => ({
-              validator(rule, value) {
+              validator(_, value) {
                 if (getFieldValue('oldPassword') == value) {
                   return Promise.reject(
                     'New password should not be the same as old password.'
@@ -573,7 +573,7 @@ const ResetPasswordModal = ({ email, closeModal }: IResetPassProps) => {
               message: 'Please retype your new password!'
             },
             ({ getFieldValue }) => ({
-              validator(rule, value) {
+              validator(value) {
                 if (value == getFieldValue('newPassword')) {
                   return Promise.resolve()
                 }

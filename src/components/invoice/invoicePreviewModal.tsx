@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Input, Modal, Row, Select, message } from 'antd';
+import { Button, Modal } from 'antd';
 interface Props {
   ivLink: string;
   closeModal: () => void;

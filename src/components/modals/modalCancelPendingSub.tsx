@@ -13,7 +13,7 @@ const Index = ({ subInfo, closeModal, refresh }: Props) => {
 
   const onConfirm = async () => {
     setLoading(true)
-    const [res, err] = await cancelSubReq(subInfo?.subscriptionId as string)
+    const [_, err] = await cancelSubReq(subInfo?.subscriptionId as string)
     setLoading(false)
     if (null != err) {
       message.error(err.message)

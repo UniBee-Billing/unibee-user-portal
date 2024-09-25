@@ -48,7 +48,7 @@ const Index = ({
       return
     }
     setSubmittingForgetPass(true)
-    const [res, err] = await forgetPassReq(form.getFieldValue('email'))
+    const [_, err] = await forgetPassReq(form.getFieldValue('email'))
     setSubmittingForgetPass(false)
     if (null != err) {
       message.error(err.message)
@@ -87,7 +87,7 @@ const Index = ({
 
     if (triggeredByExpired) {
       console.log('expired in password login: ', sessionStore)
-      sessionStore.refresh && sessionStore.refresh()
+      sessionStore.refresh?.()
       message.success('Login succeeded')
     } else {
       navigate(`${APP_PATH}my-subscription`, {
@@ -141,8 +141,8 @@ const Index = ({
               required: true,
               message: 'Please input your Email!'
             },
-            ({ getFieldValue }) => ({
-              validator(rule, value) {
+            () => ({
+              validator(_, value) {
                 if (value != null && value != '' && emailValidate(value)) {
                   return Promise.resolve()
                 }
@@ -215,7 +215,7 @@ const ForgetPasswordModal = ({
 
   const onConfirm = async () => {
     setLoading(true)
-    const [res, err] = await forgetPassVerifyReq(
+    const [_, err] = await forgetPassVerifyReq(
       form2.getFieldValue('email'),
       form2.getFieldValue('verificationCode'),
       form2.getFieldValue('newPassword')
@@ -289,8 +289,8 @@ const ForgetPasswordModal = ({
               required: true,
               message: 'Please input your new password!'
             },
-            ({ getFieldValue }) => ({
-              validator(rule, value) {
+            () => ({
+              validator(_, value) {
                 if (!passwordSchema.validate(value)) {
                   return Promise.reject(
                     'At least 8 characters containing lowercase, uppercase, number and special character.'
@@ -314,7 +314,7 @@ const ForgetPasswordModal = ({
               message: 'Please retype your new password!'
             },
             ({ getFieldValue }) => ({
-              validator(rule, value) {
+              validator(value) {
                 if (value == getFieldValue('newPassword')) {
                   return Promise.resolve()
                 }

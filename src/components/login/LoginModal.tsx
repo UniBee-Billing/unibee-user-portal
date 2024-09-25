@@ -1,5 +1,4 @@
 import { Modal } from 'antd';
-import { useSessionStore } from '../../stores';
 import LoginContainer from './loginContainer';
 
 const Index = ({ email }: { email: string }) => {

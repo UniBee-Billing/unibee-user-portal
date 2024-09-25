@@ -1,10 +1,9 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import { Divider, Pagination, Tag, message } from 'antd';
+import { Divider, Pagination, message } from 'antd';
 import Table, { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { formatDate, showAmount } from '../../helpers';
+import { formatDate } from '../../helpers';
 import { getOnetimePaymentHistoryReq } from '../../requests';
 import { IOneTimeHistoryItem } from '../../shared.types';
 import { usePagination } from '../hooks';
@@ -103,9 +102,9 @@ const Index = () => {
         rowClassName="clickable-tbl-row"
         pagination={false}
         // scroll={{ x: true, y: 640 }}
-        onRow={(record, rowIndex) => {
+        onRow={() => {
           return {
-            onClick: (event) => {},
+            onClick: () => {},
           };
         }}
         loading={{
