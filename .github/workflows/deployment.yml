@@ -38,6 +38,12 @@ jobs:
           push: true
           tags: unibee/user-portal:${{ inputs.version }}-dev
 
+      - name: Build daily image and push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: unibee/user-portal:daily
+
       - name: Deploy to cluster
         if: inputs.environment == 'development'
         run: 'curl --header "Content-Type: application/json" --request POST --data "{\"key\":\"${{ secrets.DEPLOYMENT_KEY }}\", \"deployment\":\"userPortal\", \"imageTag\":\"${{ inputs.version }}-dev\"}" https://api.unibee.dev/cloud/cd/k8s/pod/restart'
