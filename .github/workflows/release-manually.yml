@@ -25,7 +25,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: unibee/admin-portal:${{ github.ref_name }}
+          tags: unibee/user-portal:${{ github.ref_name }}
 
       - name: Create release
         uses: ncipollo/release-action@v1
