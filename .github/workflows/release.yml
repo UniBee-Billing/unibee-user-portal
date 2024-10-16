@@ -24,7 +24,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: 'unibee/admin-portal:${{ github.event.client_payload.version }}'
+          tags: 'unibee/user-portal:${{ github.event.client_payload.version }}'
 
       - name: Tag version
         uses: anothrNick/github-tag-action@v1
