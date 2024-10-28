@@ -1,6 +1,6 @@
 {
   "name": "unibee-userportal-front",
-  "version": "0.0.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
