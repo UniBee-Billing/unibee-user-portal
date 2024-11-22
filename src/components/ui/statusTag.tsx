@@ -67,5 +67,6 @@ export {
   InvoiceStatus,
   PaymentStatus,
   SubHistoryStatus,
-  SubscriptionStatus
+  SubscriptionStatus,
+  getDiscountCodeStatusTagById
 }
