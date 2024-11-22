@@ -32,7 +32,7 @@ export const SUBSCRIPTION_STATUS: { [key: number]: string } = {
 }
 
 export const SUBSCRIPTION_HISTORY_STATUS: { [key: number]: string } = {
-  1: 'Processing',
+  1: 'Active',
   2: 'Finished',
   3: 'Cancelled',
   4: 'Expired'
@@ -40,12 +40,13 @@ export const SUBSCRIPTION_HISTORY_STATUS: { [key: number]: string } = {
 
 export const INVOICE_STATUS: { [key: number]: string } = {
   0: 'Initiating', // this status only exist for a very short period, users/admin won't even know it exist
-  1: 'Pending', // admin manually create an invoice, ready for edit, but not published yet, users won't see it, won't receive email.
-  // in pending, admin can also delete the invoice
-  2: 'Processing', // admin has published the invoice, user will receive a mail with payment link. Admin can revoke the invoice if user hasn't made the payment.
+  1: 'Draft', // admin manually create an invoice, ready for edit, but not published yet, users won't see it, won't receive email.
+  // this is user portal, so user won't see this status
+  2: 'Awaiting payment', // admin has published the invoice, user will receive a mail with payment link. Admin can revoke the invoice if user hasn't made the payment.
   3: 'Paid', // user paid the invoice
   4: 'Failed', // user not pay the invoice before it get expired
-  5: 'Cancelled' // admin cancel the invoice after publishing, only if user hasn't paid yet. If user has paid, admin cannot cancel it.
+  5: 'Cancelled', // admin cancel the invoice after publishing, only if user hasn't paid yet. If user has paid, admin cannot cancel it.
+  6: 'Reversed' // 取消后被通知支付成功的，这种情况一般是要排查的
 }
 
 export const PAYMENT_STATUS: { [key: number]: string } = {

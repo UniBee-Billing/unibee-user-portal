@@ -271,6 +271,7 @@ type InvoiceItemTotal = {
   currency: string
   subscriptionAmount: number
   subscriptionAmountExcludingTax: number
+  discountAmount: number
   taxAmount: number
   taxPercentage: number
   totalAmount: number

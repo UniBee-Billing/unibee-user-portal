@@ -33,6 +33,7 @@ interface Props {
   countryList: Country[]
   userCountryCode: string
   defaultVatNumber: string
+  discountCode: string
   closeModal: () => void
 }
 
@@ -41,6 +42,7 @@ const Index = ({
   countryList,
   userCountryCode,
   defaultVatNumber,
+  discountCode,
   closeModal
 }: Props) => {
   const navigate = useNavigate()
@@ -118,8 +120,14 @@ const Index = ({
         ? plan.addons.filter((a) => a.checked)
         : []
 
-    // return;
     setLoading(true)
+    console.log(
+      'def/value: ',
+      discountInputRef.current?.input?.defaultValue,
+      '/',
+      discountInputRef.current?.input?.value
+    )
+    const couponCode = discountInputRef.current?.input?.value ?? discountCode
     const [previewRes, err] = await createPreviewReq(
       plan.id,
       addons.map((a) => ({
@@ -130,7 +138,7 @@ const Index = ({
       selectedCountry,
       gatewayId as number,
       createPreview,
-      discountInputRef.current?.input?.value
+      couponCode // discountInputRef.current?.input?.value
     )
     setLoading(false)
     console.log('previewRes: ', previewRes)
@@ -172,7 +180,7 @@ const Index = ({
   // discount's Apply button onClick handler
   // refactor this with the above into one
   const onDiscountChecking2: React.MouseEventHandler<HTMLElement> = async (
-    _
+    evt
   ) => {
     setDiscountChecking(true)
     discountChkingRef.current = true
@@ -356,7 +364,7 @@ const Index = ({
       return
     }
 
-    const { link } = createSubRes
+    const { link, paid } = createSubRes
     if (link != '' && link != null) {
       window.open(link, '_blank')
     }
@@ -376,7 +384,6 @@ const Index = ({
     createPreview()
   }, [selectedCountry, gatewayId])
 
-  // console.log('discount/vat checking: ', discountChecking, '//', vatChecking);
   return (
     <Modal
       title={wireConfirmStep ? 'Wire Transfer Account' : 'Order Preview'}
@@ -551,6 +558,7 @@ const Index = ({
                   <Col span={24}>
                     <Input
                       ref={discountInputRef}
+                      defaultValue={discountCode}
                       allowClear
                       // disabled={discountChecking || vatChecking}
                       disabled={loading || submitting}

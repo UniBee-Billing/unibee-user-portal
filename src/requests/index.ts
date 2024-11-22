@@ -383,14 +383,16 @@ export const getActiveSubWithMore = async (
 export const createUpdatePreviewReq = async (
   planId: number,
   addons: { quantity: number; addonPlanId: number }[],
-  subscriptionId: string | null
+  subscriptionId: string | null,
+  discountCode: string
 ) => {
   const urlPath = 'update_preview'
   const body = {
     subscriptionId,
     newPlanId: planId,
     quantity: 1,
-    addonParams: addons
+    addonParams: addons,
+    discountCode
   }
   try {
     const res = await request.post(`/user/subscription/${urlPath}`, body)
@@ -440,13 +442,31 @@ export const createPreviewReq = async (
   }
 }
 
+export const applyDiscountPreviewReq = async (code: string, planId: number) => {
+  try {
+    const res = await request.post(`/user/plan/code_apply_preview`, {
+      code,
+      planId
+    })
+    if (res.data.code == 61) {
+      session.setSession({ expired: true, refresh: null })
+      throw new ExpiredError('Session expired')
+    }
+    return [res.data.data, null]
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error')
+    return [null, e]
+  }
+}
+
 export const updateSubscriptionReq = async (
   newPlanId: number,
   subscriptionId: string,
   addons: { quantity: number; addonPlanId: number }[],
   confirmTotalAmount: number,
   confirmCurrency: string,
-  prorationDate: number
+  prorationDate: number,
+  discountCode: string
 ) => {
   // "create_submit"
   const body = {
@@ -456,7 +476,8 @@ export const updateSubscriptionReq = async (
     addonParams: addons,
     confirmTotalAmount,
     confirmCurrency,
-    prorationDate
+    prorationDate,
+    discountCode
   }
   try {
     const res = await request.post(`/user/subscription/update_submit`, body)
