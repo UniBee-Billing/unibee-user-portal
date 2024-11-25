@@ -63,9 +63,9 @@ const getDiscountCodeStatusTagById = (statusId: number) =>
 
 export {
   DiscountCodeStatus,
+  getDiscountCodeStatusTagById,
   InvoiceStatus,
   PaymentStatus,
   SubHistoryStatus,
-  SubscriptionStatus,
-  getDiscountCodeStatusTagById
+  SubscriptionStatus
 }
