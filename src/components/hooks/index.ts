@@ -26,7 +26,8 @@ const useCountdown = (
           setCounting(false)
         }
         if (val < 0) {
-          setCurrentVal(valBK), cancelAnimationFrame(countdownReqId.current)
+          setCurrentVal(valBK)
+          cancelAnimationFrame(countdownReqId.current)
         }
       }
     })()

@@ -98,7 +98,7 @@ const MailForm = ({
   const submit = async () => {
     try {
       setSubmitting(true)
-      const res = await sendMailaddress()
+      await sendMailaddress()
       setSubmitting(false)
       goForward()
     } catch (err) {

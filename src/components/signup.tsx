@@ -55,7 +55,7 @@ const Index = () => {
     }
     // return;
     setSubmitting(true)
-    const [res, err] = await signUpReq(body)
+    const [_, err] = await signUpReq(body)
     setSubmitting(false)
     if (null != err) {
       message.error(err.message)

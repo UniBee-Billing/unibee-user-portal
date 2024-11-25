@@ -61,7 +61,7 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
       return
     }
     setLoading(true)
-    const [changePaymentMethodRes, err] = await changeGlobalPaymentMethodReq({
+    const [_, err] = await changeGlobalPaymentMethodReq({
       paymentMethodId: paymentId
     })
     setLoading(false)

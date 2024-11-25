@@ -255,7 +255,7 @@ const Index = ({
 
     if (wireConfirmStep) {
       setLoading(true)
-      const [res, err] = await markWireCompleteReq(subscriptionId.current)
+      const [_, err] = await markWireCompleteReq(subscriptionId.current)
       setLoading(false)
       if (null != err) {
         message.error(err.message)
