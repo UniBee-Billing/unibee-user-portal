@@ -57,12 +57,10 @@ const Index = () => {
       message.error(err.message)
       return
     }
-    console.log('planList, subList: ', res)
     const { products, subscriptions } = res
     setProductList(products.products)
     let subs = subscriptions ?? []
     subs = subs.map(normalizeSub)
-    console.log('subs after normalization: ', subs)
     setSubList(subs)
 
     /*

@@ -33,6 +33,7 @@ interface Props {
   countryList: Country[]
   userCountryCode: string
   defaultVatNumber: string
+  discountCode: string
   closeModal: () => void
 }
 
@@ -41,6 +42,7 @@ const Index = ({
   countryList,
   userCountryCode,
   defaultVatNumber,
+  discountCode,
   closeModal
 }: Props) => {
   const navigate = useNavigate()
@@ -118,8 +120,8 @@ const Index = ({
         ? plan.addons.filter((a) => a.checked)
         : []
 
-    // return;
     setLoading(true)
+    const couponCode = discountInputRef.current?.input?.value ?? discountCode
     const [previewRes, err] = await createPreviewReq(
       plan.id,
       addons.map((a) => ({
@@ -130,10 +132,9 @@ const Index = ({
       selectedCountry,
       gatewayId as number,
       createPreview,
-      discountInputRef.current?.input?.value
+      couponCode // discountInputRef.current?.input?.value
     )
     setLoading(false)
-    console.log('previewRes: ', previewRes)
     if (null != err) {
       message.error(err.message)
       return false
@@ -171,9 +172,9 @@ const Index = ({
 
   // discount's Apply button onClick handler
   // refactor this with the above into one
-  const onDiscountChecking2: React.MouseEventHandler<HTMLElement> = async (
-    _
-  ) => {
+  const onDiscountChecking2: React.MouseEventHandler<
+    HTMLElement
+  > = async () => {
     setDiscountChecking(true)
     discountChkingRef.current = true
     await createPreview() // I should insert **ref.current = true/false into createPreview
@@ -254,13 +255,12 @@ const Index = ({
 
     if (wireConfirmStep) {
       setLoading(true)
-      const [res, err] = await markWireCompleteReq(subscriptionId.current)
+      const [_, err] = await markWireCompleteReq(subscriptionId.current)
       setLoading(false)
       if (null != err) {
         message.error(err.message)
         return
       }
-      console.log('mark wire complete res: ', res)
       closeModal()
       message.success('Subscription created.')
       navigate(`${APP_PATH}my-subscription`)
@@ -293,7 +293,6 @@ const Index = ({
       const wire = appConfig.gateway.find(
         (g) => g.gatewayName == 'wire_transfer'
       )
-      // console.log('total amt/wire-mim amt: ', wire, '//', preview?.totalAmount);
       if (wire?.currency != preview?.currency) {
         message.error(`Wire transfer currency is ${wire?.currency}`)
         return
@@ -329,7 +328,6 @@ const Index = ({
       gatewayId,
       discountInputRef.current?.input?.value
     )
-    console.log('create sub res: ', createSubRes)
     setSubmitting(false)
     if (err != null) {
       message.error(err.message)
@@ -342,15 +340,10 @@ const Index = ({
         vATNumber: { $set: vatNumber },
         countryCode: { $set: selectedCountry }
       })
-      console.log('new profile: ', p)
       profileStore.setProfile(p)
     }
 
     if (isWireSelected) {
-      console.log(
-        'setting sub id after create sub: ',
-        createSubRes.subscription.subscriptionId
-      )
       subscriptionId.current = createSubRes.subscription.subscriptionId
       setWireConfirmStep(!wireConfirmStep)
       return
@@ -376,7 +369,6 @@ const Index = ({
     createPreview()
   }, [selectedCountry, gatewayId])
 
-  // console.log('discount/vat checking: ', discountChecking, '//', vatChecking);
   return (
     <Modal
       title={wireConfirmStep ? 'Wire Transfer Account' : 'Order Preview'}
@@ -551,14 +543,13 @@ const Index = ({
                   <Col span={24}>
                     <Input
                       ref={discountInputRef}
+                      defaultValue={discountCode}
                       allowClear
                       // disabled={discountChecking || vatChecking}
                       disabled={loading || submitting}
                       style={{ width: '200px' }}
-                      // value={discountCode}
                       onBlur={onDiscountChecking}
                       onPressEnter={onCodeEnter}
-                      // onChange={onDiscountCodeChange}
                     />
                     <span className=" ml-1">
                       <Button

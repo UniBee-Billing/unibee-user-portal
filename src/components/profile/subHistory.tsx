@@ -140,7 +140,6 @@ const Index = () => {
       message.error(err.message)
       return
     }
-    console.log('sub his res: ', res)
     const { subscriptionTimeLines, total } = res
     setSubHistory(subscriptionTimeLines ?? [])
     setTotal(total)
@@ -153,7 +152,6 @@ const Index = () => {
     if (null != err) {
       return
     }
-    console.log('product list: ', res)
     setProductList(res.products ?? [])
   }
 

@@ -40,7 +40,6 @@ const Index = ({
   productId: string
   normalizeSub: (sub: ISubscription) => ISubscription
 }) => {
-  console.log('sub passed from parent(subList): ', subDetail)
   const location = useLocation()
   // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false)

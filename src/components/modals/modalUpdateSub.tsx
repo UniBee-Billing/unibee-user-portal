@@ -11,11 +11,18 @@ const APP_PATH = import.meta.env.BASE_URL
 interface Props {
   plan: IPlan
   subscriptionId: string
+  discountCode: string
   closeModal: () => void
   refresh: () => void // after upgrade, refresh parent component
 }
 
-const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
+const Index = ({
+  plan,
+  subscriptionId,
+  discountCode,
+  closeModal,
+  refresh
+}: Props) => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false) // when the Modal is loading, preview is null, Modal has no content, but a loading spinner
   const [submitting, setSubmitting] = useState(false) // when user click submit, preview is not null, Modal has content.
@@ -36,7 +43,8 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       })),
       preview?.totalAmount as number,
       preview?.currency as string,
-      preview?.prorationDate as number
+      preview?.prorationDate as number,
+      discountCode
     )
     setSubmitting(false)
     if (null != err) {
@@ -74,14 +82,14 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
           quantity: a.quantity as number,
           addonPlanId: a.id
         })),
-        subscriptionId as string
+        subscriptionId as string,
+        discountCode
       )
       setLoading(false)
       if (null != err) {
         message.error(err.message)
         return
       }
-      console.log('update preview res: ', previewRes)
       setPreview(previewRes)
     }
     fetchPreview()
@@ -94,7 +102,7 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       open={true}
       footer={null}
       closeIcon={null}
-      width={'720px'}
+      width={'920px'}
     >
       {loading ? (
         <div
@@ -112,11 +120,13 @@ const Index = ({ plan, subscriptionId, closeModal, refresh }: Props) => {
       ) : (
         preview != null && (
           <>
-            <InvoiceLines label="Current Invoices" invoice={preview.invoice} />
             <InvoiceLines
               label="Next Billing Cycle Invoices"
               invoice={preview.nextPeriodInvoice}
+              hideDetail={true}
+              showButton={true}
             />
+            <InvoiceLines label="Current Invoices" invoice={preview.invoice} />
           </>
         )
       )}
@@ -141,91 +151,124 @@ export default Index
 
 const InvoiceLines = ({
   invoice,
-  label
+  label,
+  hideDetail,
+  showButton
 }: {
   invoice: InvoiceItemTotal | undefined
   label: string
-}) => (
-  <>
-    <Divider orientation="left" style={{ margin: '32px 0', color: '#757575' }}>
-      {label}
-    </Divider>
-    {invoice == null || invoice.lines.length == 0 ? (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          fontSize: '16px',
-          color: '#757575'
-        }}
+  hideDetail?: boolean
+  showButton?: boolean
+}) => {
+  const [hide, setHide] = useState(!!hideDetail)
+  return (
+    <>
+      <Divider
+        orientation="left"
+        style={{ margin: '32px 0', color: '#757575' }}
       >
-        No Items
-      </div>
-    ) : (
-      <>
-        <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
-          <Col span={10}>Description</Col>
-          <Col span={5}>Amt(Exc Tax)</Col>
-          <Col span={5}>Quantity</Col>
-          <Col span={4}>Amt</Col>
-        </Row>
-        {invoice.lines.map((i, idx) => (
-          <div key={idx}>
+        {label}
+      </Divider>
+      {invoice == null || invoice.lines.length == 0 ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            fontSize: '16px',
+            color: '#757575'
+          }}
+        >
+          No Items
+        </div>
+      ) : (
+        <>
+          <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
+            <Col span={9}>Description</Col>
+            <Col span={4}>Unit price</Col>
+            <Col span={1}></Col>
+            <Col span={3}>Quantity</Col>
+            <Col span={4}>VAT</Col>
+            <Col span={3}>Total</Col>
+          </Row>
+          {invoice.lines.map((i, idx) => (
+            <div key={idx}>
+              <Row>
+                <Col span={9}>{i.description}</Col>
+                <Col span={4}>
+                  {showAmount(i.unitAmountExcludingTax, i.currency)}
+                </Col>
+                <Col span={1}></Col>
+                <Col span={3}>{i.quantity}</Col>
+                <Col span={4}>
+                  {showAmount(i.tax as number, i.currency)}
+                  <span className="text-xs text-gray-500">{` (${(i.taxPercentage as number) / 100}%)`}</span>
+                </Col>
+                <Col span={3}>
+                  {showAmount(
+                    i.unitAmountExcludingTax * i.quantity,
+                    i.currency
+                  )}
+                </Col>
+              </Row>
+              {idx != invoice.lines.length - 1 && (
+                <Divider style={{ margin: '8px 0' }} />
+              )}
+            </div>
+          ))}
+
+          <div
+            style={{
+              height: hide ? '0px' : '66px',
+              visibility: hide ? 'hidden' : 'visible'
+            }}
+          >
             <Row>
-              <Col span={10}>{i.description}</Col>
-              <Col span={5}>
-                {showAmount(i.unitAmountExcludingTax, i.currency)}
-              </Col>
-              <Col span={5}>{i.quantity}</Col>
-              <Col span={4}>
-                {showAmount(i.unitAmountExcludingTax * i.quantity, i.currency)}
+              <Col span={17}></Col>
+              <Col span={4}>Subtotal</Col>
+              <Col span={3}>
+                {showAmount(
+                  invoice.subscriptionAmountExcludingTax,
+                  invoice.currency
+                )}
               </Col>
             </Row>
-            {idx != invoice.lines.length - 1 && (
-              <Divider style={{ margin: '8px 0' }} />
-            )}
+            <Row>
+              <Col span={17}> </Col>
+              <Col span={4}>Total Discounted</Col>
+              <Col span={3}>
+                {`${showAmount(-1 * invoice.discountAmount, invoice.currency)}`}
+              </Col>
+            </Row>
+            <Row>
+              <Col span={17}></Col>
+              <Col span={4}>
+                VAT(
+                {`${invoice.taxPercentage / 100}%`})
+              </Col>
+              <Col span={3} style={{ fontWeight: 'bold' }}>
+                {showAmount(invoice.taxAmount, invoice.currency)}
+              </Col>
+            </Row>
           </div>
-        ))}
-
-        <Row>
-          <Col span={20}>
-            <div
-              style={{
-                fontSize: '18px',
-                textAlign: 'right',
-                marginRight: '18px'
-              }}
-            >
-              VAT({`${invoice.taxPercentage / 100} %`})
-            </div>
-          </Col>
-          <Col span={4}>
-            <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-              {' '}
-              {`${showAmount(invoice.taxAmount, invoice.currency)}`}
-            </span>
-          </Col>
-        </Row>
-        <Row>
-          <Col span={20}>
-            <div
-              style={{
-                fontSize: '18px',
-                textAlign: 'right',
-                marginRight: '18px'
-              }}
-            >
-              Total
-            </div>
-          </Col>
-          <Col span={4}>
-            <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-              {' '}
-              {`${showAmount(invoice.totalAmount, invoice.currency)}`}
-            </span>
-          </Col>
-        </Row>
-      </>
-    )}
-  </>
-)
+          <Row>
+            <Col span={17}></Col>
+            <Col span={4}>
+              Total{' '}
+              {showButton && (
+                <span
+                  className="text-xs text-blue-500 hover:cursor-pointer"
+                  onClick={() => setHide(!hide)}
+                >
+                  {hide ? 'more' : 'less'}
+                </span>
+              )}
+            </Col>
+            <Col span={3} style={{ fontWeight: 'bold' }}>
+              {showAmount(invoice.totalAmount, invoice.currency)}
+            </Col>
+          </Row>
+        </>
+      )}
+    </>
+  )
+}

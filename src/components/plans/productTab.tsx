@@ -24,7 +24,6 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
       message.error(subErr.message)
       return
     }
-    console.log('sub list res: ', subs)
     setSubList(
       subs == null
         ? []
@@ -33,7 +32,6 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
             // return { id, status, planId, productId }
             const activeSub = { ...sub.subscription }
             ;(activeSub as ISubscription).addons = sub.addonParams
-            console.log('local sub: ', activeSub)
             // setActiveSub(localActiveSub)
             // setSelectedPlan(sub.subscription.planId)
             return activeSub

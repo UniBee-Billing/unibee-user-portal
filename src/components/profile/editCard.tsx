@@ -61,7 +61,7 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
       return
     }
     setLoading(true)
-    const [changePaymentMethodRes, err] = await changeGlobalPaymentMethodReq({
+    const [_, err] = await changeGlobalPaymentMethodReq({
       paymentMethodId: paymentId
     })
     setLoading(false)
@@ -69,7 +69,6 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
       message.error(err.message)
       return
     }
-    console.log('changePaymentMethodRes: ', changePaymentMethodRes)
     message.success('Your auto payment card changed')
   }
 

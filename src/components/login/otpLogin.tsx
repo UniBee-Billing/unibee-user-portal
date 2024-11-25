@@ -98,14 +98,12 @@ const MailForm = ({
   const submit = async () => {
     try {
       setSubmitting(true)
-      const res = await sendMailaddress()
-      console.log('send mail addre res: ', res)
+      await sendMailaddress()
       setSubmitting(false)
       goForward()
     } catch (err) {
       setSubmitting(false)
       if (err instanceof Error) {
-        console.log('err sending mailaddress: ', err.message)
         setErrMsg(err.message)
       } else {
         setErrMsg('Unknown error')

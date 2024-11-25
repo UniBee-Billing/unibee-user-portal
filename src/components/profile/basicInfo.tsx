@@ -56,7 +56,6 @@ const Index = () => {
   }
 
   const onSave = async () => {
-    console.log(' saving...', form.getFieldsValue(), '//', gatewayId)
     const u = JSON.parse(JSON.stringify(form.getFieldsValue()))
     u.gatewayId = gatewayId
     setLoading(true)

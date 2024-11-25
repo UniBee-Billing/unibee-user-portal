@@ -1,10 +1,14 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import { Button, Col, Empty, Popover, Row, Spin, message } from 'antd'
+import { Button, Col, Empty, Input, Popover, Row, Spin, message } from 'antd'
 import update from 'immutability-helper'
 import React, { useEffect, useState } from 'react'
 import { showAmount } from '../../helpers'
-import { getActiveSubWithMore, getCountryList } from '../../requests'
-import { Country, IPlan, ISubscription } from '../../shared.types'
+import {
+  applyDiscountPreviewReq,
+  getActiveSubWithMore,
+  getCountryList
+} from '../../requests'
+import { Country, DiscountCode, IPlan, ISubscription } from '../../shared.types'
 import { useAppConfigStore, useProfileStore } from '../../stores'
 import OTPBuyListModal from '../modals/addonBuyListModal'
 import BillingAddressModal from '../modals/billingAddressModal'
@@ -12,7 +16,13 @@ import CancelSubModal from '../modals/modalCancelPendingSub'
 import CreateSubModal from '../modals/modalCreateSub'
 import UpdatePlanModal from '../modals/modalUpdateSub'
 import OTPModal from '../modals/onetimePaymentModal'
+import CouponPopover from '../ui/couponPopover'
 import Plan from './plan'
+
+type DiscountCodePreview = {
+  isValid: boolean
+  preview: DiscountCode | null // null is used when isValid: false
+}
 
 const Index = ({
   productId,
@@ -25,6 +35,11 @@ const Index = ({
   const [plans, setPlans] = useState<IPlan[]>([])
   const [otpPlans, setOtpPlans] = useState<IPlan[]>([]) // one-time-payment plan,
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null) // null: not selected
+  const [discountCode, setDiscountCode] = useState('')
+  const [codePreview, setCodePreview] = useState<DiscountCodePreview | null>(
+    null
+  )
+  const [codeChecking, setCodeChecking] = useState(false)
   const [countryList, setCountryList] = useState<Country[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false) // create subscription Modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false) // update subscription Modal
@@ -49,6 +64,28 @@ const Index = ({
     setBillingAddressModalOpen(!billingAddressModalOpen)
 
   const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen)
+
+  const onCodeChange: React.ChangeEventHandler<HTMLInputElement> = (evt) => {
+    const v = evt.target.value
+    setDiscountCode(v)
+    if (v === '') {
+      setCodePreview(null)
+    }
+  }
+
+  const onPreviewCode = async () => {
+    if (selectedPlan === null) {
+      return
+    }
+    setCodeChecking(true)
+    const [res, err] = await applyDiscountPreviewReq(discountCode, selectedPlan)
+    setCodeChecking(false)
+    if (null != err) {
+      message.error(err.message)
+      return
+    }
+    setCodePreview({ isValid: res.valid, preview: res.discountCode })
+  }
 
   const onAddonChange = (
     addonId: number,
@@ -166,37 +203,28 @@ const Index = ({
       }
     }
 
-    console.log('plans/productId: : ', localPlans, '///', productId)
     // main plans
     setPlans(localPlans.filter((p) => p.type == 1))
   }
 
   const upgradeCheck = () => {
     // return true
+    if (
+      (codePreview === null && discountCode !== '') || // code provided, but not applied
+      (codePreview !== null && codePreview.preview?.code !== discountCode) // code provided and applied, but changed in input field
+    ) {
+      onPreviewCode()
+      return false
+    }
 
     if (activeSub == null) {
       // user has no active sub, this is first-time purchase, not a upgrade
       return true
     }
-    console.log('upgrade check, planList in this product: ', plans)
     const currentPlan = plans.find((p) => p.id == activeSub.planId)
     const upgradePlan = plans.find((p) => p.id == selectedPlan)
-    console.log(
-      'current/upgrade: ',
-      currentPlan,
-      '//',
-      upgradePlan,
-      '/active sub: ',
-      activeSub
-    )
 
     if (currentPlan?.currency != upgradePlan?.currency) {
-      console.log(
-        'currentPlan?.currency != upgradePlan?.currency ',
-        currentPlan?.currency,
-        '///',
-        upgradePlan?.currency
-      )
       message.error(
         'Upgrade to a plan with different currency is not supported.'
       )
@@ -311,6 +339,7 @@ const Index = ({
             subscriptionId={activeSub.subscriptionId}
             closeModal={toggleUpdateModal}
             refresh={fetchData}
+            discountCode={discountCode}
           />
         )
       }
@@ -323,6 +352,7 @@ const Index = ({
             defaultVatNumber={profileStore.vATNumber}
             closeModal={toggleCreateModal}
             userCountryCode={profileStore.countryCode}
+            discountCode={discountCode}
           />
         )
       }
@@ -363,23 +393,75 @@ const Index = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          margin: '48px'
+          margin: '48px',
+          flexDirection: 'column'
         }}
       >
         {plans.length > 0 && (
-          <Button
-            type="primary"
-            onClick={onPlanConfirm}
-            // disabled={selectedPlan == null || activeSub.current.status != 2}
-            disabled={
-              selectedPlan == null ||
-              activeSub?.status == 0 || // initiating
-              activeSub?.status == 1 || // created (not paid)
-              activeSub?.status == 3 // pending (payment in processing)
-            }
-          >
-            Buy
-          </Button>
+          <>
+            <div className="mx-auto my-4 flex w-64 flex-row justify-center gap-4">
+              <div className="flex flex-col">
+                <Input
+                  value={discountCode}
+                  onChange={onCodeChange}
+                  status={
+                    codePreview !== null && !codePreview.isValid
+                      ? 'error'
+                      : undefined
+                  }
+                  disabled={codeChecking}
+                  placeholder="Discount code"
+                />
+
+                <div className="flex">
+                  {codePreview !== null &&
+                    (codePreview.isValid ? (
+                      <>
+                        <span className="text-xs text-green-500">
+                          Code is valid{' '}
+                          <CouponPopover
+                            coupon={codePreview.preview as DiscountCode}
+                          />
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-xs text-red-500">
+                        Code is invalid
+                      </span>
+                    ))}
+                </div>
+              </div>
+              <Button
+                onClick={onPreviewCode}
+                loading={codeChecking}
+                disabled={
+                  codeChecking ||
+                  selectedPlan == null ||
+                  activeSub?.status == 0 || // initiating
+                  activeSub?.status == 1 || // created (not paid)
+                  activeSub?.status == 3 // pending (payment in processing)
+                }
+              >
+                Apply
+              </Button>
+            </div>
+            <div>
+              <Button
+                type="primary"
+                onClick={onPlanConfirm}
+                // disabled={selectedPlan == null || activeSub.current.status != 2}
+                disabled={
+                  selectedPlan == null ||
+                  (codePreview !== null && !codePreview.isValid) || // you cannot proceed with invalid code
+                  activeSub?.status == 0 || // initiating
+                  activeSub?.status == 1 || // created (not paid)
+                  activeSub?.status == 3 // pending (payment in processing)
+                }
+              >
+                Buy
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </div>
