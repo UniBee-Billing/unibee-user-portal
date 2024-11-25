@@ -121,12 +121,6 @@ const Index = ({
         : []
 
     setLoading(true)
-    console.log(
-      'def/value: ',
-      discountInputRef.current?.input?.defaultValue,
-      '/',
-      discountInputRef.current?.input?.value
-    )
     const couponCode = discountInputRef.current?.input?.value ?? discountCode
     const [previewRes, err] = await createPreviewReq(
       plan.id,
@@ -141,7 +135,6 @@ const Index = ({
       couponCode // discountInputRef.current?.input?.value
     )
     setLoading(false)
-    console.log('previewRes: ', previewRes)
     if (null != err) {
       message.error(err.message)
       return false
@@ -179,9 +172,9 @@ const Index = ({
 
   // discount's Apply button onClick handler
   // refactor this with the above into one
-  const onDiscountChecking2: React.MouseEventHandler<HTMLElement> = async (
-    evt
-  ) => {
+  const onDiscountChecking2: React.MouseEventHandler<
+    HTMLElement
+  > = async () => {
     setDiscountChecking(true)
     discountChkingRef.current = true
     await createPreview() // I should insert **ref.current = true/false into createPreview
@@ -268,7 +261,6 @@ const Index = ({
         message.error(err.message)
         return
       }
-      console.log('mark wire complete res: ', res)
       closeModal()
       message.success('Subscription created.')
       navigate(`${APP_PATH}my-subscription`)
@@ -301,7 +293,6 @@ const Index = ({
       const wire = appConfig.gateway.find(
         (g) => g.gatewayName == 'wire_transfer'
       )
-      // console.log('total amt/wire-mim amt: ', wire, '//', preview?.totalAmount);
       if (wire?.currency != preview?.currency) {
         message.error(`Wire transfer currency is ${wire?.currency}`)
         return
@@ -337,7 +328,6 @@ const Index = ({
       gatewayId,
       discountInputRef.current?.input?.value
     )
-    console.log('create sub res: ', createSubRes)
     setSubmitting(false)
     if (err != null) {
       message.error(err.message)
@@ -350,21 +340,16 @@ const Index = ({
         vATNumber: { $set: vatNumber },
         countryCode: { $set: selectedCountry }
       })
-      console.log('new profile: ', p)
       profileStore.setProfile(p)
     }
 
     if (isWireSelected) {
-      console.log(
-        'setting sub id after create sub: ',
-        createSubRes.subscription.subscriptionId
-      )
       subscriptionId.current = createSubRes.subscription.subscriptionId
       setWireConfirmStep(!wireConfirmStep)
       return
     }
 
-    const { link, paid } = createSubRes
+    const { link } = createSubRes
     if (link != '' && link != null) {
       window.open(link, '_blank')
     }
@@ -563,10 +548,8 @@ const Index = ({
                       // disabled={discountChecking || vatChecking}
                       disabled={loading || submitting}
                       style={{ width: '200px' }}
-                      // value={discountCode}
                       onBlur={onDiscountChecking}
                       onPressEnter={onCodeEnter}
-                      // onChange={onDiscountCodeChange}
                     />
                     <span className=" ml-1">
                       <Button

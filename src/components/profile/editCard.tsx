@@ -69,7 +69,6 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
       message.error(err.message)
       return
     }
-    console.log('changePaymentMethodRes: ', changePaymentMethodRes)
     message.success('Your auto payment card changed')
   }
 

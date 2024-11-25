@@ -45,7 +45,6 @@ const Index = ({ subscriptionId, closeModal }: Props) => {
     list.sort(
       (a: OneTimePayment, b: OneTimePayment) => b.createTime - a.createTime
     )
-    console.log('purchase list res: ', list)
     setLoading(false)
     if (null != err) {
       message.error(err.message)

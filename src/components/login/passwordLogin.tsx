@@ -86,7 +86,6 @@ const Index = ({
     merchantStore.setMerchantInfo(merchantInfo)
 
     if (triggeredByExpired) {
-      console.log('expired in password login: ', sessionStore)
       sessionStore.refresh?.()
       message.success('Login succeeded')
     } else {

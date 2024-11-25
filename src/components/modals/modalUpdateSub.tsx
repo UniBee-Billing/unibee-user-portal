@@ -90,7 +90,6 @@ const Index = ({
         message.error(err.message)
         return
       }
-      console.log('update preview res: ', previewRes)
       setPreview(previewRes)
     }
     fetchPreview()

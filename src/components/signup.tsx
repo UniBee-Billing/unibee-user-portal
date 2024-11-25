@@ -53,12 +53,10 @@ const Index = () => {
       delete body.city
       delete body.zipCode
     }
-    console.log('signup info: ', body)
     // return;
     setSubmitting(true)
     const [res, err] = await signUpReq(body)
     setSubmitting(false)
-    console.log('signup res: ', res)
     if (null != err) {
       message.error(err.message)
       return

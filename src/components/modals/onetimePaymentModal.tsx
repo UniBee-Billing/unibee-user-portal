@@ -49,7 +49,6 @@ const Index = ({ closeModal, plan, subscriptionId }: Props) => {
       message.error(err.message)
       return
     }
-    console.log('payment res: ', paymentRes)
     if (paymentRes.paid) {
       closeModal()
       message.success('Payment succeeded')

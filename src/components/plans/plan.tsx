@@ -109,10 +109,7 @@ const Index = ({
     setTotalAmount(amount)
   }, [plan])
 
-  // console.log('plan detail: ', plan);
-
   const onOtpClick = (planId: number) => () => {
-    console.log('plan addon clicked: ', planId)
     setOtpPlanId(planId)
     toggleOtpModal()
   }

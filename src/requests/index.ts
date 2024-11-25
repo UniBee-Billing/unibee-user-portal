@@ -216,7 +216,6 @@ export const getAppConfigReq = async () => {
   const session = useSessionStore.getState()
   try {
     const res = await request.get(`/system/information/get`, {})
-    console.log('app config res: ', res)
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null })
       throw new Error('Session expired')
@@ -232,7 +231,6 @@ export const getMerchantInfoReq = async () => {
   const session = useSessionStore.getState()
   try {
     const res = await request.get(`/user/merchant/get`)
-    console.log('merchant info res: ', res)
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null })
       throw new Error('Session expired')
@@ -248,7 +246,6 @@ export const getGatewayListReq = async () => {
   const session = useSessionStore.getState()
   try {
     const res = await request.get(`/user/gateway/list`)
-    console.log('gateway res: ', res)
     if (res.data.code == 61) {
       session.setSession({ expired: true, refresh: null })
       throw new Error('Session expired')

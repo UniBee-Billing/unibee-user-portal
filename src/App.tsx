@@ -140,10 +140,8 @@ const App: React.FC = () => {
         navigationEntries.length > 0 &&
         (navigationEntries[0] as PerformanceNavigationTiming).type === 'reload'
       ) {
-        console.log('Page was reloaded, begin initializing....')
         const [initRes, errInit] = await initializeReq()
         if (null != errInit) {
-          console.log('init err: ', errInit)
           return
         }
         const { appConfig, gateways, merchantInfo, user } = initRes

@@ -1,15 +1,5 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import {
-  Button,
-  Col,
-  Empty,
-  Input,
-  Modal,
-  Popover,
-  Row,
-  Spin,
-  message
-} from 'antd'
+import { Button, Col, Empty, Input, Popover, Row, Spin, message } from 'antd'
 import update from 'immutability-helper'
 import React, { useEffect, useState } from 'react'
 import { showAmount } from '../../helpers'
@@ -213,7 +203,6 @@ const Index = ({
       }
     }
 
-    console.log('plans/productId: : ', localPlans, '///', productId)
     // main plans
     setPlans(localPlans.filter((p) => p.type == 1))
   }
@@ -232,25 +221,10 @@ const Index = ({
       // user has no active sub, this is first-time purchase, not a upgrade
       return true
     }
-    console.log('upgrade check, planList in this product: ', plans)
     const currentPlan = plans.find((p) => p.id == activeSub.planId)
     const upgradePlan = plans.find((p) => p.id == selectedPlan)
-    console.log(
-      'current/upgrade: ',
-      currentPlan,
-      '//',
-      upgradePlan,
-      '/active sub: ',
-      activeSub
-    )
 
     if (currentPlan?.currency != upgradePlan?.currency) {
-      console.log(
-        'currentPlan?.currency != upgradePlan?.currency ',
-        currentPlan?.currency,
-        '///',
-        upgradePlan?.currency
-      )
       message.error(
         'Upgrade to a plan with different currency is not supported.'
       )

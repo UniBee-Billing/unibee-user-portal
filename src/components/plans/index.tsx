@@ -22,7 +22,6 @@ const Index = () => {
     setLoading(true)
     const [res, err] = await getProductListReq(getProductList)
     setLoading(false)
-    console.log('get productList res: ', res)
     if (null != err) {
       message.error(err.message)
       return
