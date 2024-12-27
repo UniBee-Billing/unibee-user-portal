@@ -12,6 +12,7 @@ interface Props {
   plan: IPlan
   subscriptionId: string
   discountCode: string
+  creditAmt: number | null
   closeModal: () => void
   refresh: () => void // after upgrade, refresh parent component
 }
@@ -20,6 +21,7 @@ const Index = ({
   plan,
   subscriptionId,
   discountCode,
+  creditAmt,
   closeModal,
   refresh
 }: Props) => {
@@ -34,18 +36,20 @@ const Index = ({
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : []
-    const [updateSubRes, err] = await updateSubscriptionReq(
-      plan?.id,
+    const [updateSubRes, err] = await updateSubscriptionReq({
+      newPlanId: plan?.id,
       subscriptionId,
-      addons.map((a) => ({
+      addons: addons.map((a) => ({
         quantity: a.quantity as number,
         addonPlanId: a.id
       })),
-      preview?.totalAmount as number,
-      preview?.currency as string,
-      preview?.prorationDate as number,
-      discountCode
-    )
+      confirmTotalAmount: preview?.totalAmount as number,
+      confirmCurrency: preview?.currency as string,
+      prorationDate: preview?.prorationDate as number,
+      discountCode,
+      applyPromoCredit: creditAmt != null && creditAmt > 0,
+      applyPromoCreditAmount: creditAmt ?? 0
+    })
     setSubmitting(false)
     if (null != err) {
       message.error(err.message)
@@ -76,15 +80,17 @@ const Index = ({
         : []
     const fetchPreview = async () => {
       setLoading(true)
-      const [previewRes, err] = await createUpdatePreviewReq(
-        plan!.id,
-        addons.map((a) => ({
+      const [previewRes, err] = await createUpdatePreviewReq({
+        planId: plan!.id,
+        addons: addons.map((a) => ({
           quantity: a.quantity as number,
           addonPlanId: a.id
         })),
-        subscriptionId as string,
-        discountCode
-      )
+        subscriptionId: subscriptionId,
+        discountCode: discountCode,
+        applyPromoCredit: creditAmt != null && creditAmt > 0,
+        applyPromoCreditAmount: creditAmt ?? 0
+      })
       setLoading(false)
       if (null != err) {
         message.error(err.message)
@@ -218,7 +224,7 @@ const InvoiceLines = ({
 
           <div
             style={{
-              height: hide ? '0px' : '66px',
+              height: hide ? '0px' : '88px',
               visibility: hide ? 'hidden' : 'visible'
             }}
           >
@@ -232,6 +238,17 @@ const InvoiceLines = ({
                 )}
               </Col>
             </Row>
+            {invoice.promoCreditDiscountAmount != 0 && (
+              <Row>
+                <Col span={17}> </Col>
+                <Col span={4}>
+                  Credit Used({invoice?.promoCreditPayout?.creditAmount})
+                </Col>
+                <Col span={3}>
+                  {`${showAmount(-1 * invoice.promoCreditDiscountAmount, invoice.currency)}`}
+                </Col>
+              </Row>
+            )}
             <Row>
               <Col span={17}> </Col>
               <Col span={4}>Total Discounted</Col>

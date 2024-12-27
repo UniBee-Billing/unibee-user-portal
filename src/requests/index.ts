@@ -376,20 +376,32 @@ export const getActiveSubWithMore = async (
   return [{ subscriptions, plans }, null]
 }
 
+type TCreateUpdatePreviewReq = {
+  planId: number
+  addons: { quantity: number; addonPlanId: number }[]
+  subscriptionId: string | null
+  discountCode?: string
+  applyPromoCredit?: boolean
+  applyPromoCreditAmount?: number
+}
 // update preview
-export const createUpdatePreviewReq = async (
-  planId: number,
-  addons: { quantity: number; addonPlanId: number }[],
-  subscriptionId: string | null,
-  discountCode: string
-) => {
+export const createUpdatePreviewReq = async ({
+  planId,
+  addons,
+  subscriptionId,
+  discountCode,
+  applyPromoCredit,
+  applyPromoCreditAmount
+}: TCreateUpdatePreviewReq) => {
   const urlPath = 'update_preview'
   const body = {
     subscriptionId,
     newPlanId: planId,
     quantity: 1,
     addonParams: addons,
-    discountCode
+    discountCode,
+    applyPromoCredit,
+    applyPromoCreditAmount
   }
   try {
     const res = await request.post(`/user/subscription/${urlPath}`, body)
@@ -404,16 +416,30 @@ export const createUpdatePreviewReq = async (
   }
 }
 
-// create new prview
-export const createPreviewReq = async (
-  planId: number,
-  addons: { quantity: number; addonPlanId: number }[],
-  vatNumber: string | null,
-  vatCountryCode: string | null,
-  gatewayId: number,
-  refreshCb: () => void,
+type TCreatePreviewReq = {
+  planId: number
+  addons: { quantity: number; addonPlanId: number }[]
+  vatNumber: string | null
+  vatCountryCode: string | null
+  gatewayId: number
+  refreshCb: () => void
   discountCode?: string
-) => {
+  applyPromoCredit?: boolean
+  applyPromoCreditAmount?: number
+}
+
+// create new prview
+export const createPreviewReq = async ({
+  planId,
+  addons,
+  vatNumber,
+  vatCountryCode,
+  gatewayId,
+  refreshCb,
+  discountCode,
+  applyPromoCredit,
+  applyPromoCreditAmount
+}: TCreatePreviewReq) => {
   const urlPath = 'create_preview'
   const body = {
     gatewayId,
@@ -424,7 +450,9 @@ export const createPreviewReq = async (
     vatNumber,
     vatCountryCode,
     refreshCb,
-    discountCode
+    discountCode,
+    applyPromoCredit,
+    applyPromoCreditAmount
   }
   try {
     const res = await request.post(`/user/subscription/${urlPath}`, body)
@@ -456,16 +484,29 @@ export const applyDiscountPreviewReq = async (code: string, planId: number) => {
   }
 }
 
-export const updateSubscriptionReq = async (
-  newPlanId: number,
-  subscriptionId: string,
-  addons: { quantity: number; addonPlanId: number }[],
-  confirmTotalAmount: number,
-  confirmCurrency: string,
-  prorationDate: number,
-  discountCode: string
-) => {
-  // "create_submit"
+type TUpdateSubscriptionReq = {
+  newPlanId: number
+  subscriptionId: string
+  addons: { quantity: number; addonPlanId: number }[]
+  confirmTotalAmount: number
+  confirmCurrency: string
+  prorationDate: number
+  discountCode?: string
+  applyPromoCredit?: boolean
+  applyPromoCreditAmount?: number
+}
+// "create_submit"
+export const updateSubscriptionReq = async ({
+  newPlanId,
+  subscriptionId,
+  addons,
+  confirmTotalAmount,
+  confirmCurrency,
+  prorationDate,
+  discountCode,
+  applyPromoCredit,
+  applyPromoCreditAmount
+}: TUpdateSubscriptionReq) => {
   const body = {
     subscriptionId,
     newPlanId,
@@ -474,7 +515,9 @@ export const updateSubscriptionReq = async (
     confirmTotalAmount,
     confirmCurrency,
     prorationDate,
-    discountCode
+    discountCode,
+    applyPromoCredit,
+    applyPromoCreditAmount
   }
   try {
     const res = await request.post(`/user/subscription/update_submit`, body)
@@ -489,16 +532,30 @@ export const updateSubscriptionReq = async (
   }
 }
 
-export const createSubscriptionReq = async (
-  planId: number,
-  addons: { quantity: number; addonPlanId: number }[],
-  confirmTotalAmount: number,
-  confirmCurrency: string,
-  vatCountryCode: string,
-  vatNumber: string,
-  gatewayId: number,
+type TCreateSubscriptionReq = {
+  planId: number
+  addons: { quantity: number; addonPlanId: number }[]
+  confirmTotalAmount: number
+  confirmCurrency: string
+  vatCountryCode: string
+  vatNumber: string
+  gatewayId: number
   discountCode?: string
-) => {
+  applyPromoCredit?: boolean
+  applyPromoCreditAmount?: number
+}
+export const createSubscriptionReq = async ({
+  planId,
+  addons,
+  confirmTotalAmount,
+  confirmCurrency,
+  vatCountryCode,
+  vatNumber,
+  gatewayId,
+  discountCode,
+  applyPromoCredit,
+  applyPromoCreditAmount
+}: TCreateSubscriptionReq) => {
   const body = {
     planId,
     quantity: 1,
@@ -509,7 +566,9 @@ export const createSubscriptionReq = async (
     returnUrl: `${window.location.origin}/payment-result`, // .origin doesn't work on IE
     vatCountryCode,
     vatNumber,
-    discountCode
+    discountCode,
+    applyPromoCredit,
+    applyPromoCreditAmount
   }
   try {
     const res = await request.post(`/user/subscription/create_submit`, body)

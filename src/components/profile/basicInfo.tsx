@@ -12,16 +12,16 @@ import {
   Spin,
   message
 } from 'antd'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { passwordSchema } from '../../helpers'
+import { passwordSchema, showAmount } from '../../helpers'
 import {
   getProfileWithMoreReq,
   logoutReq,
   resetPassReq,
   saveProfileReq
 } from '../../requests'
-import { Country, IProfile } from '../../shared.types'
+import { Country, CreditType, IProfile } from '../../shared.types'
 import {
   useAppConfigStore,
   useMerchantInfoStore,
@@ -91,6 +91,12 @@ const Index = () => {
       }))
     )
   }
+
+  const promoCredit = useMemo(() => {
+    return profile?.promoCreditAccounts?.find(
+      (p) => p.type == CreditType.PROMO_CREDIT && p.currency == 'EUR'
+    )
+  }, [profile])
 
   useEffect(() => {
     fetchData()
@@ -384,6 +390,21 @@ const Index = () => {
             </Form.Item>
           </Col>
         </Row>
+        <Divider
+          orientation="left"
+          style={{ margin: '32px 0', color: '#757575' }}
+        >
+          Promo Credit
+        </Divider>
+        <Row>
+          <Col span={12}>
+            <Form.Item label="Credit Amount" labelCol={{ span: 6 }}>
+              {`${promoCredit?.amount} (${promoCredit && showAmount(promoCredit?.currencyAmount, promoCredit?.currency)})`}
+            </Form.Item>
+          </Col>
+          <Col span={12}>{}</Col>
+        </Row>
+
         <Divider
           orientation="left"
           style={{ margin: '32px 0', color: '#757575' }}
