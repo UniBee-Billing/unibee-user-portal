@@ -2,7 +2,6 @@ import {
   CheckCircleOutlined,
   InfoCircleOutlined,
   LoadingOutlined,
-  MinusCircleOutlined,
   MinusOutlined,
   SyncOutlined
 } from '@ant-design/icons'
@@ -156,7 +155,7 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
               i.updateCurrency
             )
           ) : (
-            <MinusCircleOutlined />
+            <MinusOutlined />
           )}
 
           {i?.updateAddons && i.updateAddons.length > 0 && (
@@ -364,7 +363,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
               subInfo.latestInvoice.currency
             )
           ) : (
-            <MinusCircleOutlined />
+            <MinusOutlined />
           )}
 
           {subInfo &&
@@ -460,7 +459,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
               subInfo!.currency
             )
           ) : (
-            <MinusCircleOutlined />
+            <MinusOutlined />
           )}
 
           {subInfo && subInfo.addons && subInfo.addons.length > 0 && (
@@ -504,7 +503,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
               subInfo.latestInvoice?.promoCreditTransaction?.currency
             )
           ) : (
-            <MinusCircleOutlined />
+            <MinusOutlined />
           )}
         </Col>
       </Row>
