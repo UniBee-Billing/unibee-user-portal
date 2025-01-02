@@ -1,5 +1,4 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import type { InputRef } from 'antd'
 import {
   Button,
   Col,

@@ -25,8 +25,7 @@ import {
   DiscountCode,
   DiscountType,
   IPlan,
-  ISubscription,
-  TPromoAccount
+  ISubscription
 } from '../../shared.types'
 import { useAppConfigStore, useProfileStore } from '../../stores'
 import OTPBuyListModal from '../modals/addonBuyListModal'
@@ -35,7 +34,6 @@ import CancelSubModal from '../modals/modalCancelPendingSub'
 import CreateSubModal from '../modals/modalCreateSub'
 import UpdatePlanModal from '../modals/modalUpdateSub'
 import OTPModal from '../modals/onetimePaymentModal'
-import CouponPopover from '../ui/couponPopover'
 import Plan from './plan'
 
 type DiscountCodePreview = {
@@ -152,7 +150,7 @@ const Index = ({
       return <div className="text-xs text-gray-500">No promo credit used</div>
     }
     return (
-      <div className="text-xs text-green-500">{`At most ${creditAmount} credits (${(creditAmount * credit.credit.exchangeRate) / 100}${CURRENCY[credit.credit.currency].symbol}) to be used.`}</div>
+      <div className="text-xs text-green-500">{`At most ${creditAmount} credits (${CURRENCY[credit.credit.currency].symbol}${(creditAmount * credit.credit.exchangeRate) / 100}) to be used.`}</div>
     )
   }
   const onCreditChange = (value: number | null) => {

@@ -12,7 +12,7 @@ import {
   Spin,
   message
 } from 'antd'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { passwordSchema, showAmount } from '../../helpers'
 import {

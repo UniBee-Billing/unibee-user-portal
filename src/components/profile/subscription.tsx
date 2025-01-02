@@ -2,6 +2,7 @@ import {
   CheckCircleOutlined,
   InfoCircleOutlined,
   LoadingOutlined,
+  MinusCircleOutlined,
   MinusOutlined,
   SyncOutlined
 } from '@ant-design/icons'
@@ -143,7 +144,7 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
           Addons Price
         </Col>
         <Col span={6}>
-          {i?.updateAddons &&
+          {i?.updateAddons ? (
             showAmount(
               i.updateAddons!.reduce(
                 (
@@ -153,7 +154,10 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
                 0
               ),
               i.updateCurrency
-            )}
+            )
+          ) : (
+            <MinusCircleOutlined />
+          )}
 
           {i?.updateAddons && i.updateAddons.length > 0 && (
             <Popover
@@ -352,11 +356,16 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         </Col>
         <Col span={6}>
           {subInfo &&
-            subInfo.latestInvoice &&
+          subInfo.latestInvoice &&
+          subInfo.latestInvoice.discountAmount &&
+          subInfo.latestInvoice.discountAmount > 0 ? (
             showAmount(
               subInfo.latestInvoice.discountAmount as number,
               subInfo.latestInvoice.currency
-            )}
+            )
+          ) : (
+            <MinusCircleOutlined />
+          )}
 
           {subInfo &&
             subInfo.latestInvoice &&
@@ -439,8 +448,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           Addons Price
         </Col>
         <Col span={6}>
-          {subInfo &&
-            subInfo.addons &&
+          {subInfo && subInfo.addons ? (
             showAmount(
               subInfo!.addons!.reduce(
                 (
@@ -450,7 +458,10 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
                 0
               ),
               subInfo!.currency
-            )}
+            )
+          ) : (
+            <MinusCircleOutlined />
+          )}
 
           {subInfo && subInfo.addons && subInfo.addons.length > 0 && (
             <Popover
@@ -484,14 +495,17 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
             `(${Math.abs(subInfo.latestInvoice?.promoCreditTransaction?.deltaAmount)})`}
         </Col>
         <Col span={6}>
-          {subInfo.latestInvoice?.promoCreditTransaction != null &&
+          {subInfo.latestInvoice?.promoCreditTransaction != null ? (
             showAmount(
               Math.abs(
                 subInfo.latestInvoice?.promoCreditTransaction
                   ?.deltaCurrencyAmount
               ),
               subInfo.latestInvoice?.promoCreditTransaction?.currency
-            )}
+            )
+          ) : (
+            <MinusCircleOutlined />
+          )}
         </Col>
       </Row>
       <Row style={rowStyle}>
