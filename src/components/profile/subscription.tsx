@@ -70,64 +70,8 @@ const Index = ({
     setSubscription(sub)
   }
 
-  /*
-  const fetchData = async () => {
-    setLoading(true)
-    const [s, err] = await getActiveSubReq(fetchData)
-    setLoading(false)
-    console.log('active sub: ', s)
-    if (null != err) {
-      message.error(err.message)
-      return
-    }
-
-    if (null == s) {
-      // if user enter this route from login and has no subscription(new user or current sub expired/cancelled)
-      // they'll be redirected to /product, otherwise, stay.
-      if (location.state != null && location.state.from == 'login') {
-        navigate(`${APP_PATH}plans`)
-      } else {
-        // user might cancel a pending sub, after refresh, backend returns a null, I need to set to null
-        // thus, page will show 'no subscription'
-        setSubscription(null)
-      }
-      return
-    }
-
-    const sub = {
-      ...s.subscription,
-      plan: s.plan,
-      latestInvoice: s.latestInvoice,
-      addons:
-        s.addons == null
-          ? []
-          : s.addons.map((a: any) => ({
-              ...a.addonPlan,
-              quantity: a.quantity
-            })),
-      user: s.user,
-      unfinishedSubscriptionPendingUpdate: s.unfinishedSubscriptionPendingUpdate
-    }
-    if (sub.unfinishedSubscriptionPendingUpdate != null) {
-      if (sub.unfinishedSubscriptionPendingUpdate.updateAddons != null) {
-        sub.unfinishedSubscriptionPendingUpdate.updateAddons =
-          sub.unfinishedSubscriptionPendingUpdate.updateAddons.map(
-            (a: any) => ({
-              ...a.addonPlan,
-              quantity: a.quantity,
-              addonPlanId: a.addonPlan.id
-            })
-          )
-      }
-    }
-    setSubscription(sub)
-  }
-    */
-
   const goToChoosePlan = () =>
     navigate(`${APP_PATH}plans?productId=${productId}`)
-
-  // useEffect(() => {  }, [])
 
   useEffect(() => {
     if (location.state && location.state.msg) {
@@ -199,7 +143,7 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
           Addons Price
         </Col>
         <Col span={6}>
-          {i?.updateAddons &&
+          {i?.updateAddons ? (
             showAmount(
               i.updateAddons!.reduce(
                 (
@@ -209,7 +153,10 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
                 0
               ),
               i.updateCurrency
-            )}
+            )
+          ) : (
+            <MinusOutlined />
+          )}
 
           {i?.updateAddons && i.updateAddons.length > 0 && (
             <Popover
@@ -382,45 +329,24 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
             showAmount(subInfo?.plan?.amount, subInfo?.plan?.currency)}
         </Col>
         <Col span={4} style={colStyle}>
-          Addons Price
+          Total Amount
         </Col>
         <Col span={6}>
-          {subInfo &&
-            subInfo.addons &&
-            showAmount(
-              subInfo!.addons!.reduce(
-                (
-                  sum,
-                  { quantity, amount }: { quantity: number; amount: number }
-                ) => sum + quantity * amount,
-                0
-              ),
-              subInfo!.currency
-            )}
-
-          {subInfo && subInfo.addons && subInfo.addons.length > 0 && (
-            <Popover
-              placement="top"
-              title="Addon breakdown"
-              content={
-                <div style={{ width: '280px' }}>
-                  {subInfo?.addons.map((a) => (
-                    <Row key={a.id}>
-                      <Col span={10}>{a.planName}</Col>
-                      <Col span={14}>
-                        {showAmount(a.amount, a.currency)} × {a.quantity} ={' '}
-                        {showAmount(a.amount * a.quantity, a.currency)}
-                      </Col>
-                    </Row>
-                  ))}
-                </div>
-              }
-            >
-              <span style={{ marginLeft: '8px', cursor: 'pointer' }}>
-                <InfoCircleOutlined />
-              </span>
-            </Popover>
+          {showAmount(
+            subInfo.latestInvoice?.totalAmount,
+            subInfo.latestInvoice?.currency
           )}
+          {subInfo &&
+          subInfo.latestInvoice?.taxPercentage &&
+          subInfo.latestInvoice?.taxPercentage != 0 ? (
+            <span style={{ color: '#757575', fontSize: '11px' }}>
+              {` (${
+                subInfo &&
+                subInfo.latestInvoice?.taxPercentage &&
+                subInfo.latestInvoice?.taxPercentage / 100
+              }% tax incl)`}
+            </span>
+          ) : null}
         </Col>
       </Row>
       <Row style={rowStyle}>
@@ -429,11 +355,16 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         </Col>
         <Col span={6}>
           {subInfo &&
-            subInfo.latestInvoice &&
+          subInfo.latestInvoice &&
+          subInfo.latestInvoice.discountAmount &&
+          subInfo.latestInvoice.discountAmount > 0 ? (
             showAmount(
               subInfo.latestInvoice.discountAmount as number,
               subInfo.latestInvoice.currency
-            )}
+            )
+          ) : (
+            <MinusOutlined />
+          )}
 
           {subInfo &&
             subInfo.latestInvoice &&
@@ -513,17 +444,67 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
             )}
         </Col>
         <Col span={4} style={colStyle}>
-          Total Amount
+          Addons Price
         </Col>
         <Col span={6}>
-          {subInfo?.amount && showAmount(subInfo.amount, subInfo.currency)}
-          {subInfo && subInfo.taxPercentage && subInfo.taxPercentage != 0 ? (
-            <span style={{ color: '#757575', fontSize: '11px' }}>
-              {` (${
-                subInfo && subInfo.taxPercentage && subInfo.taxPercentage / 100
-              }% tax incl)`}
-            </span>
-          ) : null}
+          {subInfo && subInfo.addons ? (
+            showAmount(
+              subInfo!.addons!.reduce(
+                (
+                  sum,
+                  { quantity, amount }: { quantity: number; amount: number }
+                ) => sum + quantity * amount,
+                0
+              ),
+              subInfo!.currency
+            )
+          ) : (
+            <MinusOutlined />
+          )}
+
+          {subInfo && subInfo.addons && subInfo.addons.length > 0 && (
+            <Popover
+              placement="top"
+              title="Addon breakdown"
+              content={
+                <div style={{ width: '280px' }}>
+                  {subInfo?.addons.map((a) => (
+                    <Row key={a.id}>
+                      <Col span={10}>{a.planName}</Col>
+                      <Col span={14}>
+                        {showAmount(a.amount, a.currency)} × {a.quantity} ={' '}
+                        {showAmount(a.amount * a.quantity, a.currency)}
+                      </Col>
+                    </Row>
+                  ))}
+                </div>
+              }
+            >
+              <span style={{ marginLeft: '8px', cursor: 'pointer' }}>
+                <InfoCircleOutlined />
+              </span>
+            </Popover>
+          )}
+        </Col>
+      </Row>
+      <Row style={rowStyle}>
+        <Col span={4} style={colStyle}>
+          Credit Used
+          {subInfo.latestInvoice?.promoCreditTransaction != null &&
+            `(${Math.abs(subInfo.latestInvoice?.promoCreditTransaction?.deltaAmount)})`}
+        </Col>
+        <Col span={6}>
+          {subInfo.latestInvoice?.promoCreditTransaction != null ? (
+            showAmount(
+              Math.abs(
+                subInfo.latestInvoice?.promoCreditTransaction
+                  ?.deltaCurrencyAmount
+              ),
+              subInfo.latestInvoice?.promoCreditTransaction?.currency
+            )
+          ) : (
+            <MinusOutlined />
+          )}
         </Col>
       </Row>
       <Row style={rowStyle}>

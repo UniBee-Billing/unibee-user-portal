@@ -1,10 +1,10 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import type { InputRef } from 'antd'
 import {
   Button,
   Col,
   Divider,
   Input,
+  InputNumber,
   Modal,
   Row,
   Select,
@@ -12,8 +12,9 @@ import {
   message
 } from 'antd'
 import update from 'immutability-helper'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { ChangeEventHandler, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CURRENCY } from '../../constants'
 import { showAmount } from '../../helpers'
 import {
   createPreviewReq,
@@ -21,7 +22,13 @@ import {
   markWireCompleteReq,
   vatNumberCheckReq
 } from '../../requests'
-import { Country, IPlan, IPreview } from '../../shared.types'
+import {
+  Country,
+  CreditType,
+  DiscountType,
+  IPlan,
+  IPreview
+} from '../../shared.types'
 import { useAppConfigStore, useProfileStore } from '../../stores'
 import PaymentSelector from '../ui/paymentSelector'
 import './modalCreateSub.css'
@@ -33,7 +40,8 @@ interface Props {
   countryList: Country[]
   userCountryCode: string
   defaultVatNumber: string
-  discountCode: string
+  couponCode: string
+  creditAmt: number | null
   closeModal: () => void
 }
 
@@ -42,24 +50,35 @@ const Index = ({
   countryList,
   userCountryCode,
   defaultVatNumber,
-  discountCode,
+  couponCode,
+  creditAmt,
   closeModal
 }: Props) => {
   const navigate = useNavigate()
   const appConfig = useAppConfigStore()
   const profileStore = useProfileStore()
+  const promoCredit = profileStore.promoCreditAccounts?.find(
+    (p) => p.type == CreditType.PROMO_CREDIT && p.currency == 'EUR'
+  )
+
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [preview, setPreview] = useState<IPreview | null>(null)
   const [vatNumber, setVatNumber] = useState(defaultVatNumber)
   const [selectedCountry, setSelectedCountry] = useState(userCountryCode)
+  const [creditAmount, setCreditAmount] = useState<number | null>(creditAmt)
+  const onCreditAmtChange = (value: number | null) => {
+    setCreditAmount(value)
+  }
+  const [discountCode, setDiscountCode] = useState<string>(couponCode)
+  const onDiscountCodeChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
+    setDiscountCode(evt.target.value)
+  }
   const vatChechkingRef = useRef(false)
-  const discountChkingRef = useRef(false)
-  const discountInputRef = useRef<InputRef>(null)
   const [discountChecking, setDiscountChecking] = useState(false)
   const [vatChecking, setVatChecking] = useState(false)
 
-  const subscriptionId = useRef('') // fore wire transfer, we need this Id(after creating sub) to mark transfer as complete
+  const subscriptionId = useRef('') // for wire transfer, we need this Id(after creating sub) to mark transfer as complete
 
   // set card payment as default gateway
   const [gatewayId, setGatewayId] = useState<undefined | number>(
@@ -89,26 +108,6 @@ const Index = ({
     option?: { label: string; value: string }
   ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 
-  const getDiscountDesc = () => {
-    if (preview == null) {
-      return ''
-    }
-    if (preview.discountMessage != '') {
-      return <span className=" text-red-700">{preview.discountMessage}</span>
-    }
-    // return '';
-    if (preview.discount == null) {
-      return ''
-    }
-    const code = preview.discount
-    let amt =
-      code.discountType == 1 // 1: percentage, 2: fixed amt
-        ? String(code.discountPercentage / 100) + '% off'
-        : showAmount(code.discountAmount, code.currency) + ' off'
-    amt += `, number of billing cycles you can use this code: ${code.cycleLimit == 0 ? 'unlimited' : code.cycleLimit}`
-    return `${amt}`
-  }
-
   const createPreview = async () => {
     if (null == gatewayId) {
       message.error('Please select your payment method.')
@@ -119,21 +118,21 @@ const Index = ({
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : []
-
     setLoading(true)
-    const couponCode = discountInputRef.current?.input?.value ?? discountCode
-    const [previewRes, err] = await createPreviewReq(
-      plan.id,
-      addons.map((a) => ({
+    const [previewRes, err] = await createPreviewReq({
+      planId: plan.id,
+      addons: addons.map((a) => ({
         quantity: a.quantity as number,
         addonPlanId: a.id
       })),
       vatNumber,
-      selectedCountry,
-      gatewayId as number,
-      createPreview,
-      couponCode // discountInputRef.current?.input?.value
-    )
+      vatCountryCode: selectedCountry,
+      gatewayId: gatewayId as number,
+      refreshCb: createPreview,
+      discountCode: discountCode,
+      applyPromoCredit: creditAmount != null && creditAmount > 0,
+      applyPromoCreditAmount: creditAmount ?? 0
+    })
     setLoading(false)
     if (null != err) {
       message.error(err.message)
@@ -145,50 +144,66 @@ const Index = ({
     return true
   }
 
-  // although we have a Apply button to check discount code, but users might not click it,
-  // so onBlur is used to force check.
-  // discount <input /> onBlur handler
-  const onDiscountChecking = async (evt: React.FocusEvent<HTMLElement>) => {
-    // console.log('discount blur ele: ', evt);
-    // if onBlur is happening on Cancel button, that means users want to close the Modal
-    // then, we don't need to createPreview
-    if (evt.relatedTarget?.classList.contains('cancel-btn-wrapper')) {
-      return
+  const discountCodeUseNote = () => {
+    if (
+      preview == null ||
+      (preview.discount == null && preview.discountMessage == '')
+    ) {
+      return <div className="text-xs text-gray-500">No discount code used</div>
     }
-    // Apply button's job is also to createPreview, it's duplicate onblur's job
-    if (evt.relatedTarget?.classList.contains('apply-btn-wrapper')) {
-      return
+    // discountMessage is discount related error message
+    if (preview.discount == null && preview.discountMessage != '') {
+      // invalid discount code or other error
+      return (
+        <div className="text-xs text-red-500">{preview.discountMessage}</div>
+      )
     }
-
-    setDiscountChecking(true)
-    if (evt.relatedTarget?.classList.contains('confirm-btn-wrapper')) {
-      discountChkingRef.current = true
+    if (preview.discount != null) {
+      if (preview.discount.discountType == DiscountType.PERCENTAGE) {
+        return (
+          <div className="text-xs text-green-500">{`
+            Discount code is valid(${preview.discount.discountPercentage / 100}% off).
+            `}</div>
+        )
+      } else {
+        return (
+          <div className="text-xs text-green-500">
+            {`Discount code is valid(${showAmount(
+              preview.discount.discountAmount,
+              preview.discount.currency
+            )} off).`}
+          </div>
+        )
+      }
     }
-    await createPreview() // I should insert **ref.current = true/false into createPreview
-    discountChkingRef.current = false
-    setDiscountChecking(false)
-    setSubmitting(false)
+    return null
   }
 
-  // discount's Apply button onClick handler
-  // refactor this with the above into one
-  const onDiscountChecking2: React.MouseEventHandler<
-    HTMLElement
-  > = async () => {
-    setDiscountChecking(true)
-    discountChkingRef.current = true
-    await createPreview() // I should insert **ref.current = true/false into createPreview
-    discountChkingRef.current = false
-    setDiscountChecking(false)
-    setSubmitting(false)
+  const getCreditInfo = () => {
+    if (promoCredit == undefined) {
+      return { credit: null, note: 'No credit available' }
+    }
+    return {
+      credit: {
+        amount: promoCredit.amount,
+        currencyAmount: promoCredit.currencyAmount / 100,
+        currency: promoCredit.currency,
+        exchangeRate: promoCredit.exchangeRate
+      },
+      note: `Credits available: ${promoCredit.amount} (${showAmount(promoCredit.currencyAmount, promoCredit.currency)})`
+    }
   }
-
-  const onCodeEnter = async () => {
-    discountChkingRef.current = true
-    setDiscountChecking(true)
-    await createPreview() // I should insert **ref.current = true/false into createPreview
-    discountChkingRef.current = false
-    setDiscountChecking(false)
+  const creditUseNote = () => {
+    const credit = getCreditInfo()
+    if (credit?.credit == null) {
+      return null
+    }
+    if (creditAmount == 0 || creditAmount == null) {
+      return <div className="text-xs text-gray-500">No promo credit used</div>
+    }
+    return (
+      <div className="mt-1 text-xs text-green-500">{`At most ${creditAmount} credits (${CURRENCY[credit.credit.currency].symbol}${(creditAmount * credit.credit.exchangeRate) / 100}) to be used.`}</div>
+    )
   }
 
   const onVATCheck = async (evt: React.FocusEvent<HTMLElement>) => {
@@ -245,6 +260,17 @@ const Index = ({
       message.error('Invalid discount code')
       return false
     }
+
+    if (
+      (preview === null && discountCode !== '') || // code provided, but not applied(apply btn not clicked)
+      (preview !== null &&
+        preview.discount != null &&
+        preview.discount?.code !== discountCode) // code provided and applied, but changed in input field
+    ) {
+      createPreview()
+      return false
+    }
+
     return true
   }
 
@@ -267,7 +293,7 @@ const Index = ({
       return
     }
 
-    if (vatChechkingRef.current || discountChkingRef.current) {
+    if (vatChechkingRef.current) {
       return
     }
 
@@ -314,20 +340,23 @@ const Index = ({
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : []
+
     setSubmitting(true)
-    const [createSubRes, err] = await createSubscriptionReq(
-      plan.id,
-      addons.map((a) => ({
+    const [createSubRes, err] = await createSubscriptionReq({
+      planId: plan.id,
+      addons: addons.map((a) => ({
         quantity: a.quantity as number,
         addonPlanId: a.id
       })),
-      preview?.totalAmount as number,
-      preview?.currency as string,
-      selectedCountry, // preview?.vatCountryCode as string,
+      confirmTotalAmount: preview?.totalAmount as number,
+      confirmCurrency: preview?.currency as string,
+      vatCountryCode: selectedCountry, // preview?.vatCountryCode as string,
       vatNumber, // preview?.vatNumber as string,
       gatewayId,
-      discountInputRef.current?.input?.value
-    )
+      discountCode: discountCode,
+      applyPromoCredit: creditAmount != null && creditAmount > 0,
+      applyPromoCreditAmount: creditAmount ?? 0
+    })
     setSubmitting(false)
     if (err != null) {
       message.error(err.message)
@@ -536,38 +565,38 @@ const Index = ({
 
             <div className=" mt-6 flex w-full pr-4">
               <div className="w-3/5">
-                <Row>
-                  <Col span={24}>Discount code</Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <Input
-                      ref={discountInputRef}
-                      defaultValue={discountCode}
-                      allowClear
-                      // disabled={discountChecking || vatChecking}
-                      disabled={loading || submitting}
-                      style={{ width: '200px' }}
-                      onBlur={onDiscountChecking}
-                      onPressEnter={onCodeEnter}
-                    />
-                    <span className=" ml-1">
+                <div className=" my-4 flex w-80 flex-col justify-center gap-4">
+                  <div>
+                    <div className="flex justify-between">
+                      <InputNumber
+                        style={{ width: 240 }}
+                        min={1}
+                        value={creditAmount}
+                        onChange={onCreditAmtChange}
+                        placeholder={`Credit available: ${promoCredit?.amount} (${promoCredit && showAmount(promoCredit?.currencyAmount, promoCredit?.currency)})`}
+                      />
                       <Button
-                        className="apply-btn-wrapper"
-                        size="small"
-                        type="text"
-                        onClick={onDiscountChecking2}
-                        loading={discountChecking}
-                        disabled={loading || submitting}
+                        onClick={createPreview}
+                        // loading={codeChecking}
                       >
                         Apply
                       </Button>
-                    </span>
-                    <div className=" mt-1 text-xs text-gray-500">
-                      {discountChecking ? 'checking...' : getDiscountDesc()}
                     </div>
-                  </Col>
-                </Row>
+                    {creditUseNote()}
+                  </div>
+                  <div>
+                    <div className="flex  justify-between">
+                      <Input
+                        style={{ width: 240 }}
+                        value={discountCode}
+                        onChange={onDiscountCodeChange}
+                        placeholder="Discount code"
+                      />
+                      <Button onClick={createPreview}>Apply</Button>
+                    </div>
+                    <div className="flex">{discountCodeUseNote()}</div>
+                  </div>
+                </div>
               </div>
 
               <div className="w-2/5">
@@ -575,14 +604,14 @@ const Index = ({
                   <Col
                     span={16}
                     style={{ fontSize: '18px' }}
-                    className=" text-red-800"
+                    className=" text-gray-700"
                   >
-                    Saved
+                    Subtotal
                   </Col>
                   <Col
-                    className=" text-red-800"
+                    className=" text-gray-800"
                     span={8}
-                  >{`${showAmount(preview.discountAmount, preview.currency)}`}</Col>
+                  >{`${showAmount(preview.invoice.subscriptionAmountExcludingTax, preview.invoice.currency)}`}</Col>
                 </Row>
                 <Row>
                   <Col
@@ -590,12 +619,42 @@ const Index = ({
                     style={{ fontSize: '18px' }}
                     className=" text-gray-700"
                   >
-                    Tax
+                    Credit Used
+                    {preview.invoice.promoCreditPayout != null &&
+                      `(${preview.invoice.promoCreditPayout.creditAmount})`}
+                  </Col>
+                  <Col className=" text-gray-800" span={8}>
+                    {showAmount(
+                      -1 * preview.invoice.promoCreditDiscountAmount,
+                      preview.invoice.currency
+                    )}
+                  </Col>
+                </Row>
+                <Row>
+                  <Col
+                    span={16}
+                    style={{ fontSize: '18px' }}
+                    className=" text-gray-800"
+                  >
+                    Discounted Amount
+                  </Col>
+                  <Col
+                    className=" text-gray-800"
+                    span={8}
+                  >{`${showAmount(preview.discountAmount * -1, preview.currency)}`}</Col>
+                </Row>
+                <Row>
+                  <Col
+                    span={16}
+                    style={{ fontSize: '18px' }}
+                    className=" text-gray-700"
+                  >
+                    Tax{`(${preview.invoice.taxPercentage / 100} %)`}
                   </Col>
                   <Col
                     span={8}
                     className=" text-gray-700"
-                  >{`${preview.taxPercentage / 100} %`}</Col>
+                  >{`${showAmount(preview.invoice.taxAmount, preview.invoice.currency)} `}</Col>
                 </Row>
                 <Divider style={{ margin: '4px 0' }} />
                 <Row>

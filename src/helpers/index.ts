@@ -23,14 +23,18 @@ passwordSchema
   .symbols(1) // should have special characters
 
 export const showAmount = (
-  amount: number,
-  currency: keyof typeof CURRENCY,
+  amount: number | undefined,
+  currency: keyof typeof CURRENCY | undefined,
   ignoreFactor?: boolean
 ): string => {
+  if (amount == undefined || currency == undefined) {
+    return ''
+  }
   const isNegative = amount < 0
   if (isNegative) {
     amount *= -1
   }
+
   const c = CURRENCY[currency]
   return `${isNegative ? '-' : ''}${c.symbol}${amount / (ignoreFactor ? 1 : c.stripe_factor)}`
 }

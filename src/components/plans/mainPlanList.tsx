@@ -1,14 +1,32 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import { Button, Col, Empty, Input, Popover, Row, Spin, message } from 'antd'
+import {
+  Button,
+  Col,
+  Empty,
+  Input,
+  InputNumber,
+  Popover,
+  Row,
+  Spin,
+  message
+} from 'antd'
 import update from 'immutability-helper'
 import React, { useEffect, useState } from 'react'
+import { CURRENCY } from '../../constants'
 import { showAmount } from '../../helpers'
 import {
   applyDiscountPreviewReq,
   getActiveSubWithMore,
   getCountryList
 } from '../../requests'
-import { Country, DiscountCode, IPlan, ISubscription } from '../../shared.types'
+import {
+  Country,
+  CreditType,
+  DiscountCode,
+  DiscountType,
+  IPlan,
+  ISubscription
+} from '../../shared.types'
 import { useAppConfigStore, useProfileStore } from '../../stores'
 import OTPBuyListModal from '../modals/addonBuyListModal'
 import BillingAddressModal from '../modals/billingAddressModal'
@@ -16,12 +34,13 @@ import CancelSubModal from '../modals/modalCancelPendingSub'
 import CreateSubModal from '../modals/modalCreateSub'
 import UpdatePlanModal from '../modals/modalUpdateSub'
 import OTPModal from '../modals/onetimePaymentModal'
-import CouponPopover from '../ui/couponPopover'
 import Plan from './plan'
 
 type DiscountCodePreview = {
   isValid: boolean
-  preview: DiscountCode | null // null is used when isValid: false
+  discountAmount: number
+  discountCode: DiscountCode | null // null is used when isValid: false
+  failureReason: string
 }
 
 const Index = ({
@@ -32,10 +51,14 @@ const Index = ({
   activeSub: ISubscription | undefined
 }) => {
   const profileStore = useProfileStore()
+  const promoCredit = profileStore.promoCreditAccounts?.find(
+    (p) => p.type == CreditType.PROMO_CREDIT && p.currency == 'EUR'
+  )
   const [plans, setPlans] = useState<IPlan[]>([])
   const [otpPlans, setOtpPlans] = useState<IPlan[]>([]) // one-time-payment plan,
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null) // null: not selected
   const [discountCode, setDiscountCode] = useState('')
+  const [creditAmount, setCreditAmount] = useState<number | null>(null)
   const [codePreview, setCodePreview] = useState<DiscountCodePreview | null>(
     null
   )
@@ -65,12 +88,73 @@ const Index = ({
 
   const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen)
 
+  const discountCodeUseNote = () => {
+    if (discountCode == '' || codePreview == null) {
+      return <div className="text-xs text-gray-500">No discount code used</div>
+    }
+    if (codePreview != null) {
+      if (codePreview.isValid) {
+        return (
+          <div className="text-xs text-green-500">
+            Discount code is valid(
+            {`${
+              codePreview.discountCode?.discountType == DiscountType.PERCENTAGE
+                ? codePreview.discountCode?.discountPercentage / 100 + '%'
+                : showAmount(
+                    codePreview.discountCode?.discountAmount,
+                    codePreview.discountCode?.currency
+                  )
+            } off`}
+            )
+          </div>
+        )
+      } else {
+        return (
+          <div className="text-xs text-red-500">
+            {codePreview.failureReason}
+          </div>
+        )
+      }
+    }
+    return null
+  }
+
   const onCodeChange: React.ChangeEventHandler<HTMLInputElement> = (evt) => {
     const v = evt.target.value
     setDiscountCode(v)
     if (v === '') {
       setCodePreview(null)
     }
+  }
+
+  const getCreditInfo = () => {
+    if (promoCredit == undefined) {
+      return { credit: null, note: 'No credit available' }
+    }
+    return {
+      credit: {
+        amount: promoCredit.amount,
+        currencyAmount: promoCredit.currencyAmount / 100,
+        currency: promoCredit.currency,
+        exchangeRate: promoCredit.exchangeRate
+      },
+      note: `Credits available: ${promoCredit.amount} (${showAmount(promoCredit.currencyAmount, promoCredit.currency)})`
+    }
+  }
+  const creditUseNote = () => {
+    const credit = getCreditInfo()
+    if (credit?.credit == null) {
+      return null
+    }
+    if (creditAmount == 0 || creditAmount == null) {
+      return <div className="text-xs text-gray-500">No promo credit used</div>
+    }
+    return (
+      <div className="text-xs text-green-500">{`At most ${creditAmount} credits (${CURRENCY[credit.credit.currency].symbol}${(creditAmount * credit.credit.exchangeRate) / 100}) to be used.`}</div>
+    )
+  }
+  const onCreditChange = (value: number | null) => {
+    setCreditAmount(value)
   }
 
   const onPreviewCode = async () => {
@@ -84,7 +168,13 @@ const Index = ({
       message.error(err.message)
       return
     }
-    setCodePreview({ isValid: res.valid, preview: res.discountCode })
+    const { discountAmount, failureReason, valid } = res
+    setCodePreview({
+      isValid: valid,
+      discountCode: res.discountCode,
+      failureReason,
+      discountAmount
+    })
   }
 
   const onAddonChange = (
@@ -211,7 +301,7 @@ const Index = ({
     // return true
     if (
       (codePreview === null && discountCode !== '') || // code provided, but not applied
-      (codePreview !== null && codePreview.preview?.code !== discountCode) // code provided and applied, but changed in input field
+      (codePreview !== null && codePreview.discountCode?.code !== discountCode) // code provided and applied, but changed in input field
     ) {
       onPreviewCode()
       return false
@@ -340,6 +430,7 @@ const Index = ({
             closeModal={toggleUpdateModal}
             refresh={fetchData}
             discountCode={discountCode}
+            creditAmt={creditAmount}
           />
         )
       }
@@ -352,7 +443,8 @@ const Index = ({
             defaultVatNumber={profileStore.vATNumber}
             closeModal={toggleCreateModal}
             userCountryCode={profileStore.countryCode}
-            discountCode={discountCode}
+            couponCode={discountCode}
+            creditAmt={creditAmount}
           />
         )
       }
@@ -365,7 +457,7 @@ const Index = ({
       )}
 
       <div
-        style={{ maxHeight: 'calc(100vh - 460px)', overflowY: 'auto' }}
+        style={{ maxHeight: 'calc(100vh - 560px)', overflowY: 'auto' }}
         className="flex flex-wrap gap-6 pb-5 pl-4"
       >
         {plans.length == 0 && !loading ? (
@@ -388,62 +480,63 @@ const Index = ({
           ))
         )}
       </div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          margin: '48px',
-          flexDirection: 'column'
-        }}
-      >
+      <div className="my-6 flex flex-col items-center justify-center">
         {plans.length > 0 && (
           <>
-            <div className="mx-auto my-4 flex w-64 flex-row justify-center gap-4">
-              <div className="flex flex-col">
-                <Input
-                  value={discountCode}
-                  onChange={onCodeChange}
-                  status={
-                    codePreview !== null && !codePreview.isValid
-                      ? 'error'
-                      : undefined
-                  }
-                  disabled={codeChecking}
-                  placeholder="Discount code"
-                />
-
-                <div className="flex">
-                  {codePreview !== null &&
-                    (codePreview.isValid ? (
-                      <>
-                        <span className="text-xs text-green-500">
-                          Code is valid{' '}
-                          <CouponPopover
-                            coupon={codePreview.preview as DiscountCode}
-                          />
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-xs text-red-500">
-                        Code is invalid
-                      </span>
-                    ))}
+            <div className="mx-auto my-4 flex w-64 flex-col justify-center gap-4">
+              <div>
+                <div className="flex w-80 justify-between">
+                  <InputNumber
+                    style={{ width: 240 }}
+                    value={creditAmount}
+                    onChange={onCreditChange}
+                    placeholder={`Credit available: ${promoCredit?.amount} (${promoCredit && showAmount(promoCredit?.currencyAmount, promoCredit?.currency)})`}
+                  />
+                  <Button
+                    // onClick={onPreviewCode}
+                    // loading={codeChecking}
+                    disabled={
+                      selectedPlan == null ||
+                      activeSub?.status == 0 || // initiating
+                      activeSub?.status == 1 || // created (not paid)
+                      activeSub?.status == 3 // pending (payment in processing)
+                    }
+                  >
+                    Apply
+                  </Button>
                 </div>
+                <div className="flex">{creditUseNote()}</div>
               </div>
-              <Button
-                onClick={onPreviewCode}
-                loading={codeChecking}
-                disabled={
-                  codeChecking ||
-                  selectedPlan == null ||
-                  activeSub?.status == 0 || // initiating
-                  activeSub?.status == 1 || // created (not paid)
-                  activeSub?.status == 3 // pending (payment in processing)
-                }
-              >
-                Apply
-              </Button>
+              <div>
+                <div className="flex w-80 justify-between">
+                  <Input
+                    style={{ width: 240 }}
+                    value={discountCode}
+                    onChange={onCodeChange}
+                    status={
+                      codePreview !== null && !codePreview.isValid
+                        ? 'error'
+                        : undefined
+                    }
+                    disabled={codeChecking}
+                    placeholder="Discount code"
+                  />
+                  <Button
+                    onClick={onPreviewCode}
+                    loading={codeChecking}
+                    disabled={
+                      codeChecking ||
+                      selectedPlan == null ||
+                      activeSub?.status == 0 || // initiating
+                      activeSub?.status == 1 || // created (not paid)
+                      activeSub?.status == 3 // pending (payment in processing)
+                    }
+                  >
+                    Apply
+                  </Button>
+                </div>
+                <div className="flex">{discountCodeUseNote()}</div>
+              </div>
             </div>
             <div>
               <Button

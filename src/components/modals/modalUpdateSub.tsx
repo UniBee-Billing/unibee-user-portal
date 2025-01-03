@@ -12,6 +12,7 @@ interface Props {
   plan: IPlan
   subscriptionId: string
   discountCode: string
+  creditAmt: number | null
   closeModal: () => void
   refresh: () => void // after upgrade, refresh parent component
 }
@@ -20,6 +21,7 @@ const Index = ({
   plan,
   subscriptionId,
   discountCode,
+  creditAmt,
   closeModal,
   refresh
 }: Props) => {
@@ -34,18 +36,20 @@ const Index = ({
       plan != null && plan.addons != null
         ? plan.addons.filter((a) => a.checked)
         : []
-    const [updateSubRes, err] = await updateSubscriptionReq(
-      plan?.id,
+    const [updateSubRes, err] = await updateSubscriptionReq({
+      newPlanId: plan?.id,
       subscriptionId,
-      addons.map((a) => ({
+      addons: addons.map((a) => ({
         quantity: a.quantity as number,
         addonPlanId: a.id
       })),
-      preview?.totalAmount as number,
-      preview?.currency as string,
-      preview?.prorationDate as number,
-      discountCode
-    )
+      confirmTotalAmount: preview?.totalAmount as number,
+      confirmCurrency: preview?.currency as string,
+      prorationDate: preview?.prorationDate as number,
+      discountCode,
+      applyPromoCredit: creditAmt != null && creditAmt > 0,
+      applyPromoCreditAmount: creditAmt ?? 0
+    })
     setSubmitting(false)
     if (null != err) {
       message.error(err.message)
@@ -57,7 +61,8 @@ const Index = ({
     // so it won't redirect you to chckout form, only if your card is expired or has insufficient fund.
     // the payment will be done immediaetly(most of time).
     if (paid) {
-      refresh()
+      // after successful plan upgrade, if refresh parent component immediately, backend still return the old plan.
+      setTimeout(() => refresh(), 1000)
       message.success('Plan updated')
       closeModal()
       return
@@ -76,15 +81,17 @@ const Index = ({
         : []
     const fetchPreview = async () => {
       setLoading(true)
-      const [previewRes, err] = await createUpdatePreviewReq(
-        plan!.id,
-        addons.map((a) => ({
+      const [previewRes, err] = await createUpdatePreviewReq({
+        planId: plan!.id,
+        addons: addons.map((a) => ({
           quantity: a.quantity as number,
           addonPlanId: a.id
         })),
-        subscriptionId as string,
-        discountCode
-      )
+        subscriptionId: subscriptionId,
+        discountCode: discountCode,
+        applyPromoCredit: creditAmt != null && creditAmt > 0,
+        applyPromoCreditAmount: creditAmt ?? 0
+      })
       setLoading(false)
       if (null != err) {
         message.error(err.message)
@@ -151,16 +158,13 @@ export default Index
 
 const InvoiceLines = ({
   invoice,
-  label,
-  hideDetail,
-  showButton
+  label
 }: {
   invoice: InvoiceItemTotal | undefined
   label: string
   hideDetail?: boolean
   showButton?: boolean
 }) => {
-  const [hide, setHide] = useState(!!hideDetail)
   return (
     <>
       <Divider
@@ -183,26 +187,22 @@ const InvoiceLines = ({
       ) : (
         <>
           <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
-            <Col span={9}>Description</Col>
-            <Col span={4}>Unit price</Col>
-            <Col span={1}></Col>
-            <Col span={3}>Quantity</Col>
-            <Col span={4}>VAT</Col>
+            <Col span={12}>Description</Col>
+            <Col span={3}>Unit price</Col>
+            <Col span={2}></Col>
+            <Col span={4}>Quantity</Col>
             <Col span={3}>Total</Col>
           </Row>
           {invoice.lines.map((i, idx) => (
             <div key={idx}>
               <Row>
-                <Col span={9}>{i.description}</Col>
+                <Col span={12}>{i.description}</Col>
                 <Col span={4}>
                   {showAmount(i.unitAmountExcludingTax, i.currency)}
                 </Col>
                 <Col span={1}></Col>
-                <Col span={3}>{i.quantity}</Col>
-                <Col span={4}>
-                  {showAmount(i.tax as number, i.currency)}
-                  <span className="text-xs text-gray-500">{` (${(i.taxPercentage as number) / 100}%)`}</span>
-                </Col>
+                <Col span={4}>{i.quantity}</Col>
+
                 <Col span={3}>
                   {showAmount(
                     i.unitAmountExcludingTax * i.quantity,
@@ -216,13 +216,9 @@ const InvoiceLines = ({
             </div>
           ))}
 
-          <div
-            style={{
-              height: hide ? '0px' : '66px',
-              visibility: hide ? 'hidden' : 'visible'
-            }}
-          >
-            <Row>
+          <div>
+            <Divider style={{ margin: '8px 0' }} />
+            <Row className="my-1">
               <Col span={17}></Col>
               <Col span={4}>Subtotal</Col>
               <Col span={3}>
@@ -232,14 +228,25 @@ const InvoiceLines = ({
                 )}
               </Col>
             </Row>
-            <Row>
+            {invoice.promoCreditDiscountAmount != 0 && (
+              <Row className="my-1">
+                <Col span={17}> </Col>
+                <Col span={4}>
+                  Credit Used({invoice?.promoCreditPayout?.creditAmount})
+                </Col>
+                <Col span={3}>
+                  {`${showAmount(-1 * invoice.promoCreditDiscountAmount, invoice.currency)}`}
+                </Col>
+              </Row>
+            )}
+            <Row className="my-1">
               <Col span={17}> </Col>
               <Col span={4}>Total Discounted</Col>
               <Col span={3}>
                 {`${showAmount(-1 * invoice.discountAmount, invoice.currency)}`}
               </Col>
             </Row>
-            <Row>
+            <Row className="my-1">
               <Col span={17}></Col>
               <Col span={4}>
                 VAT(
@@ -250,19 +257,9 @@ const InvoiceLines = ({
               </Col>
             </Row>
           </div>
-          <Row>
+          <Row className="my-1">
             <Col span={17}></Col>
-            <Col span={4}>
-              Total{' '}
-              {showButton && (
-                <span
-                  className="text-xs text-blue-500 hover:cursor-pointer"
-                  onClick={() => setHide(!hide)}
-                >
-                  {hide ? 'more' : 'less'}
-                </span>
-              )}
-            </Col>
+            <Col span={4}>Total </Col>
             <Col span={3} style={{ fontWeight: 'bold' }}>
               {showAmount(invoice.totalAmount, invoice.currency)}
             </Col>
