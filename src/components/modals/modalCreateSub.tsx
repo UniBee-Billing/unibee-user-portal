@@ -641,7 +641,7 @@ const Index = ({
                   <Col
                     className=" text-gray-800"
                     span={8}
-                  >{`${showAmount(preview.discountAmount, preview.currency)}`}</Col>
+                  >{`${showAmount(preview.discountAmount * -1, preview.currency)}`}</Col>
                 </Row>
                 <Row>
                   <Col
