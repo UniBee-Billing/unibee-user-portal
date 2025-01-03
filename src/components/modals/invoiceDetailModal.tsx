@@ -134,6 +134,30 @@ const Index = ({ detail, closeModal }: Props) => {
         ))}
       <Divider />
 
+      <Row>
+        <Col span={14}> </Col>
+        <Col span={6} style={{ fontSize: '18px' }} className=" text-gray-700">
+          Subtotal
+        </Col>
+        <Col
+          span={4}
+          className=" text-gray-700"
+        >{`${showAmount(detail.subscriptionAmountExcludingTax, detail.currency, true)}`}</Col>
+      </Row>
+
+      <Row>
+        <Col span={14}> </Col>
+        <Col span={6} style={{ fontSize: '18px' }} className=" text-gray-700">
+          Promo Credit{' '}
+          {detail?.promoCreditTransaction != null &&
+            `(${Math.abs(detail.promoCreditTransaction.deltaAmount)})`}
+        </Col>
+        <Col
+          span={4}
+          className=" text-gray-700"
+        >{`${showAmount(detail.promoCreditDiscountAmount * -1, detail.currency)}`}</Col>
+      </Row>
+
       <Row className="flex items-center">
         <Col span={14}> </Col>
         <Col span={6} style={{ fontSize: '18px' }} className=" text-red-800">

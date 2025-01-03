@@ -61,7 +61,8 @@ const Index = ({
     // so it won't redirect you to chckout form, only if your card is expired or has insufficient fund.
     // the payment will be done immediaetly(most of time).
     if (paid) {
-      refresh()
+      // after successful plan upgrade, if refresh parent component immediately, backend still return the old plan.
+      setTimeout(() => refresh(), 1000)
       message.success('Plan updated')
       closeModal()
       return
@@ -157,16 +158,13 @@ export default Index
 
 const InvoiceLines = ({
   invoice,
-  label,
-  hideDetail,
-  showButton
+  label
 }: {
   invoice: InvoiceItemTotal | undefined
   label: string
   hideDetail?: boolean
   showButton?: boolean
 }) => {
-  const [hide, setHide] = useState(!!hideDetail)
   return (
     <>
       <Divider
@@ -189,26 +187,22 @@ const InvoiceLines = ({
       ) : (
         <>
           <Row style={{ fontWeight: 'bold', margin: '16px 0' }}>
-            <Col span={9}>Description</Col>
-            <Col span={4}>Unit price</Col>
-            <Col span={1}></Col>
-            <Col span={3}>Quantity</Col>
-            <Col span={4}>VAT</Col>
+            <Col span={12}>Description</Col>
+            <Col span={3}>Unit price</Col>
+            <Col span={2}></Col>
+            <Col span={4}>Quantity</Col>
             <Col span={3}>Total</Col>
           </Row>
           {invoice.lines.map((i, idx) => (
             <div key={idx}>
               <Row>
-                <Col span={9}>{i.description}</Col>
+                <Col span={12}>{i.description}</Col>
                 <Col span={4}>
                   {showAmount(i.unitAmountExcludingTax, i.currency)}
                 </Col>
                 <Col span={1}></Col>
-                <Col span={3}>{i.quantity}</Col>
-                <Col span={4}>
-                  {showAmount(i.tax as number, i.currency)}
-                  <span className="text-xs text-gray-500">{` (${(i.taxPercentage as number) / 100}%)`}</span>
-                </Col>
+                <Col span={4}>{i.quantity}</Col>
+
                 <Col span={3}>
                   {showAmount(
                     i.unitAmountExcludingTax * i.quantity,
@@ -222,13 +216,9 @@ const InvoiceLines = ({
             </div>
           ))}
 
-          <div
-            style={{
-              height: hide ? '0px' : '88px',
-              visibility: hide ? 'hidden' : 'visible'
-            }}
-          >
-            <Row>
+          <div>
+            <Divider style={{ margin: '8px 0' }} />
+            <Row className="my-1">
               <Col span={17}></Col>
               <Col span={4}>Subtotal</Col>
               <Col span={3}>
@@ -239,7 +229,7 @@ const InvoiceLines = ({
               </Col>
             </Row>
             {invoice.promoCreditDiscountAmount != 0 && (
-              <Row>
+              <Row className="my-1">
                 <Col span={17}> </Col>
                 <Col span={4}>
                   Credit Used({invoice?.promoCreditPayout?.creditAmount})
@@ -249,14 +239,14 @@ const InvoiceLines = ({
                 </Col>
               </Row>
             )}
-            <Row>
+            <Row className="my-1">
               <Col span={17}> </Col>
               <Col span={4}>Total Discounted</Col>
               <Col span={3}>
                 {`${showAmount(-1 * invoice.discountAmount, invoice.currency)}`}
               </Col>
             </Row>
-            <Row>
+            <Row className="my-1">
               <Col span={17}></Col>
               <Col span={4}>
                 VAT(
@@ -267,19 +257,9 @@ const InvoiceLines = ({
               </Col>
             </Row>
           </div>
-          <Row>
+          <Row className="my-1">
             <Col span={17}></Col>
-            <Col span={4}>
-              Total{' '}
-              {showButton && (
-                <span
-                  className="text-xs text-blue-500 hover:cursor-pointer"
-                  onClick={() => setHide(!hide)}
-                >
-                  {hide ? 'more' : 'less'}
-                </span>
-              )}
-            </Col>
+            <Col span={4}>Total </Col>
             <Col span={3} style={{ fontWeight: 'bold' }}>
               {showAmount(invoice.totalAmount, invoice.currency)}
             </Col>

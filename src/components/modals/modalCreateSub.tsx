@@ -1,5 +1,4 @@
 import { LoadingOutlined } from '@ant-design/icons'
-import type { InputRef } from 'antd'
 import {
   Button,
   Col,
@@ -203,7 +202,7 @@ const Index = ({
       return <div className="text-xs text-gray-500">No promo credit used</div>
     }
     return (
-      <div className="mt-1 text-xs text-green-500">{`At most ${creditAmount} credits (${(creditAmount * credit.credit.exchangeRate) / 100}${CURRENCY[credit.credit.currency].symbol}) to be used.`}</div>
+      <div className="mt-1 text-xs text-green-500">{`At most ${creditAmount} credits (${CURRENCY[credit.credit.currency].symbol}${(creditAmount * credit.credit.exchangeRate) / 100}) to be used.`}</div>
     )
   }
 
@@ -264,12 +263,13 @@ const Index = ({
 
     if (
       (preview === null && discountCode !== '') || // code provided, but not applied(apply btn not clicked)
-      (preview !== null && preview.discount?.code !== discountCode) // code provided and applied, but changed in input field
+      (preview !== null &&
+        preview.discount != null &&
+        preview.discount?.code !== discountCode) // code provided and applied, but changed in input field
     ) {
       createPreview()
       return false
     }
-    // onConfirm()
 
     return true
   }
@@ -641,7 +641,7 @@ const Index = ({
                   <Col
                     className=" text-gray-800"
                     span={8}
-                  >{`${showAmount(preview.discountAmount, preview.currency)}`}</Col>
+                  >{`${showAmount(preview.discountAmount * -1, preview.currency)}`}</Col>
                 </Row>
                 <Row>
                   <Col
