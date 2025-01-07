@@ -73,6 +73,15 @@ const Index = ({
   const [discountCode, setDiscountCode] = useState<string>(couponCode)
   const onDiscountCodeChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
     setDiscountCode(evt.target.value)
+    if (evt.target.value === '') {
+      if (preview != null && preview.discountMessage != '') {
+        const newPreview = JSON.parse(JSON.stringify(preview))
+        newPreview.discountMessage = ''
+        newPreview.discount = null
+        newPreview.discountAmount = 0
+        setPreview(newPreview)
+      }
+    }
   }
   const vatChechkingRef = useRef(false)
   const [discountChecking, setDiscountChecking] = useState(false)
@@ -765,7 +774,11 @@ const Index = ({
             className="confirm-btn-wrapper"
             onClick={onConfirm}
             loading={loading || submitting}
-            disabled={loading || submitting}
+            disabled={
+              loading ||
+              submitting ||
+              (preview != null && preview.discountMessage != '')
+            }
           >
             {wireConfirmStep
               ? "Yes, I've finished the transfer"

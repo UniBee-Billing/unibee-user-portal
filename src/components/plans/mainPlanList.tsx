@@ -16,6 +16,8 @@ import { CURRENCY } from '../../constants'
 import { showAmount } from '../../helpers'
 import {
   applyDiscountPreviewReq,
+  createPreviewReq,
+  createUpdatePreviewReq,
   getActiveSubWithMore,
   getCountryList
 } from '../../requests'
@@ -25,6 +27,7 @@ import {
   DiscountCode,
   DiscountType,
   IPlan,
+  IPreview,
   ISubscription
 } from '../../shared.types'
 import { useAppConfigStore, useProfileStore } from '../../stores'
@@ -51,6 +54,7 @@ const Index = ({
   activeSub: ISubscription | undefined
 }) => {
   const profileStore = useProfileStore()
+  const appConfig = useAppConfigStore()
   const promoCredit = profileStore.promoCreditAccounts?.find(
     (p) => p.type == CreditType.PROMO_CREDIT && p.currency == 'EUR'
   )
@@ -63,6 +67,7 @@ const Index = ({
     null
   )
   const [codeChecking, setCodeChecking] = useState(false)
+  const [preview, setPreview] = useState<IPreview | null>(null)
   const [countryList, setCountryList] = useState<Country[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false) // create subscription Modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false) // update subscription Modal
@@ -94,6 +99,16 @@ const Index = ({
     }
     if (codePreview != null) {
       if (codePreview.isValid) {
+        // code valid doesn't mean you can use it, there might be other restriction:
+        if (preview?.discountMessage != '') {
+          // this code could only be used for long period plan upgrade(monthly to yearly)
+          return (
+            <div className="text-xs text-red-500">
+              {preview?.discountMessage}
+            </div>
+          )
+        }
+
         return (
           <div className="text-xs text-green-500">
             Discount code is valid(
@@ -124,6 +139,7 @@ const Index = ({
     setDiscountCode(v)
     if (v === '') {
       setCodePreview(null)
+      setPreview(null)
     }
   }
 
@@ -157,6 +173,76 @@ const Index = ({
     setCreditAmount(value)
   }
 
+  const getUpdateSubPreview = async (): Promise<
+    [IPreview | null, Error | null]
+  > => {
+    if (selectedPlan == null) {
+      return [null, new Error('No plan selected')]
+    }
+    if (activeSub == null) {
+      return [null, new Error('No active subscription')]
+    }
+    const plan = plans.find((p) => p.id == selectedPlan) as IPlan
+    const addons =
+      plan != null && plan.addons != null
+        ? plan.addons.filter((a) => a.checked)
+        : []
+    const [previewRes, err] = await createUpdatePreviewReq({
+      planId: plan!.id,
+      addons: addons.map((a) => ({
+        quantity: a.quantity as number,
+        addonPlanId: a.id
+      })),
+      subscriptionId: activeSub.subscriptionId,
+      discountCode: discountCode,
+      applyPromoCredit: creditAmount != null && creditAmount > 0,
+      applyPromoCreditAmount: creditAmount ?? 0
+    })
+    if (null != err) {
+      return [null, err]
+    }
+    return [previewRes, null]
+  }
+
+  const getCreateSubPreview = async (): Promise<
+    [IPreview | null, Error | null]
+  > => {
+    if (selectedPlan == null) {
+      return [null, new Error('No plan selected')]
+    }
+
+    const gatewayId = appConfig.gateway.find(
+      (g) => g.gatewayName == 'stripe'
+    )?.gatewayId
+    if (gatewayId == null) {
+      return [null, new Error('No payment gateway found')]
+    }
+
+    const plan = plans.find((p) => p.id == selectedPlan) as IPlan
+    const addons =
+      plan != null && plan.addons != null
+        ? plan.addons.filter((a) => a.checked)
+        : []
+    const [previewRes, err] = await createPreviewReq({
+      planId: plan.id,
+      addons: addons.map((a) => ({
+        quantity: a.quantity as number,
+        addonPlanId: a.id
+      })),
+      vatNumber: null,
+      vatCountryCode: null,
+      gatewayId: gatewayId as number,
+      refreshCb: getCreateSubPreview,
+      discountCode: discountCode,
+      applyPromoCredit: creditAmount != null && creditAmount > 0,
+      applyPromoCreditAmount: creditAmount ?? 0
+    })
+    if (null != err) {
+      return [null, err]
+    }
+    return [previewRes, null]
+  }
+
   const onPreviewCode = async () => {
     if (selectedPlan === null) {
       return
@@ -175,6 +261,22 @@ const Index = ({
       failureReason,
       discountAmount
     })
+
+    if (activeSub != null) {
+      const [previewRes, err] = await getUpdateSubPreview()
+      if (null != err) {
+        message.error(err.message)
+        return
+      }
+      setPreview(previewRes)
+    } else {
+      const [previewRes, err] = await getCreateSubPreview()
+      if (null != err) {
+        message.error(err.message)
+        return
+      }
+      setPreview(previewRes)
+    }
   }
 
   const onAddonChange = (
@@ -298,10 +400,11 @@ const Index = ({
   }
 
   const upgradeCheck = () => {
-    // return true
     if (
       (codePreview === null && discountCode !== '') || // code provided, but not applied
-      (codePreview !== null && codePreview.discountCode?.code !== discountCode) // code provided and applied, but changed in input field
+      (codePreview !== null &&
+        codePreview.discountCode?.code !== discountCode) || // code provided and applied, but changed in input field
+      (preview != null && preview.discountMessage != '')
     ) {
       onPreviewCode()
       return false
@@ -493,8 +596,6 @@ const Index = ({
                     placeholder={`Credit available: ${promoCredit?.amount} (${promoCredit && showAmount(promoCredit?.currencyAmount, promoCredit?.currency)})`}
                   />
                   <Button
-                    // onClick={onPreviewCode}
-                    // loading={codeChecking}
                     disabled={
                       selectedPlan == null ||
                       activeSub?.status == 0 || // initiating
@@ -546,6 +647,7 @@ const Index = ({
                 disabled={
                   selectedPlan == null ||
                   (codePreview !== null && !codePreview.isValid) || // you cannot proceed with invalid code
+                  (preview != null && preview.discountMessage != '') ||
                   activeSub?.status == 0 || // initiating
                   activeSub?.status == 1 || // created (not paid)
                   activeSub?.status == 3 // pending (payment in processing)
