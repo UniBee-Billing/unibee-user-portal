@@ -25,6 +25,7 @@ import {
 type TCard = {
   id: string
   type: string
+  isDefault: boolean
   brand: string
   country: string
   expiredAt: string
@@ -46,6 +47,7 @@ interface MethodData {
 interface Method {
   id: string
   type: string
+  isDefault: boolean
   data: MethodData
 }
 
@@ -117,14 +119,12 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
       id: m.id,
       type: m.type,
       ...m.data,
-      expiredAt: m.data.expYear + '-' + m.data.expMonth
+      expiredAt: m.data.expYear + '-' + m.data.expMonth,
+      isDefault: m.isDefault
     }))
     setCards(cards)
-    // there are cardA(default), B, and C, user clicked and selected B, but didn't click 'set as auto payment card', then refresh the list.
-    // I have to reset A as default, otherwise, user might think B is the new default.
-    if (defaultPaymentId != paymentId) {
-      setDefaultPaymentMethod(defaultPaymentId)
-    }
+    const defaultCard = cards.find((c: { isDefault: boolean }) => c.isDefault)
+    setDefaultPaymentMethod(defaultCard == undefined ? '' : defaultCard.id)
   }
 
   useEffect(() => {
@@ -147,7 +147,7 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
               </span>
             </Tooltip>
             <Tooltip title="Refresh">
-              <span className=" ml-2 cursor-pointer" onClick={refresh}>
+              <span className=" ml-2 cursor-pointer" onClick={fetchCards}>
                 <SyncOutlined />
               </span>
             </Tooltip>
