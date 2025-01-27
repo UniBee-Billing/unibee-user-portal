@@ -84,6 +84,12 @@ const Index = () => {
       render: (s, iv) => InvoiceStatus(s, iv.refund != null)
     },
     {
+      title: 'Gateway',
+      dataIndex: 'gateway',
+      key: 'gateway',
+      render: (g) => (g == null ? null : g.name)
+    },
+    {
       title: 'Document Type',
       dataIndex: 'refund',
       key: 'refund',
