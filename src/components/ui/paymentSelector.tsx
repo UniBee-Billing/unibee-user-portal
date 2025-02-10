@@ -1,25 +1,18 @@
 import { Col, Row } from 'antd'
-import React, { ReactNode } from 'react'
+import React from 'react'
 import { showAmount } from '../../helpers'
 import { TGateway } from '../../shared.types'
 import { useAppConfigStore } from '../../stores'
-import PayPalIcon from './icon/PayPal.svg?react'
-import AmexIcon from './icon/amex.svg?react'
-import BitcoinIcon from './icon/bitcoin-btc-logo.svg?react'
-import EthIcon from './icon/ethereum-eth-logo.svg?react'
-import LitecoinIcon from './icon/litecoin-ltc-logo.svg?react'
-import MastercardIcon from './icon/mastercard.svg?react'
-import UsdtIcon from './icon/tether-usdt-logo.svg?react'
-import VisaIcon from './icon/visa.svg?react'
-import WireIcon from './icon/wire-transfer-1.svg?react'
-
+/*
 enum PAYMENT_METHODS {
   stripe = 'stripe',
   paypal = 'paypal',
   changelly = 'changelly',
   wire_transfer = 'wire_transfer'
 }
+  */
 
+/*
 const PAYMENTS: {
   [key in PAYMENT_METHODS]: {
     label: string
@@ -66,6 +59,7 @@ const PAYMENTS: {
     order: 4
   }
 }
+  */
 
 const Index = ({
   selected,
