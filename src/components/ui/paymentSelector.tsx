@@ -1,24 +1,18 @@
 import { Col, Row } from 'antd'
-import React, { ReactNode } from 'react'
+import React from 'react'
 import { showAmount } from '../../helpers'
+import { TGateway } from '../../shared.types'
 import { useAppConfigStore } from '../../stores'
-import PayPalIcon from './icon/PayPal.svg?react'
-import AmexIcon from './icon/amex.svg?react'
-import BitcoinIcon from './icon/bitcoin-btc-logo.svg?react'
-import EthIcon from './icon/ethereum-eth-logo.svg?react'
-import LitecoinIcon from './icon/litecoin-ltc-logo.svg?react'
-import MastercardIcon from './icon/mastercard.svg?react'
-import UsdtIcon from './icon/tether-usdt-logo.svg?react'
-import VisaIcon from './icon/visa.svg?react'
-import WireIcon from './icon/wire-transfer-1.svg?react'
-
+/*
 enum PAYMENT_METHODS {
   stripe = 'stripe',
   paypal = 'paypal',
   changelly = 'changelly',
   wire_transfer = 'wire_transfer'
 }
+  */
 
+/*
 const PAYMENTS: {
   [key in PAYMENT_METHODS]: {
     label: string
@@ -65,6 +59,7 @@ const PAYMENTS: {
     order: 4
   }
 }
+  */
 
 const Index = ({
   selected,
@@ -78,15 +73,9 @@ const Index = ({
   disabled?: boolean
 }) => {
   const appConfig = useAppConfigStore()
-  const gateways = appConfig.gateway
-    .map((g) => ({
-      ...g,
-      label: PAYMENTS[g.gatewayName as PAYMENT_METHODS].label,
-      logo: PAYMENTS[g.gatewayName as PAYMENT_METHODS].logo,
-      order: PAYMENTS[g.gatewayName as PAYMENT_METHODS].order
-    }))
-    .sort((a, b) => a.order - b.order)
-
+  const gateways = appConfig.gateway.sort(
+    (a: TGateway, b: TGateway) => a.sort - b.sort
+  )
   const wire = gateways.find((g) => g.gatewayName == 'wire_transfer')
 
   return (
@@ -102,17 +91,18 @@ const Index = ({
               <input
                 type="radio"
                 name="payment-method"
-                // id={isCard ? 'card-payment' : 'crypto-payment'}
                 id={`payment-${g.gatewayName}`}
                 value={g.gatewayId}
                 checked={g.gatewayId == selected}
                 onChange={onSelect}
                 disabled={disabled}
               />
-              <div className="ml-2 flex justify-between">{g.label}</div>
+              <div className="ml-2 flex justify-between">{g.displayName}</div>
             </div>
             <div className="flex items-center justify-center gap-2">
-              {g.logo}
+              {g.gatewayIcons.map((i) => (
+                <img key={i} height={24} src={i} />
+              ))}
             </div>
           </label>
         )
