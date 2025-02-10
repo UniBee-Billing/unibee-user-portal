@@ -141,6 +141,9 @@ const Index = ({
 
     setDiscountChecking(false)
     setPreview(previewRes)
+    if (previewRes.discount != null) {
+      setDiscountCode(previewRes.discount.code)
+    }
     return true
   }
 
