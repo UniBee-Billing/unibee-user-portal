@@ -175,6 +175,10 @@ const Index = ({
       failureReason,
       discountAmount
     })
+    // code is case-insensitive, user input mlx501, BE is MLX501, after preview,
+    // response from BE said, this is a valid code, but res.discountCode.code is still MLX501
+    // I need to udpate the local mlx501 to MLX501
+    setDiscountCode(res.discountCode.code)
   }
 
   const onAddonChange = (
@@ -298,7 +302,6 @@ const Index = ({
   }
 
   const upgradeCheck = () => {
-    // return true
     if (
       (codePreview === null && discountCode !== '') || // code provided, but not applied
       (codePreview !== null && codePreview.discountCode?.code !== discountCode) // code provided and applied, but changed in input field
