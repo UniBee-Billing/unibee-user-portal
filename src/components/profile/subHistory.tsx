@@ -8,6 +8,7 @@ import { getProductListReq, getSubHistoryReq } from '../../requests'
 import { usePagination } from '../hooks'
 
 import { IProduct, ISubAddon, ISubHistoryItem } from '../../shared.types.ts'
+import LongTextPopover from '../ui/longTextPopover.tsx'
 import { SubHistoryStatus } from '../ui/statusTag.tsx'
 // import { SubscriptionStatus } from '../ui/statusTag';
 
@@ -38,7 +39,10 @@ const Index = () => {
       dataIndex: 'itemName',
       key: 'itemName',
       width: 180,
-      render: (_, record) => (record.plan == null ? null : record.plan.planName)
+      render: (_, record) =>
+        record.plan == null ? null : (
+          <LongTextPopover text={record.plan.planName} width="180px" />
+        )
     },
     {
       title: 'Start Time',
