@@ -27,6 +27,7 @@ import { DiscountCode, ISubscription } from '../../shared.types'
 import { useAppConfigStore } from '../../stores'
 import CancelSubModal from '../modals/modalCancelPendingSub'
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub'
+import LongTextPopover from '../ui/longTextPopover'
 import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag'
 
 const APP_PATH = import.meta.env.BASE_URL // default is / (if no --base specified in build cmd)
@@ -125,11 +126,21 @@ const PendingUpdateSection = ({ subInfo }: { subInfo: ISubscription }) => {
         <Col span={4} style={colStyle}>
           Plan
         </Col>
-        <Col span={6}>{i!.updatePlan.planName}</Col>
+        <Col span={6}>
+          <LongTextPopover
+            text={i!.updatePlan.planName}
+            showViewMoreButton={true}
+          />
+        </Col>
         <Col span={4} style={colStyle}>
           Plan Description
         </Col>
-        <Col span={6}>{i!.updatePlan.description}</Col>
+        <Col span={10}>
+          <LongTextPopover
+            text={i!.updatePlan.description}
+            showViewMoreButton={true}
+          />
+        </Col>
       </Row>
 
       <Row style={rowStyle}>
@@ -294,11 +305,22 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         <Col span={4} style={colStyle}>
           Plan
         </Col>
-        <Col span={6}>{subInfo?.plan?.planName}</Col>
+        <Col span={6}>
+          <LongTextPopover
+            text={subInfo?.plan?.planName}
+            showViewMoreButton={true}
+          />
+        </Col>
         <Col span={4} style={colStyle}>
           Plan Description
         </Col>
-        <Col span={6}>{subInfo?.plan?.description}</Col>
+        <Col span={10}>
+          {' '}
+          <LongTextPopover
+            text={subInfo?.plan?.description}
+            showViewMoreButton={true}
+          />
+        </Col>
       </Row>
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>

@@ -3,6 +3,7 @@ import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import React, { useEffect, useState } from 'react'
 import { formatPlanPrice, showAmount } from '../../helpers'
 import { IPlan } from '../../shared.types'
+import LongTextPopover from '../ui/longTextPopover'
 import { SubscriptionStatus } from '../ui/statusTag'
 
 interface IPLanProps {
@@ -143,8 +144,12 @@ const Index = ({
               : 'unset'
         }}
       >
-        <div style={{ fontSize: '28px' }}>{plan.planName}</div>
-        <div>{plan.description}</div>
+        <div style={{ fontSize: '28px' }}>
+          <LongTextPopover text={plan.planName} width="230px" />
+        </div>
+        <div>
+          <LongTextPopover text={plan.description} width="240px" />
+        </div>
 
         {hasAddonInfo && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
