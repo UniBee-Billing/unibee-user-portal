@@ -1,9 +1,9 @@
+import { getSublistReq } from '@/requests'
+import { IProduct, ISubAddon, ISubscription } from '@/shared.types'
 import { LoadingOutlined, StarOutlined } from '@ant-design/icons'
 import { Spin, Tabs, message } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getSublistReq } from '../../requests'
-import { IProduct, ISubAddon, ISubscription } from '../../shared.types'
 import MainPlanList from './mainPlanList'
 
 const Index = ({ productList }: { productList: IProduct[] }) => {

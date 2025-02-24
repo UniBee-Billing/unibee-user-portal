@@ -1,4 +1,5 @@
 import axios from 'axios'
+import update from 'immutability-helper'
 import { ExpiredError, IProfile } from '../shared.types'
 import { useAppConfigStore, useProfileStore, useSessionStore } from '../stores'
 import { request } from './client'
@@ -8,6 +9,25 @@ const appConfig = useAppConfigStore.getState()
 const stripeGatewayId = appConfig.gateway.find(
   (g) => g.gatewayName == 'stripe'
 )?.gatewayId
+
+const updateSessionCb = (refreshCb?: () => void) => {
+  const refreshCallbacks = update(session.refreshCallbacks, {
+    $push: [refreshCb]
+  })
+  session.setSession({
+    expired: true,
+    refreshCallbacks
+  })
+}
+
+const handleStatusCode = (code: number, refreshCb?: () => void) => {
+  if (code == 61) {
+    // TODO: use Enum to define the code
+    // session expired || role/permissions changed(need relogin)
+    updateSessionCb(refreshCb)
+    throw new ExpiredError('Session expired')
+  }
+}
 
 // after login, we need merchantInfo, appConfig, payment gatewayInfo, etc.
 // this fn get all these data in one go.
@@ -72,7 +92,7 @@ type TPassLogin = {
 export const loginWithPasswordReq = async (body: TPassLogin) => {
   try {
     const res = await request.post(`/user/auth/sso/login`, body)
-    session.setSession({ expired: false, refresh: null })
+    session.setSession({ expired: false, refreshCallbacks: [] })
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -101,7 +121,7 @@ export const loginWithOTPVerifyReq = async (
       email,
       verificationCode
     })
-    session.setSession({ expired: false, refresh: null })
+    session.setSession({ expired: false, refreshCallbacks: [] })
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -118,10 +138,7 @@ export const resetPassReq = async (
       oldPassword,
       newPassword
     })
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [null, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -172,10 +189,7 @@ export const logoutReq = async () => {
 export const getProfileReq = async () => {
   try {
     const res = await request.get(`/user/get`)
-    if (res.data.code == 61) {
-      //  session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data.user, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -191,7 +205,7 @@ export const getProfileWithMoreReq = async (refreshCb: () => void) => {
   const err = errUser || countryErr
   if (null != err) {
     if (err instanceof ExpiredError) {
-      session.setSession({ expired: true, refresh: refreshCb })
+      updateSessionCb(refreshCb)
     }
     return [null, err]
   }
@@ -201,10 +215,7 @@ export const getProfileWithMoreReq = async (refreshCb: () => void) => {
 export const saveProfileReq = async (newProfile: IProfile) => {
   try {
     const res = await request.post(`/user/update`, newProfile)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -213,13 +224,9 @@ export const saveProfileReq = async (newProfile: IProfile) => {
 }
 
 export const getAppConfigReq = async () => {
-  const session = useSessionStore.getState()
   try {
     const res = await request.get(`/system/information/get`, {})
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -228,13 +235,9 @@ export const getAppConfigReq = async () => {
 }
 
 export const getMerchantInfoReq = async () => {
-  const session = useSessionStore.getState()
   try {
     const res = await request.get(`/user/merchant/get`)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data.merchant, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -243,13 +246,9 @@ export const getMerchantInfoReq = async () => {
 }
 
 export const getGatewayListReq = async () => {
-  const session = useSessionStore.getState()
   try {
     const res = await request.get(`/user/gateway/list`)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data.gateways, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -267,10 +266,7 @@ export const getSublistReq = async (refreshCb?: () => void) => {
   }
   try {
     const res = await request.post(`/user/subscription/list`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb ?? null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data.subscriptions, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -287,10 +283,7 @@ export const getActiveSub = async () => {
       page: 0,
       count: 100
     })
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data.subscriptions, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -302,10 +295,7 @@ export const getActiveSub = async () => {
 export const getActiveSubReq = async (refreshCb: () => void) => {
   try {
     const res = await request.get(`/user/subscription/current/detail`)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb })
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -321,10 +311,7 @@ export const getSubDetailReq = async (
     const res = await request.get(
       `/user/subscription/detail?subscriptionId=${subscriptionId}`
     )
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb ?? null })
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -346,10 +333,7 @@ export const getPlanList = async ({
       type,
       productIds
     })
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data.plans, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -369,7 +353,7 @@ export const getActiveSubWithMore = async (
   const err = errSubDetail || errPlanList
   if (null != err) {
     if (err instanceof ExpiredError) {
-      session.setSession({ expired: true, refresh: refreshCb })
+      updateSessionCb(refreshCb)
     }
     return [null, err]
   }
@@ -405,10 +389,7 @@ export const createUpdatePreviewReq = async ({
   }
   try {
     const res = await request.post(`/user/subscription/${urlPath}`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -456,10 +437,7 @@ export const createPreviewReq = async ({
   }
   try {
     const res = await request.post(`/user/subscription/${urlPath}`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -473,10 +451,7 @@ export const applyDiscountPreviewReq = async (code: string, planId: number) => {
       code,
       planId
     })
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -521,10 +496,7 @@ export const updateSubscriptionReq = async ({
   }
   try {
     const res = await request.post(`/user/subscription/update_submit`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -572,10 +544,7 @@ export const createSubscriptionReq = async ({
   }
   try {
     const res = await request.post(`/user/subscription/create_submit`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -607,15 +576,11 @@ export const getSubHistoryReq = async ({
   page: number
   count: number
 }) => {
-  const session = useSessionStore.getState()
   try {
     const res = await request.get(
       `/user/subscription/timeline_list?page=${page}&count=${count}`
     )
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -631,15 +596,11 @@ export const getOnetimePaymentHistoryReq = async ({
   page: number
   count: number
 }) => {
-  const session = useSessionStore.getState()
   try {
     const res = await request.get(
       `/user/payment/item/list?page=${page}&count=${count}`
     )
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -654,10 +615,7 @@ export const markWireCompleteReq = async (subscriptionId: string) => {
       `/user/subscription/mark_wire_transfer_paid`,
       { subscriptionId }
     )
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -676,14 +634,11 @@ type TGetInvoicesReq = {
 }
 export const getInvoiceListReq = async (
   body: TGetInvoicesReq,
-  refreshCb: (() => void) | null
+  refreshCb?: () => void
 ) => {
   try {
     const res = await request.post(`/user/invoice/list`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -697,11 +652,7 @@ export const getInvoiceDetailReq = async (
 ) => {
   try {
     const res = await request.get(`/user/invoice/detail?invoiceId=${invoiceId}`)
-
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data.invoice, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -733,10 +684,7 @@ export const vatNumberCheckReq = async (vatNumber: string) => {
   const body = { vatNumber }
   try {
     const res = await request.post(`/user/vat/vat_number_validate`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data.vatNumberValidate, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -752,10 +700,7 @@ export const getPaymentListReq = async (
     const res = await request.get(
       `/user/payment/payment_timeline_list?page=${page}&count=${count}`
     )
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -768,10 +713,7 @@ export const checkPaymentReq = async (subscriptionId: string) => {
   const body = { subscriptionId }
   try {
     const res = await request.post(`/user/subscription/pay_check`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -783,10 +725,7 @@ export const checkPaymentReq = async (subscriptionId: string) => {
 export const checkOnetimePaymentReq = async (paymentId: string) => {
   try {
     const res = await request.get(`/user/payment/detail?paymentId=${paymentId}`)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data.paymentDetail, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -798,10 +737,7 @@ export const checkSessionReq = async (sessionId: string) => {
   const body = { session: sessionId }
   try {
     const res = await request.post(`/user/auth/session_login`, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -826,10 +762,7 @@ export const terminateOrResumeSubReq = async ({
   }
   try {
     const res = await request.post(URL, body)
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [null, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -844,10 +777,7 @@ export const cancelSubReq = async (subscriptionId: string) => {
     const res = await request.post(`/user/subscription/cancel`, {
       subscriptionId
     })
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: null })
-      throw new Error('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [null, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -858,10 +788,7 @@ export const cancelSubReq = async (subscriptionId: string) => {
 export const getCountryList = async () => {
   try {
     const res = await request.post(`/user/vat/country_list`, {})
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data.vatCountryList, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -874,10 +801,7 @@ export const getPaymentMethodListReq = async (refreshCb: () => void) => {
     const res = await request.get(
       `/user/payment/method_list?gatewayId=${stripeGatewayId}`
     )
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb })
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data.methodList, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -896,10 +820,7 @@ export const addPaymentMethodReq = async ({
   const body = { currency, redirectUrl, gatewayId: stripeGatewayId }
   try {
     const res = await request.post('/user/payment/method_new', body)
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -915,10 +836,7 @@ export const removePaymentMethodReq = async ({
   const body = { gatewayId: stripeGatewayId, paymentMethodId }
   try {
     const res = await request.post('/user/payment/method_delete', body)
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -937,10 +855,7 @@ export const changePaymentMethodReq = async ({
   const body = { paymentMethodId, subscriptionId, gatewayId: stripeGatewayId }
   try {
     const res = await request.post('/user/subscription/change_gateway', body)
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -958,10 +873,7 @@ export const changeGlobalPaymentMethodReq = async ({
   const body = { paymentMethodId, gatewayId: stripeGatewayId }
   try {
     const res = await request.post('/user/change_gateway', body)
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -984,10 +896,7 @@ export const onetimePaymentReq = async ({
   const body = { gatewayId, planId, quantity, returnUrl }
   try {
     const res = await request.post(`/user/payment/new`, body)
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -999,13 +908,6 @@ export const onetimePaymentReq = async ({
 // user can see a list of addon purchase with current subscription.
 type TAddonPayment = {
   addonId: number // addon is technically the same as plan, so this is planId
-  /*
-  metadata?: {
-    "additionalProp1": "string",
-    "additionalProp2": "string",
-    "additionalProp3": "string"
-  },
-  */
   quantity: number
   returnUrl: string
   subscriptionId: string
@@ -1016,10 +918,7 @@ export const addonPaymentReq = async (body: TAddonPayment) => {
       `/user/subscription/new_onetime_addon_payment`,
       body
     )
-    if (res.data.code == 61) {
-      // session.setSession({ expired: true, refresh: null });
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -1035,10 +934,7 @@ export const onetimepaymentListReq = async (
     const res = await request.get(
       `/user/subscription/onetime_addon_list?subscriptionId=${subscriptionId}`
     )
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb })
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data.subscriptionOnetimeAddons, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -1052,10 +948,7 @@ export const getProductListReq = async (refreshCb?: () => void) => {
       count: 50,
       page: 0
     })
-    if (res.data.code == 61) {
-      session.setSession({ expired: true, refresh: refreshCb ?? null })
-      throw new ExpiredError('Session expired')
-    }
+    handleStatusCode(res.data.code, refreshCb)
     return [res.data.data, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -1071,7 +964,7 @@ export const getProductsWithMoreReq = async (refreshCb: () => void) => {
   const err = errProducts || subErr
   if (null != err) {
     if (err instanceof ExpiredError) {
-      session.setSession({ expired: true, refresh: refreshCb })
+      updateSessionCb(refreshCb)
     }
     return [null, err]
   }

@@ -1,3 +1,9 @@
+import { SUBSCRIPTION_STATUS } from '@/constants'
+import { daysBetweenDate, showAmount } from '@/helpers'
+import { getSubDetailReq } from '@/requests'
+import '@/shared.css'
+import { DiscountCode, ISubscription } from '@/shared.types'
+import { useAppConfigStore } from '@/stores'
 import {
   CheckCircleOutlined,
   InfoCircleOutlined,
@@ -19,12 +25,6 @@ import {
 import dayjs from 'dayjs'
 import React, { CSSProperties, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { SUBSCRIPTION_STATUS } from '../../constants'
-import { daysBetweenDate, showAmount } from '../../helpers'
-import { getSubDetailReq } from '../../requests'
-import '../../shared.css'
-import { DiscountCode, ISubscription } from '../../shared.types'
-import { useAppConfigStore } from '../../stores'
 import CancelSubModal from '../modals/modalCancelPendingSub'
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub'
 import LongTextPopover from '../ui/longTextPopover'

@@ -32,7 +32,7 @@ export default function SessionResult() {
     localStorage.setItem('token', token)
     user.token = token
     profileStore.setProfile(user)
-    sessionStore.setSession({ expired: false, refresh: null })
+    sessionStore.setSession({ expired: false, refreshCallbacks: [] })
 
     const [initRes, errInit] = await initializeReq()
     if (null != errInit) {

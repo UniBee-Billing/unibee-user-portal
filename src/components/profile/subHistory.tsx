@@ -1,15 +1,14 @@
+import { formatDate, showAmount } from '@/helpers'
+import { getProductListReq, getSubHistoryReq } from '@/requests'
+import { IProduct, ISubAddon, ISubHistoryItem } from '@/shared.types'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Col, Divider, Pagination, Popover, Row, Spin, message } from 'antd'
 import Table, { ColumnsType } from 'antd/es/table'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { formatDate, showAmount } from '../../helpers'
-import { getProductListReq, getSubHistoryReq } from '../../requests'
 import { usePagination } from '../hooks'
-
-import { IProduct, ISubAddon, ISubHistoryItem } from '../../shared.types.ts'
-import LongTextPopover from '../ui/longTextPopover.tsx'
-import { SubHistoryStatus } from '../ui/statusTag.tsx'
+import LongTextPopover from '../ui/longTextPopover'
+import { SubHistoryStatus } from '../ui/statusTag'
 // import { SubscriptionStatus } from '../ui/statusTag';
 
 const PAGE_SIZE = 10

@@ -207,11 +207,6 @@ const OTPForm = ({
     localStorage.setItem('token', token)
     user.token = token
     profileStore.setProfile(user)
-    sessionStore.setSession({
-      expired: false,
-      refresh: null,
-      redirectToLogin: false
-    })
 
     const [initRes, errInit] = await initializeReq()
     setSubmitting(false)
@@ -226,14 +221,21 @@ const OTPForm = ({
     merchantStore.setMerchantInfo(merchantInfo)
 
     if (triggeredByExpired) {
-      sessionStore.refresh?.()
+      sessionStore.refreshCallbacks?.forEach((cb) => cb && cb())
+      sessionStore.setSession({
+        expired: false,
+        refreshCallbacks: []
+      })
       message.success('Login succeeded')
     } else {
+      sessionStore.setSession({
+        expired: false,
+        refreshCallbacks: []
+      })
       navigate(`${APP_PATH}my-subscription`, {
         state: { from: 'login' }
       })
     }
-    sessionStore.setSession({ expired: false, refresh: null })
   }
 
   return (

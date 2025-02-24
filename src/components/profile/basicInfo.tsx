@@ -1,3 +1,17 @@
+import { passwordSchema, showAmount } from '@/helpers'
+import {
+  getProfileWithMoreReq,
+  logoutReq,
+  resetPassReq,
+  saveProfileReq
+} from '@/requests'
+import { Country, CreditType, IProfile } from '@/shared.types'
+import {
+  useAppConfigStore,
+  useMerchantInfoStore,
+  useProfileStore,
+  useSessionStore
+} from '@/stores'
 import { LoadingOutlined } from '@ant-design/icons'
 import {
   Button,
@@ -14,20 +28,6 @@ import {
 } from 'antd'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { passwordSchema, showAmount } from '../../helpers'
-import {
-  getProfileWithMoreReq,
-  logoutReq,
-  resetPassReq,
-  saveProfileReq
-} from '../../requests'
-import { Country, CreditType, IProfile } from '../../shared.types'
-import {
-  useAppConfigStore,
-  useMerchantInfoStore,
-  useProfileStore,
-  useSessionStore
-} from '../../stores'
 import PaymentSelector from '../ui/paymentSelector'
 import './basicInfo.css'
 import EditCard from './editCard'

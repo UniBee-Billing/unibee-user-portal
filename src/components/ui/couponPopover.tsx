@@ -1,10 +1,10 @@
+import { showAmount } from '@/helpers'
+import { DiscountCode } from '@/shared.types'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { Col, Popover, Row } from 'antd'
 import dayjs from 'dayjs'
 import { isEmpty } from 'lodash'
 import { useNavigate } from 'react-router-dom'
-import { showAmount } from '../../helpers'
-import { DiscountCode } from '../../shared.types'
 import { getDiscountCodeStatusTagById } from '../ui/statusTag'
 
 const Index = ({ coupon }: { coupon?: DiscountCode }) => {

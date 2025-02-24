@@ -1,7 +1,6 @@
 import { Result, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-// import axios from "axios";
 import { checkPaymentReq } from '../requests'
 
 // http://localhost:5173/payment-result?subId=sub20240109hcHUQ1kvcxwICk3&success=true&session_id=cs_test_a193gxY4JlOESP2C8jMHNQmrIJJiLtjl8JSIRFokQHSw9ylF905bdj0Jfw

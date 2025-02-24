@@ -1,8 +1,8 @@
+import { formatPlanPrice, showAmount } from '@/helpers'
+import { IPlan } from '@/shared.types'
 import { Button, Checkbox, Input } from 'antd'
 import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import React, { useEffect, useState } from 'react'
-import { formatPlanPrice, showAmount } from '../../helpers'
-import { IPlan } from '../../shared.types'
 import LongTextPopover from '../ui/longTextPopover'
 import { SubscriptionStatus } from '../ui/statusTag'
 
