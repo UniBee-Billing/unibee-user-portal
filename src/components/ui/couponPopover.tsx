@@ -1,5 +1,10 @@
 import { showAmount } from '@/helpers'
-import { DiscountCode } from '@/shared.types'
+import {
+  DiscountCode,
+  DiscountCodeBillingType,
+  DiscountCodeStatus,
+  DiscountType
+} from '@/shared.types'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { Col, Popover, Row } from 'antd'
 import dayjs from 'dayjs'
@@ -40,7 +45,9 @@ const Index = ({ coupon }: { coupon?: DiscountCode }) => {
               Status
             </Col>
             <Col span={14}>
-              {getDiscountCodeStatusTagById(coupon.status as number)}
+              {getDiscountCodeStatusTagById(
+                coupon.status as DiscountCodeStatus
+              )}
             </Col>
           </Row>
           <Row>
@@ -48,7 +55,9 @@ const Index = ({ coupon }: { coupon?: DiscountCode }) => {
               Billing type
             </Col>
             <Col span={14}>
-              {coupon.billingType === 1 ? 'One-time' : 'Recurring'}
+              {coupon.billingType === DiscountCodeBillingType.ONE_TIME
+                ? 'One-time'
+                : 'Recurring'}
             </Col>
           </Row>
           <Row>
@@ -56,7 +65,9 @@ const Index = ({ coupon }: { coupon?: DiscountCode }) => {
               Discount type
             </Col>
             <Col span={14}>
-              {coupon.discountType === 1 ? 'Percentage' : 'Fixed amount'}
+              {coupon.discountType === DiscountType.PERCENTAGE
+                ? 'Percentage'
+                : 'Fixed amount'}
             </Col>
           </Row>
           <Row>
@@ -70,7 +81,7 @@ const Index = ({ coupon }: { coupon?: DiscountCode }) => {
               Discount amt
             </Col>
             <Col span={14}>
-              {coupon.discountType === 1
+              {coupon.discountType === DiscountType.PERCENTAGE
                 ? `${coupon.discountPercentage / 100}%`
                 : showAmount(coupon.discountAmount, coupon.currency)}
             </Col>

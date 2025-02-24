@@ -17,7 +17,7 @@ const SUB_STATUS: { [key: number]: ReactElement } = {
   8: <Tag color="blue">{SUBSCRIPTION_STATUS[8]}</Tag>, // 8: Incomplete
   9: <Tag color="#b71c1c">{SUBSCRIPTION_STATUS[9]}</Tag> // 9: failed
 }
-const SubscriptionStatus = (statusId: number) => SUB_STATUS[statusId]
+const SubscriptionStatusTag = (statusId: number) => SUB_STATUS[statusId]
 
 const SUB_HISTORY_STATUS: { [key: number]: ReactElement } = {
   1: <Tag color="#87d068">{SUBSCRIPTION_HISTORY_STATUS[1]}</Tag>, // 1: active
@@ -67,5 +67,5 @@ export {
   InvoiceStatus,
   PaymentStatus,
   SubHistoryStatus,
-  SubscriptionStatus
+  SubscriptionStatusTag
 }

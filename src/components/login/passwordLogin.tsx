@@ -86,6 +86,7 @@ const Index = ({
     merchantStore.setMerchantInfo(merchantInfo)
 
     if (triggeredByExpired) {
+      console.log('triggeredByExpired: ', sessionStore.refreshCallbacks)
       sessionStore.refreshCallbacks?.forEach((cb) => cb && cb())
       sessionStore.setSession({
         expired: false,
