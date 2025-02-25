@@ -138,12 +138,17 @@ export enum PlanStatus {
   SOFT_ARCHIVED = 4,
   HARD_ARCHIVED = 5
 }
+export enum PlanType {
+  MAIN = 1,
+  ADD_ON = 2, // must be used with MAIN, cannot be bought alone
+  ONE_TIME_ADD_ON = 3 // can be bought alone, has no dependencies on anything
+}
 interface IPlan {
   id: number
   productId: number
   planName: string
   description: string
-  type: number // 1: main plan, 2: add-on, 3: one-time-payment addon
+  type: PlanType
   currency: Currency
   intervalCount: number
   intervalUnit: 'day' | 'week' | 'month' | 'year' //string;
@@ -167,7 +172,7 @@ export interface ISubAddon extends IPlan {
 }
 
 export enum SubscriptionStatus {
-  INITIATING = 0, // used when creating the sub, it only exist for a very short time, user might not realize it existed
+  // INITIATING = 0, // used when creating the sub, it only exist for a very short time, user might not realize it existed
   PENDING = 1, // when sub is created, but user hasn't paid yet.
   ACTIVE = 2, // 2: active: user paid the sub fee
   // PendingInActive = 3, // when status is transitioning from 1 to 2, or 2 to 4, there is a pending status, it's not synchronous

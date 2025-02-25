@@ -1,3 +1,5 @@
+import { SubscriptionStatus } from './shared.types'
+
 export const CURRENCY: {
   [key: string]: { symbol: string; stripe_factor: number }
 } = {
@@ -17,19 +19,17 @@ export const REFUND_STATUS: { [key: number]: string } = {
   40: 'Cancelled'
 }
 
-export const SUBSCRIPTION_STATUS: { [key: number]: string } = {
-  0: 'Initiating', // used when creating the sub, it only exist for a very short time, user might not realize it exists
-  1: 'Pending', // when sub is created, but user hasn't paid yet,
-  2: 'Active', // user paid the sub fee
-  // 3: "Suspended", // suspend: not used yet. For future implementation: users might want to suspend the sub for a period of time, during which, they don't need to pay
-  3: 'PendingInActive', // when status is transitioning from 1 to 2, or 2 to 4, there is a pending status, transition is not synchronous,
-  // coz payment is not synchronous, so we have to wait, in status 3: no action can be taken on UI.
-  4: 'Cancelled', // users(or admin) cancelled the sub(immediately or automatically at the end of billing cycle). It's triggered by human.
-  5: 'Expired', // sub ended.
-  6: 'Suspended', // suspend for a while, might want to resume later. Not yet used.
-  7: 'Incomplete', // you claimed you've finished the payment, and want to use our service immiedately.
-  8: 'Processing', // you claimed you've finished the payment, but admin need to verify it.
-  9: 'Failed'
+export const SUBSCRIPTION_STATUS: Record<
+  SubscriptionStatus,
+  { label: string; color: string }
+> = {
+  [SubscriptionStatus.PENDING]: { label: 'Pending', color: 'magenta' },
+  [SubscriptionStatus.ACTIVE]: { label: 'Active', color: '#87d068' },
+  [SubscriptionStatus.CANCELLED]: { label: 'Cancelled', color: 'purple' },
+  [SubscriptionStatus.EXPIRED]: { label: 'Expired', color: 'red' },
+  [SubscriptionStatus.INCOMPLETE]: { label: 'Incomplete', color: 'cyan' },
+  [SubscriptionStatus.PROCESSING]: { label: 'Processing', color: 'blue' },
+  [SubscriptionStatus.FAILED]: { label: 'Failed', color: '#b71c1c' }
 }
 
 export const SUBSCRIPTION_HISTORY_STATUS: { [key: number]: string } = {

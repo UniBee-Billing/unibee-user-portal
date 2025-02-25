@@ -1,4 +1,3 @@
-import { SUBSCRIPTION_STATUS } from '@/constants'
 import { daysBetweenDate, showAmount } from '@/helpers'
 import { getSubDetailReq } from '@/requests'
 import '@/shared.css'
@@ -591,7 +590,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         </Col>
       </Row>
 
-      {subInfo && subInfo.status == 2 && (
+      {subInfo && subInfo.status == SubscriptionStatus.ACTIVE && (
         <div className="mx-0 my-6 flex items-center justify-start gap-9">
           <Button
             onClick={() =>
@@ -645,9 +644,6 @@ const SubReminder = ({
   const getReminder = () => {
     let n
     switch (sub!.status) {
-      case SubscriptionStatus.INITIATING:
-        n = 'Your subscription is initializing, please wait a few moment.'
-        break
       case SubscriptionStatus.PENDING:
         if (isWire) {
           n = (

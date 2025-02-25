@@ -12,6 +12,7 @@ import {
   DiscountType,
   IPlan,
   ISubscription,
+  PlanType,
   SubscriptionStatus
 } from '@/shared.types'
 import { useAppConfigStore, useProfileStore } from '@/stores'
@@ -298,8 +299,7 @@ const Index = ({
       }
     }
 
-    // main plans
-    setPlans(localPlans.filter((p) => p.type == 1))
+    setPlans(localPlans.filter((p) => p.type == PlanType.MAIN))
   }
 
   const upgradeCheck = () => {
@@ -499,9 +499,7 @@ const Index = ({
                 // loading={codeChecking}
                 disabled={
                   selectedPlan == null ||
-                  activeSub?.status == SubscriptionStatus.INITIATING || // initiating
-                  activeSub?.status == SubscriptionStatus.PENDING // created (not paid)
-                  // activeSub?.status == 3 // pending (payment in processing)
+                  activeSub?.status == SubscriptionStatus.PENDING
                 }
               >
                 Apply
@@ -529,7 +527,6 @@ const Index = ({
                 disabled={
                   codeChecking ||
                   selectedPlan == null ||
-                  activeSub?.status == SubscriptionStatus.INITIATING || // initiating
                   activeSub?.status == SubscriptionStatus.PENDING // created (not paid)
                 }
               >
@@ -547,7 +544,6 @@ const Index = ({
               disabled={
                 selectedPlan == null ||
                 (codePreview !== null && !codePreview.isValid) || // you cannot proceed with invalid code
-                activeSub?.status == SubscriptionStatus.INITIATING || // initiating
                 activeSub?.status == SubscriptionStatus.PENDING // created (not paid)
                 // activeSub?.status == 3 // pending (payment in processing)
               }
@@ -583,9 +579,6 @@ const SubReminder = ({
   const getReminder = () => {
     let n
     switch (sub!.status) {
-      case SubscriptionStatus.INITIATING:
-        n = 'Your subscription is initializing, please wait a few moment.'
-        break
       case SubscriptionStatus.PENDING:
         if (isWire) {
           n = (

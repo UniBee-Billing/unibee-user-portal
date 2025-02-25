@@ -5,7 +5,7 @@ import {
   resetPassReq,
   saveProfileReq
 } from '@/requests'
-import { Country, CreditType, IProfile } from '@/shared.types'
+import { AccountType, Country, CreditType, IProfile } from '@/shared.types'
 import {
   useAppConfigStore,
   useMerchantInfoStore,
@@ -151,9 +151,9 @@ const Index = () => {
           <Col span={24}>
             <Form.Item label="Account Type" labelCol={{ span: 3 }}>
               <Form.Item name="type" noStyle>
-                <Radio.Group disabled={profile?.type == 2}>
-                  <Radio value={1}>Individual</Radio>
-                  <Radio value={2}>Business</Radio>
+                <Radio.Group disabled={profile?.type == AccountType.BUSINESS}>
+                  <Radio value={AccountType.PERSONAL}>Individual</Radio>
+                  <Radio value={AccountType.BUSINESS}>Business</Radio>
                 </Radio.Group>
               </Form.Item>
               <span className=" text-xs text-gray-400">
@@ -237,7 +237,7 @@ const Index = () => {
               labelCol={{ span: 6 }}
               rules={[
                 {
-                  required: watchAccountType == 2, // biz user
+                  required: watchAccountType == AccountType.BUSINESS,
                   message: 'Please input your city!'
                 }
               ]}
@@ -252,7 +252,7 @@ const Index = () => {
               labelCol={{ span: 6 }}
               rules={[
                 {
-                  required: watchAccountType == 2, // biz user
+                  required: watchAccountType == AccountType.BUSINESS,
                   message: 'Please input your ZIP code!'
                 }
               ]}
@@ -285,7 +285,7 @@ const Index = () => {
               labelCol={{ span: 6 }}
               rules={[
                 {
-                  required: watchAccountType == 2, // biz user
+                  required: watchAccountType == AccountType.BUSINESS,
                   message: 'Please input your company name!'
                 }
               ]}
@@ -311,7 +311,7 @@ const Index = () => {
               labelCol={{ span: 6 }}
               /* rules={[
                 {
-                  required: watchAccountType == 2, // biz user
+                  required: watchAccountType == AccountType.BUSINESS,
                   message: 'Please input your VAT number!',
                 },
               ]} */
