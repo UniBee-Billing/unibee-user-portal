@@ -101,7 +101,6 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
       message.error(err.message)
       return
     }
-    // setPlans(localPlans.filter((p) => p.type == 1));
     const localPlans: IPlan[] =
       res == null
         ? []
