@@ -1,3 +1,4 @@
+import { SubscriptionStatus } from '@/shared.types'
 import { Tag } from 'antd'
 import React, { ReactElement } from 'react'
 import {
@@ -8,16 +9,11 @@ import {
   SUBSCRIPTION_STATUS
 } from '../../constants'
 
-const SUB_STATUS: { [key: number]: ReactElement } = {
-  1: <Tag color="magenta">{SUBSCRIPTION_STATUS[1]}</Tag>, // 1: pending
-  2: <Tag color="#87d068">{SUBSCRIPTION_STATUS[2]}</Tag>, // 2: active
-  4: <Tag color="purple">{SUBSCRIPTION_STATUS[4]}</Tag>, // 4: cancelled
-  5: <Tag color="red">{SUBSCRIPTION_STATUS[5]}</Tag>, // 5: expired
-  7: <Tag color="cyan">{SUBSCRIPTION_STATUS[7]}</Tag>, // 7: Incomplete
-  8: <Tag color="blue">{SUBSCRIPTION_STATUS[8]}</Tag>, // 8: Incomplete
-  9: <Tag color="#b71c1c">{SUBSCRIPTION_STATUS[9]}</Tag> // 9: failed
-}
-const SubscriptionStatus = (statusId: number) => SUB_STATUS[statusId]
+const SubscriptionStatusTag = (statusId: SubscriptionStatus) => (
+  <Tag color={SUBSCRIPTION_STATUS[statusId]?.color ?? ''}>
+    {SUBSCRIPTION_STATUS[statusId]?.label ?? ''}
+  </Tag>
+)
 
 const SUB_HISTORY_STATUS: { [key: number]: ReactElement } = {
   1: <Tag color="#87d068">{SUBSCRIPTION_HISTORY_STATUS[1]}</Tag>, // 1: active
@@ -67,5 +63,5 @@ export {
   InvoiceStatus,
   PaymentStatus,
   SubHistoryStatus,
-  SubscriptionStatus
+  SubscriptionStatusTag
 }
