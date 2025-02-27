@@ -28,7 +28,7 @@ import {
   message
 } from 'antd'
 import update from 'immutability-helper'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import OTPBuyListModal from '../modals/addonBuyListModal'
 import BillingAddressModal from '../modals/billingAddressModal'
 import CancelSubModal from '../modals/modalCancelPendingSub'
@@ -55,6 +55,17 @@ const Index = ({
   const promoCredit = profileStore.promoCreditAccounts?.find(
     (p) => p.type == CreditType.PROMO_CREDIT && p.currency == 'EUR'
   )
+  const creditsAvailable = useMemo(() => {
+    if (promoCredit == null) {
+      return null
+    }
+    return {
+      amt: promoCredit.amount,
+      currencyAmt: promoCredit.currencyAmount,
+      currency: promoCredit.currency
+    }
+  }, [promoCredit])
+
   const [plans, setPlans] = useState<IPlan[]>([])
   const [otpPlans, setOtpPlans] = useState<IPlan[]>([]) // one-time-payment plan,
   const [selectedPlan, setSelectedPlan] = useState<null | number>(null) // null: not selected
@@ -492,7 +503,15 @@ const Index = ({
                 style={{ width: 240 }}
                 value={creditAmount}
                 onChange={onCreditChange}
-                placeholder={`Credit available: ${promoCredit?.amount} (${promoCredit && showAmount(promoCredit?.currencyAmount, promoCredit?.currency)})`}
+                placeholder={`Credit available: ${creditsAvailable == null ? 'None' : creditsAvailable.amt} ${
+                  creditsAvailable &&
+                  '(' +
+                    showAmount(
+                      creditsAvailable.currencyAmt,
+                      creditsAvailable.currency
+                    ) +
+                    ')'
+                }`}
               />
               <Button
                 // onClick={onPreviewCode}

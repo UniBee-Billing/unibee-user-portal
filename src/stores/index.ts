@@ -15,6 +15,7 @@ const INITIAL_PROFILE: IProfile = {
   countryName: '',
   id: null,
   externalUserId: '',
+  promoCreditAccounts: [],
   phone: '',
   paymentMethod: '',
   linkedIn: '',
