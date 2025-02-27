@@ -11,9 +11,7 @@ import {
   DiscountCode,
   DiscountType,
   IPlan,
-  ISubscription,
-  PlanType,
-  SubscriptionStatus
+  ISubscription
 } from '@/shared.types'
 import { useAppConfigStore, useProfileStore } from '@/stores'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -299,7 +297,8 @@ const Index = ({
       }
     }
 
-    setPlans(localPlans.filter((p) => p.type == PlanType.MAIN))
+    // main plans
+    setPlans(localPlans.filter((p) => p.type == 1))
   }
 
   const upgradeCheck = () => {
@@ -499,7 +498,9 @@ const Index = ({
                 // loading={codeChecking}
                 disabled={
                   selectedPlan == null ||
-                  activeSub?.status == SubscriptionStatus.PENDING
+                  activeSub?.status == 0 || // initiating
+                  activeSub?.status == 1 || // created (not paid)
+                  activeSub?.status == 3 // pending (payment in processing)
                 }
               >
                 Apply
@@ -527,7 +528,9 @@ const Index = ({
                 disabled={
                   codeChecking ||
                   selectedPlan == null ||
-                  activeSub?.status == SubscriptionStatus.PENDING // created (not paid)
+                  activeSub?.status == 0 || // initiating
+                  activeSub?.status == 1 || // created (not paid)
+                  activeSub?.status == 3 // pending (payment in processing)
                 }
               >
                 Apply
@@ -544,8 +547,9 @@ const Index = ({
               disabled={
                 selectedPlan == null ||
                 (codePreview !== null && !codePreview.isValid) || // you cannot proceed with invalid code
-                activeSub?.status == SubscriptionStatus.PENDING // created (not paid)
-                // activeSub?.status == 3 // pending (payment in processing)
+                activeSub?.status == 0 || // initiating
+                activeSub?.status == 1 || // created (not paid)
+                activeSub?.status == 3 // pending (payment in processing)
               }
             >
               Buy
@@ -579,7 +583,10 @@ const SubReminder = ({
   const getReminder = () => {
     let n
     switch (sub!.status) {
-      case SubscriptionStatus.PENDING:
+      case 0:
+        n = 'Your subscription is initializing, please wait a few moment.'
+        break
+      case 1:
         if (isWire) {
           n = (
             <div
@@ -680,6 +687,9 @@ const SubReminder = ({
         }
 
         break
+      case 3:
+        n = 'Your subscription is in pending status, please wait'
+        break
       default:
         n = ''
     }
@@ -687,7 +697,7 @@ const SubReminder = ({
     // STATUS[sub?.status as keyof typeof STATUS]
   }
 
-  if (sub == null || sub.status == SubscriptionStatus.ACTIVE) {
+  if (sub == null || sub.status == 2) {
     // 2: active, only with this status, users can upgrade/downgrad/change
     return null // nothing need to be shown on page.
   }

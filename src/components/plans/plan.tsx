@@ -4,7 +4,7 @@ import { Button, Checkbox, Input } from 'antd'
 import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import React, { useEffect, useState } from 'react'
 import LongTextPopover from '../ui/longTextPopover'
-import { SubscriptionStatusTag } from '../ui/statusTag'
+import { SubscriptionStatus } from '../ui/statusTag'
 
 interface IPLanProps {
   plan: IPlan
@@ -127,7 +127,7 @@ const Index = ({
             <span style={{ color: 'orange', marginRight: '12px' }}>
               My Subscription
             </span>{' '}
-            {statusId != null && SubscriptionStatusTag(statusId)}
+            {statusId != null && SubscriptionStatus(statusId)}
           </>
         ) : null}
       </div>
