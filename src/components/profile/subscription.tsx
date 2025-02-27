@@ -1,8 +1,7 @@
-import { SUBSCRIPTION_STATUS } from '@/constants'
 import { daysBetweenDate, showAmount } from '@/helpers'
 import { getSubDetailReq } from '@/requests'
 import '@/shared.css'
-import { DiscountCode, ISubscription } from '@/shared.types'
+import { DiscountCode, ISubscription, SubscriptionStatus } from '@/shared.types'
 import { useAppConfigStore } from '@/stores'
 import {
   CheckCircleOutlined,
@@ -28,7 +27,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import CancelSubModal from '../modals/modalCancelPendingSub'
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub'
 import LongTextPopover from '../ui/longTextPopover'
-import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag'
+import { DiscountCodeStatus, SubscriptionStatusTag } from '../ui/statusTag'
 
 const APP_PATH = import.meta.env.BASE_URL // default is / (if no --base specified in build cmd)
 
@@ -327,7 +326,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           Status
         </Col>
         <Col span={6}>
-          {subInfo && SubscriptionStatus(subInfo.status)}
+          {subInfo && SubscriptionStatusTag(subInfo.status)}
           <span
             style={{ cursor: 'pointer', marginLeft: '8px' }}
             onClick={refresh}
@@ -640,10 +639,7 @@ const SubReminder = ({
   const getReminder = () => {
     let n
     switch (sub!.status) {
-      case 0:
-        n = 'Your subscription is initializing, please wait a few moment.'
-        break
-      case 1:
+      case SubscriptionStatus.PENDING:
         if (isWire) {
           n = (
             <div
@@ -733,11 +729,8 @@ const SubReminder = ({
         }
 
         break
-      case 3:
-        n = `Your subscription is in ${SUBSCRIPTION_STATUS[3]} status, please wait`
-        break
-      case 7:
-      case 8:
+      case SubscriptionStatus.INCOMPLETE:
+      case SubscriptionStatus.PROCESSING:
         n = (
           <div
             style={{
