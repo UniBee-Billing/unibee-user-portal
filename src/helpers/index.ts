@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import Dinero from 'dinero.js'
 import passwordValidator from 'password-validator'
 import { CURRENCY } from '../constants'
-import { IPlan, UserInvoice } from '../shared.types'
+import { IPlan, PlanType, UserInvoice } from '../shared.types'
 
 export const passwordSchema = new passwordValidator()
 passwordSchema
@@ -75,8 +75,7 @@ export const formatPlanPrice = (plan: IPlan) => {
     amount: plan.amount,
     currency: plan.currency
   }).toFormat('$0,0.00')
-  if (plan.type == 1 || plan.type == 2) {
-    // 1: main plan, 2: add-on, 3: one-time addon
+  if (plan.type == PlanType.MAIN || plan.type == PlanType.ADD_ON) {
     const itv = `/${plan.intervalCount == 1 ? '' : plan.intervalCount} ${plan.intervalUnit}`
     return `${amount}${itv}`
   } else {

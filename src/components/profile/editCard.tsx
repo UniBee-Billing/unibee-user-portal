@@ -1,4 +1,10 @@
 import {
+  addPaymentMethodReq,
+  changeGlobalPaymentMethodReq,
+  getPaymentMethodListReq,
+  removePaymentMethodReq
+} from '@/requests'
+import {
   LoadingOutlined,
   MinusOutlined,
   PlusOutlined,
@@ -15,12 +21,6 @@ import {
   message
 } from 'antd'
 import { useEffect, useState } from 'react'
-import {
-  addPaymentMethodReq,
-  changeGlobalPaymentMethodReq,
-  getPaymentMethodListReq,
-  removePaymentMethodReq
-} from '../../requests'
 
 type TCard = {
   id: string

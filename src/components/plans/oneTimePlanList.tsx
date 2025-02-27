@@ -1,11 +1,11 @@
+import { PlanType } from '@/constants'
+import { getCountryList, getPlanList } from '@/requests'
+import { Country, IPlan, IProduct, ISubscription } from '@/shared.types'
+import { useProfileStore } from '@/stores'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Button, Empty, Spin, message } from 'antd'
 import update from 'immutability-helper'
 import React, { useEffect, useRef, useState } from 'react'
-import { PlanType } from '../../constants'
-import { getCountryList, getPlanList } from '../../requests'
-import { Country, IPlan, IProduct, ISubscription } from '../../shared.types'
-import { useProfileStore } from '../../stores'
 import OTPBuyListModal from '../modals/addonBuyListModal'
 import BillingAddressModal from '../modals/billingAddressModal'
 import OTPModal from '../modals/onetimePaymentModal2'
@@ -101,7 +101,6 @@ const Index = ({ productList }: { productList: IProduct[] }) => {
       message.error(err.message)
       return
     }
-    // setPlans(localPlans.filter((p) => p.type == 1));
     const localPlans: IPlan[] =
       res == null
         ? []

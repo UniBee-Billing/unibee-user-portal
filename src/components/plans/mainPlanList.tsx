@@ -1,3 +1,21 @@
+import { CURRENCY } from '@/constants'
+import { showAmount } from '@/helpers'
+import {
+  applyDiscountPreviewReq,
+  getActiveSubWithMore,
+  getCountryList
+} from '@/requests'
+import {
+  Country,
+  CreditType,
+  DiscountCode,
+  DiscountType,
+  IPlan,
+  ISubscription,
+  PlanType,
+  SubscriptionStatus
+} from '@/shared.types'
+import { useAppConfigStore, useProfileStore } from '@/stores'
 import { LoadingOutlined } from '@ant-design/icons'
 import {
   Button,
@@ -12,22 +30,6 @@ import {
 } from 'antd'
 import update from 'immutability-helper'
 import React, { useEffect, useState } from 'react'
-import { CURRENCY } from '../../constants'
-import { showAmount } from '../../helpers'
-import {
-  applyDiscountPreviewReq,
-  getActiveSubWithMore,
-  getCountryList
-} from '../../requests'
-import {
-  Country,
-  CreditType,
-  DiscountCode,
-  DiscountType,
-  IPlan,
-  ISubscription
-} from '../../shared.types'
-import { useAppConfigStore, useProfileStore } from '../../stores'
 import OTPBuyListModal from '../modals/addonBuyListModal'
 import BillingAddressModal from '../modals/billingAddressModal'
 import CancelSubModal from '../modals/modalCancelPendingSub'
@@ -297,8 +299,7 @@ const Index = ({
       }
     }
 
-    // main plans
-    setPlans(localPlans.filter((p) => p.type == 1))
+    setPlans(localPlans.filter((p) => p.type == PlanType.MAIN))
   }
 
   const upgradeCheck = () => {
@@ -460,7 +461,7 @@ const Index = ({
       )}
 
       <div
-        style={{ maxHeight: 'calc(100vh - 560px)', overflowY: 'auto' }}
+        style={{ maxHeight: 'calc(100vh - 436px)', overflowY: 'auto' }}
         className="flex flex-wrap gap-6 pb-5 pl-4"
       >
         {plans.length == 0 && !loading ? (
@@ -483,83 +484,75 @@ const Index = ({
           ))
         )}
       </div>
-      <div className="my-6 flex flex-col items-center justify-center">
-        {plans.length > 0 && (
-          <>
-            <div className="mx-auto my-4 flex w-64 flex-col justify-center gap-4">
-              <div>
-                <div className="flex w-80 justify-between">
-                  <InputNumber
-                    style={{ width: 240 }}
-                    value={creditAmount}
-                    onChange={onCreditChange}
-                    placeholder={`Credit available: ${promoCredit?.amount} (${promoCredit && showAmount(promoCredit?.currencyAmount, promoCredit?.currency)})`}
-                  />
-                  <Button
-                    // onClick={onPreviewCode}
-                    // loading={codeChecking}
-                    disabled={
-                      selectedPlan == null ||
-                      activeSub?.status == 0 || // initiating
-                      activeSub?.status == 1 || // created (not paid)
-                      activeSub?.status == 3 // pending (payment in processing)
-                    }
-                  >
-                    Apply
-                  </Button>
-                </div>
-                <div className="flex">{creditUseNote()}</div>
-              </div>
-              <div>
-                <div className="flex w-80 justify-between">
-                  <Input
-                    style={{ width: 240 }}
-                    value={discountCode}
-                    onChange={onCodeChange}
-                    status={
-                      codePreview !== null && !codePreview.isValid
-                        ? 'error'
-                        : undefined
-                    }
-                    disabled={codeChecking}
-                    placeholder="Discount code"
-                  />
-                  <Button
-                    onClick={onPreviewCode}
-                    loading={codeChecking}
-                    disabled={
-                      codeChecking ||
-                      selectedPlan == null ||
-                      activeSub?.status == 0 || // initiating
-                      activeSub?.status == 1 || // created (not paid)
-                      activeSub?.status == 3 // pending (payment in processing)
-                    }
-                  >
-                    Apply
-                  </Button>
-                </div>
-                <div className="flex">{discountCodeUseNote()}</div>
-              </div>
-            </div>
-            <div>
+      {plans.length > 0 && (
+        <div className="mx-auto my-7 flex items-start justify-center gap-12">
+          <div>
+            <div className="flex w-80 justify-between">
+              <InputNumber
+                style={{ width: 240 }}
+                value={creditAmount}
+                onChange={onCreditChange}
+                placeholder={`Credit available: ${promoCredit?.amount} (${promoCredit && showAmount(promoCredit?.currencyAmount, promoCredit?.currency)})`}
+              />
               <Button
-                type="primary"
-                onClick={onPlanConfirm}
-                // disabled={selectedPlan == null || activeSub.current.status != 2}
+                // onClick={onPreviewCode}
+                // loading={codeChecking}
                 disabled={
                   selectedPlan == null ||
-                  (codePreview !== null && !codePreview.isValid) || // you cannot proceed with invalid code
-                  activeSub?.status == 0 || // initiating
-                  activeSub?.status == 1 || // created (not paid)
-                  activeSub?.status == 3 // pending (payment in processing)
+                  activeSub?.status == SubscriptionStatus.PENDING
                 }
               >
-                Buy
+                Apply
               </Button>
             </div>
-          </>
-        )}
-      </div>
+            <div className="flex">{creditUseNote()}</div>
+          </div>
+          <div>
+            <div className="flex w-80 justify-between">
+              <Input
+                style={{ width: 240 }}
+                value={discountCode}
+                onChange={onCodeChange}
+                status={
+                  codePreview !== null && !codePreview.isValid
+                    ? 'error'
+                    : undefined
+                }
+                disabled={codeChecking}
+                placeholder="Discount code"
+              />
+              <Button
+                onClick={onPreviewCode}
+                loading={codeChecking}
+                disabled={
+                  codeChecking ||
+                  selectedPlan == null ||
+                  activeSub?.status == SubscriptionStatus.PENDING // created (not paid)
+                }
+              >
+                Apply
+              </Button>
+            </div>
+            <div className="flex">{discountCodeUseNote()}</div>
+          </div>
+
+          <div>
+            <Button
+              type="primary"
+              onClick={onPlanConfirm}
+              // disabled={selectedPlan == null || activeSub.current.status != 2}
+              disabled={
+                selectedPlan == null ||
+                (codePreview !== null && !codePreview.isValid) || // you cannot proceed with invalid code
+                activeSub?.status == SubscriptionStatus.PENDING // created (not paid)
+                // activeSub?.status == 3 // pending (payment in processing)
+              }
+            >
+              Buy
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -586,10 +579,7 @@ const SubReminder = ({
   const getReminder = () => {
     let n
     switch (sub!.status) {
-      case 0:
-        n = 'Your subscription is initializing, please wait a few moment.'
-        break
-      case 1:
+      case SubscriptionStatus.PENDING:
         if (isWire) {
           n = (
             <div
@@ -690,9 +680,6 @@ const SubReminder = ({
         }
 
         break
-      case 3:
-        n = 'Your subscription is in pending status, please wait'
-        break
       default:
         n = ''
     }
@@ -700,7 +687,7 @@ const SubReminder = ({
     // STATUS[sub?.status as keyof typeof STATUS]
   }
 
-  if (sub == null || sub.status == 2) {
+  if (sub == null || sub.status == SubscriptionStatus.ACTIVE) {
     // 2: active, only with this status, users can upgrade/downgrad/change
     return null // nothing need to be shown on page.
   }

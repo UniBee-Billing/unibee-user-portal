@@ -1,11 +1,11 @@
 // import { EditFilled, MinusOutlined, PlusOutlined } from '@ant-design/icons'
+import { REFUND_STATUS } from '@/constants'
+import { showAmount } from '@/helpers'
+import { TRefund } from '@/shared.types'
+import { useAppConfigStore } from '@/stores'
 import { Button, Col, Modal, Row } from 'antd'
 import dayjs from 'dayjs'
 import React from 'react'
-import { REFUND_STATUS } from '../../constants'
-import { showAmount } from '../../helpers'
-import { TRefund } from '../../shared.types'
-import { useAppConfigStore } from '../../stores'
 
 interface Props {
   detail: TRefund

@@ -1,8 +1,4 @@
-import {
-  GithubOutlined,
-  LinkedinOutlined,
-  TwitterOutlined
-} from '@ant-design/icons'
+import { GithubOutlined, LinkedinOutlined, XOutlined } from '@ant-design/icons'
 import { Divider } from 'antd'
 
 const Index = () => (
@@ -15,8 +11,15 @@ const Index = () => (
     <div style={{ width: '80%' }}>
       <Divider style={{ border: '#FFF', width: '80%' }}>
         <div style={{ display: 'flex', gap: '24px', color: '#FFF' }}>
-          <GithubOutlined style={{ fontSize: '24px' }} />
-          <TwitterOutlined style={{ fontSize: '24px' }} />
+          <a
+            href="https://github.com/UniBee-Billing"
+            target="_blank"
+            style={{ color: 'white' }}
+          >
+            <GithubOutlined style={{ fontSize: '24px' }} />
+          </a>
+          <XOutlined style={{ fontSize: '24px' }} />
+
           <LinkedinOutlined style={{ fontSize: '24px' }} />
         </div>
       </Divider>
@@ -30,7 +33,7 @@ const Index = () => (
           gap: '12px'
         }}
       >
-        <span>Copyright © 2024</span>
+        <span>Copyright © {new Date().getFullYear()} UniBee</span>
       </div>
     </div>
   </div>

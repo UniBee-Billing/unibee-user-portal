@@ -1,65 +1,8 @@
+import { showAmount } from '@/helpers'
+import { TGateway } from '@/shared.types'
+import { useAppConfigStore } from '@/stores'
 import { Col, Row } from 'antd'
 import React from 'react'
-import { showAmount } from '../../helpers'
-import { TGateway } from '../../shared.types'
-import { useAppConfigStore } from '../../stores'
-/*
-enum PAYMENT_METHODS {
-  stripe = 'stripe',
-  paypal = 'paypal',
-  changelly = 'changelly',
-  wire_transfer = 'wire_transfer'
-}
-  */
-
-/*
-const PAYMENTS: {
-  [key in PAYMENT_METHODS]: {
-    label: string
-    order: number
-    logo: ReactNode
-  }
-} = {
-  stripe: {
-    label: 'Bank Cards',
-    logo: [<VisaIcon />, <MastercardIcon />, <AmexIcon />].map((c, idx) => (
-      <div key={idx} className="flex h-7 w-7 items-center">
-        {c}
-      </div>
-    )),
-    order: 1
-  },
-  paypal: {
-    label: 'PayPal',
-    logo: [<PayPalIcon />].map((c, idx) => (
-      <div key={idx} className="flex h-16 w-16 items-center">
-        {c}
-      </div>
-    )),
-    order: 2
-  },
-  changelly: {
-    label: 'Crypto',
-    logo: [<BitcoinIcon />, <EthIcon />, <UsdtIcon />, <LitecoinIcon />].map(
-      (c, idx) => (
-        <div key={idx} className="flex h-5 w-5 items-center">
-          {c}
-        </div>
-      )
-    ),
-    order: 3
-  },
-  wire_transfer: {
-    label: 'Wire Transfer',
-    logo: [<WireIcon />].map((c, idx) => (
-      <div key={idx} className="flex h-12 w-12 items-center">
-        {c}
-      </div>
-    )),
-    order: 4
-  }
-}
-  */
 
 const Index = ({
   selected,
@@ -79,13 +22,13 @@ const Index = ({
   const wire = gateways.find((g) => g.gatewayName == 'wire_transfer')
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex max-h-64 w-full flex-col gap-3 overflow-y-auto pr-4">
       {gateways.map((g) => {
         return (
           <label
             key={g.gatewayId}
             htmlFor={`payment-${g.gatewayName}`}
-            className={`flex h-12 w-full cursor-pointer ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}  items-center justify-between rounded border border-solid ${selected == g.gatewayId ? 'border-blue-500' : 'border-gray-200'} px-2`}
+            className={`flex h-12 w-full shrink-0 grow-0 cursor-pointer ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}  items-center justify-between rounded border border-solid ${selected == g.gatewayId ? 'border-blue-500' : 'border-gray-200'} px-2`}
           >
             <div className="flex">
               <input
@@ -101,7 +44,12 @@ const Index = ({
             </div>
             <div className="flex items-center justify-center gap-2">
               {g.gatewayIcons.map((i) => (
-                <img key={i} height={24} src={i} />
+                <div
+                  key={i}
+                  className="flex h-7 max-w-14 items-center justify-center"
+                >
+                  <img src={i} className="h-full w-full object-contain" />
+                </div>
               ))}
             </div>
           </label>

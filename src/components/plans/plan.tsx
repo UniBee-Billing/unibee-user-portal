@@ -1,10 +1,10 @@
+import { formatPlanPrice, showAmount } from '@/helpers'
+import { IPlan } from '@/shared.types'
 import { Button, Checkbox, Input } from 'antd'
 import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import React, { useEffect, useState } from 'react'
-import { formatPlanPrice, showAmount } from '../../helpers'
-import { IPlan } from '../../shared.types'
 import LongTextPopover from '../ui/longTextPopover'
-import { SubscriptionStatus } from '../ui/statusTag'
+import { SubscriptionStatusTag } from '../ui/statusTag'
 
 interface IPLanProps {
   plan: IPlan
@@ -127,7 +127,7 @@ const Index = ({
             <span style={{ color: 'orange', marginRight: '12px' }}>
               My Subscription
             </span>{' '}
-            {statusId != null && SubscriptionStatus(statusId)}
+            {statusId != null && SubscriptionStatusTag(statusId)}
           </>
         ) : null}
       </div>

@@ -37,17 +37,12 @@ interface ProfileSlice extends IProfile {
   // setProfileField: (field: string, value: any) => void;
 }
 
-export const useProfileStore = create<ProfileSlice>()(
-  persist(
-    (set, get) => ({
-      ...INITIAL_PROFILE,
-      getProfile: () => get(),
-      setProfile: (p) => set({ ...p }),
-      reset: () => set(INITIAL_PROFILE)
-    }),
-    { name: 'profile' }
-  )
-)
+export const useProfileStore = create<ProfileSlice>()((set, get) => ({
+  ...INITIAL_PROFILE,
+  getProfile: () => get(),
+  setProfile: (p) => set({ ...p }),
+  reset: () => set(INITIAL_PROFILE)
+}))
 
 // -----------------------------------
 
@@ -97,20 +92,15 @@ interface AppConfigSlice extends IAppConfig {
   reset: () => void
 }
 
-export const useAppConfigStore = create<AppConfigSlice>()(
-  persist(
-    (set, get) => ({
-      ...INITIAL_APP_VALUE,
-      getAppConfig: () => get(),
-      setAppConfig: (a) => set({ ...a }),
-      setGateway: (g: TGateway[]) => {
-        set({ ...get(), gateway: g })
-      },
-      reset: () => set(INITIAL_APP_VALUE)
-    }),
-    { name: 'appConfig' }
-  )
-)
+export const useAppConfigStore = create<AppConfigSlice>()((set, get) => ({
+  ...INITIAL_APP_VALUE,
+  getAppConfig: () => get(),
+  setAppConfig: (a) => set({ ...a }),
+  setGateway: (g: TGateway[]) => {
+    set({ ...get(), gateway: g })
+  },
+  reset: () => set(INITIAL_APP_VALUE)
+}))
 
 // ---------------
 interface ISession {
@@ -119,27 +109,57 @@ interface ISession {
   // you'll go to /my-account, but there'll be many "session expired" error, page structure is there, only content is blank
   // redirectToLogin is to force you to be at /login if you have logged out.
   redirectToLogin?: boolean
-  refresh: null | (() => void) // if session is expired when making an async fn call, save this fn here, so after re-login, re-run this fn
+  refreshCallbacks: (() => void)[]
 }
 const INITIAL_SESSION: ISession = {
-  expired: true,
+  expired: false,
   redirectToLogin: false,
-  refresh: null
+  refreshCallbacks: []
 }
 interface SessionStoreSlice extends ISession {
   getSession: () => ISession
   setSession: (s: ISession) => void
   reset: () => void
+  resetCallback: () => void
 }
 
-export const useSessionStore = create<SessionStoreSlice>()(
+export const useSessionStore = create<SessionStoreSlice>()((set, get) => ({
+  ...INITIAL_SESSION,
+  getSession: () => get(),
+  setSession: (a) => set({ ...a }),
+  reset: () => set(INITIAL_SESSION),
+  resetCallback: () => {
+    set({ ...get(), refreshCallbacks: [] })
+  }
+}))
+
+// --------------------------------
+interface UIConfig {
+  sidebarCollapsed: boolean
+}
+
+const INITIAL_UI_CONFIG: UIConfig = {
+  sidebarCollapsed: false
+}
+
+interface UIConfigSlice extends UIConfig {
+  getUIConfig: () => UIConfig
+  setUIConfig: (u: UIConfig) => void
+  toggleSidebar: () => void
+}
+
+export const uiConfigStore = create<UIConfigSlice>()(
   persist(
     (set, get) => ({
-      ...INITIAL_SESSION,
-      getSession: () => get(),
-      setSession: (a) => set({ ...a }),
-      reset: () => set(INITIAL_SESSION)
+      ...INITIAL_UI_CONFIG,
+      getUIConfig: () => get(),
+      setUIConfig: (a) => set({ ...a }),
+      toggleSidebar: () => {
+        set({ ...get(), sidebarCollapsed: !get().sidebarCollapsed })
+      }
     }),
-    { name: 'session' }
+    {
+      name: 'ui-config'
+    }
   )
 )

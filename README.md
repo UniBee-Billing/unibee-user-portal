@@ -16,7 +16,7 @@ git clone https://github.com/UniBee-Billing/unibee-user-portal
 
 # Install dependencies
 cd unibee-user-portal
-yarn
+yarn install
 ```
 
 ### Running the application
@@ -54,6 +54,10 @@ The admin portal also supports building the application using Docker, run the fo
 ```shell
 docker build -t <tag> .
 ```
+
+# Development
+
+Use `yarn add <package>` to add a new dependency, don't use `npm install <package>`.
 
 ## License
 

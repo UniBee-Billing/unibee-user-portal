@@ -86,18 +86,21 @@ const Index = ({
     merchantStore.setMerchantInfo(merchantInfo)
 
     if (triggeredByExpired) {
-      sessionStore.refresh?.()
+      sessionStore.refreshCallbacks?.forEach((cb) => cb && cb())
+      sessionStore.setSession({
+        expired: false,
+        refreshCallbacks: []
+      })
       message.success('Login succeeded')
     } else {
+      sessionStore.setSession({
+        expired: false,
+        refreshCallbacks: []
+      })
       navigate(`${APP_PATH}my-subscription`, {
         state: { from: 'login' }
       })
     }
-    sessionStore.setSession({
-      expired: false,
-      refresh: null,
-      redirectToLogin: false
-    })
   }
 
   useEffect(() => {

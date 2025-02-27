@@ -19,6 +19,10 @@ export type TPromoAccount = {
   rechargeEnable: boolean | 1 | 0
   createTime: number
 }
+export enum AccountType {
+  PERSONAL = 1,
+  BUSINESS = 2
+}
 interface IProfile {
   address: string
   countryName: string
@@ -31,7 +35,7 @@ interface IProfile {
   id: number | null
   externalUserId: string
   phone: string
-  type: 1 | 2 // 1: individual, 2: business
+  type: AccountType
   paymentMethod: string // for card payment, this is the stripe paymentId, used for auto recurring payment
   gatewayId?: number // after a successful payment, the payment gateway is saved as default. This is null for newly registered user.
   gateway?: TGateway // ditto.
@@ -127,17 +131,29 @@ interface IProduct {
   isDeleted: number
 }
 
+export enum PlanStatus {
+  EDITING = 1,
+  ACTIVE = 2,
+  INACTIVE = 3,
+  SOFT_ARCHIVED = 4,
+  HARD_ARCHIVED = 5
+}
+export enum PlanType {
+  MAIN = 1,
+  ADD_ON = 2, // must be used with MAIN, cannot be bought alone
+  ONE_TIME_ADD_ON = 3 // can be bought alone, has no dependencies on anything
+}
 interface IPlan {
   id: number
   productId: number
   planName: string
   description: string
-  type: number // 1: main plan, 2: add-on, 3: one-time-payment addon
+  type: PlanType
   currency: Currency
   intervalCount: number
   intervalUnit: 'day' | 'week' | 'month' | 'year' //string;
   amount: number
-  status: number
+  status: PlanStatus
   addons?: IAddon[]
   onetimeAddons?: IAddon[]
   cancelAtTrialEnd: number
@@ -155,6 +171,20 @@ export interface ISubAddon extends IPlan {
   addonPlanId: number
 }
 
+export enum SubscriptionStatus {
+  // INITIATING = 0, // used when creating the sub, it only exist for a very short time, user might not realize it existed
+  PENDING = 1, // when sub is created, but user hasn't paid yet.
+  ACTIVE = 2, // 2: active: user paid the sub fee
+  // PendingInActive = 3, // when status is transitioning from 1 to 2, or 2 to 4, there is a pending status, it's not synchronous
+  // so we have to wait, in status 3: no action can be taken on UI.
+  CANCELLED = 4, // users(or admin) cancelled the sub(immediately or automatically at the end of billing cycle). It's triggered by human.
+  EXPIRED = 5,
+  // SUSPENDED = 6, // suspend for a while, might want to resume later. NOT USED YET.
+  INCOMPLETE = 7, // user claimed they have wired the transfer, admin mark the subscription as Incomplete until a DATE, so user can use it before that DATE.
+  // if admin had confirmed the transfer, admin has to mark the corresponding invoice as PAID, then this sub will become ACTIVE.
+  PROCESSING = 8, // user claimed they have wired the transfer, but we're checking. This status is for wire-transfer only.
+  FAILED = 9 // we have't received the payment.
+}
 interface ISubscription {
   subscription: ISubscription
   id: number
@@ -162,7 +192,7 @@ interface ISubscription {
   planId: number
   productId: number
   userId: number
-  status: number
+  status: SubscriptionStatus
   link: string | undefined
   firstPaidTime: number
   currentPeriodStart: number
@@ -230,13 +260,19 @@ interface IOneTimeHistoryItem {
   name: string
 }
 
+export enum RefundStatus {
+  AWAITING_REFUND = 10,
+  REFUNDED = 20,
+  FAILED = 30,
+  CANCELLED = 40
+}
 type TRefund = {
   currency: string
   refundAmount: number
   refundComment: string
   refundTime: number
   createTime: number
-  status: number // 10-pending，20-success，30-failure, 40-cancel
+  status: RefundStatus
   gatewayId: number
   paymentId: string
 }
@@ -374,14 +410,25 @@ export enum DiscountType {
   PERCENTAGE = 1,
   AMOUNT
 }
+export enum DiscountCodeStatus {
+  EDITING = 1,
+  ACTIVE = 2,
+  INACTIVE = 3,
+  EXPIRED = 4,
+  ARCHIVED = 10
+}
+export enum DiscountCodeBillingType {
+  ONE_TIME = 1,
+  RECURRING = 2
+}
 type DiscountCode = {
   id?: number
   merchantId: number
   name: string
   code: string
-  status?: number
-  billingType: number
-  discountType: number
+  status?: DiscountCodeStatus
+  billingType: DiscountCodeBillingType
+  discountType: DiscountType
   discountAmount: number
   discountPercentage: number
   currency: string

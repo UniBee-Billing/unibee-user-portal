@@ -1,3 +1,13 @@
+import { daysBetweenDate, showAmount } from '@/helpers'
+import { getSubDetailReq } from '@/requests'
+import '@/shared.css'
+import {
+  DiscountCode,
+  DiscountType,
+  ISubscription,
+  SubscriptionStatus
+} from '@/shared.types'
+import { useAppConfigStore } from '@/stores'
 import {
   CheckCircleOutlined,
   InfoCircleOutlined,
@@ -19,16 +29,10 @@ import {
 import dayjs from 'dayjs'
 import React, { CSSProperties, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { SUBSCRIPTION_STATUS } from '../../constants'
-import { daysBetweenDate, showAmount } from '../../helpers'
-import { getSubDetailReq } from '../../requests'
-import '../../shared.css'
-import { DiscountCode, ISubscription } from '../../shared.types'
-import { useAppConfigStore } from '../../stores'
 import CancelSubModal from '../modals/modalCancelPendingSub'
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub'
 import LongTextPopover from '../ui/longTextPopover'
-import { DiscountCodeStatus, SubscriptionStatus } from '../ui/statusTag'
+import { DiscountCodeStatus, SubscriptionStatusTag } from '../ui/statusTag'
 
 const APP_PATH = import.meta.env.BASE_URL // default is / (if no --base specified in build cmd)
 
@@ -273,10 +277,10 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
   const toggleCancelSubModal = () => setCancelSubModalOpen(!cancelSubModalOpen)
 
   const discountAmt = (code: DiscountCode) => {
-    if (code.discountType == 1) {
+    if (code.discountType == DiscountType.PERCENTAGE) {
       // percentage
       return `${code.discountPercentage / 100} %`
-    } else if (code.discountType == 2) {
+    } else if (code.discountType == DiscountType.AMOUNT) {
       // fixed amt
       return showAmount(code.discountAmount, code.currency)
     } else {
@@ -327,7 +331,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
           Status
         </Col>
         <Col span={6}>
-          {subInfo && SubscriptionStatus(subInfo.status)}
+          {subInfo && SubscriptionStatusTag(subInfo.status)}
           <span
             style={{ cursor: 'pointer', marginLeft: '8px' }}
             onClick={refresh}
@@ -586,7 +590,7 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
         </Col>
       </Row>
 
-      {subInfo && subInfo.status == 2 && (
+      {subInfo && subInfo.status == SubscriptionStatus.ACTIVE && (
         <div className="mx-0 my-6 flex items-center justify-start gap-9">
           <Button
             onClick={() =>
@@ -640,10 +644,7 @@ const SubReminder = ({
   const getReminder = () => {
     let n
     switch (sub!.status) {
-      case 0:
-        n = 'Your subscription is initializing, please wait a few moment.'
-        break
-      case 1:
+      case SubscriptionStatus.PENDING:
         if (isWire) {
           n = (
             <div
@@ -733,11 +734,8 @@ const SubReminder = ({
         }
 
         break
-      case 3:
-        n = `Your subscription is in ${SUBSCRIPTION_STATUS[3]} status, please wait`
-        break
-      case 7:
-      case 8:
+      case SubscriptionStatus.INCOMPLETE:
+      case SubscriptionStatus.PROCESSING:
         n = (
           <div
             style={{
@@ -794,10 +792,9 @@ const SubReminder = ({
         n = ''
     }
     return n
-    // STATUS[sub?.status as keyof typeof STATUS]
   }
 
-  if (sub == null || sub.status == 2) {
+  if (sub == null || sub.status == SubscriptionStatus.ACTIVE) {
     // 2: active, only with this status, users can upgrade/downgrad/change
     return null // nothing need to be shown on page.
   }
