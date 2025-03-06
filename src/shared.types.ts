@@ -103,11 +103,16 @@ type TMerchantInfo = {
   phone: string
 }
 
+export type CURRENCY = { Currency: Currency; Symbol: string; Scale: number }
+// { Currency: 'CNY', Symbol: '¥', Scale: 100 }, or
+// { Currency: 'USD', Symbol: '$', Scale: 100 }, ...
 interface IAppConfig {
   env: string
   isProd: boolean
   supportTimeZone: string[]
   supportCurrency: { Currency: string; Symbol: string; Scale: number }[]
+  currency: Partial<Record<Currency, CURRENCY>> // this is just the record version of supportCurrency for easier lookup, key is currency code, like 'CNY', 'USD', ...
+  // its initial value is empty, hence Partial here. Maybe it's better to provide a default value, like: EUR: { Currency: 'EUR', Symbol: '€', Scale: 100 },
   gateway: TGateway[]
 }
 

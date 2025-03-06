@@ -82,6 +82,7 @@ const INITIAL_APP_VALUE: IAppConfig = {
   env: 'local',
   isProd: false,
   supportCurrency: [],
+  currency: {},
   supportTimeZone: [],
   gateway: []
 }

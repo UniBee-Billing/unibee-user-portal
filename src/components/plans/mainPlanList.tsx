@@ -1,4 +1,3 @@
-import { CURRENCY } from '@/constants'
 import { showAmount } from '@/helpers'
 import {
   applyDiscountPreviewReq,
@@ -27,6 +26,7 @@ import {
   Spin,
   message
 } from 'antd'
+import { Currency } from 'dinero.js'
 import update from 'immutability-helper'
 import React, { useEffect, useMemo, useState } from 'react'
 import OTPBuyListModal from '../modals/addonBuyListModal'
@@ -51,6 +51,7 @@ const Index = ({
   productId: number
   activeSub: ISubscription | undefined
 }) => {
+  const appConfigStore = useAppConfigStore()
   const profileStore = useProfileStore()
   const promoCredit = profileStore.promoCreditAccounts?.find(
     (p) => p.type == CreditType.PROMO_CREDIT && p.currency == 'EUR'
@@ -162,7 +163,7 @@ const Index = ({
       return <div className="text-xs text-gray-500">No promo credit used</div>
     }
     return (
-      <div className="text-xs text-green-500">{`At most ${creditAmount} credits (${CURRENCY[credit.credit.currency].symbol}${(creditAmount * credit.credit.exchangeRate) / 100}) to be used.`}</div>
+      <div className="text-xs text-green-500">{`At most ${creditAmount} credits (${appConfigStore.currency[credit.credit.currency as Currency]?.Symbol}${(creditAmount * credit.credit.exchangeRate) / 100}) to be used.`}</div>
     )
   }
   const onCreditChange = (value: number | null) => {

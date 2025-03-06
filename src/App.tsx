@@ -1,5 +1,5 @@
 import { Layout, theme } from 'antd'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import AddPaymentMethodResult from './components/addPaymentMethodResult'
@@ -18,6 +18,7 @@ import SubscriptionList from './components/profile/subscriptionList'
 import SessionResult from './components/sessionResult'
 import Sidebar from './components/siderbar'
 import Signup from './components/signup'
+import { useAppInitialize } from './hooks/useAppInitialize'
 
 const APP_PATH = import.meta.env.BASE_URL
 const { Header, Content, Footer } = Layout
@@ -30,10 +31,15 @@ const noSiderRoutes = [
 ]
 
 const App: React.FC = () => {
+  const appInitialize = useAppInitialize()
   const location = useLocation()
   const {
     token: { colorBgContainer, borderRadiusLG }
   } = theme.useToken()
+
+  useEffect(() => {
+    appInitialize()
+  }, [])
 
   return (
     <>

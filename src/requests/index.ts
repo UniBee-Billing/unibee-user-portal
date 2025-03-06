@@ -24,6 +24,7 @@ const handleStatusCode = (code: number, refreshCb?: () => void) => {
   if (code == 61) {
     // TODO: use Enum to define the code
     // session expired || role/permissions changed(need relogin)
+    console.log('pusing cb into refreshCb', refreshCb)
     updateSessionCb(refreshCb)
     throw new ExpiredError('Session expired')
   }
