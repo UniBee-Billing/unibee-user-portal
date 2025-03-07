@@ -1,19 +1,11 @@
+import { useAppInitialize } from '@/hooks/useAppInitialize'
 import { Button, Form, Input, message } from 'antd'
 import { useState } from 'react'
 import OtpInput from 'react-otp-input'
 import { useNavigate } from 'react-router-dom'
 import { emailValidate } from '../../helpers'
-import {
-  initializeReq,
-  loginWithOTPReq,
-  loginWithOTPVerifyReq
-} from '../../requests'
-import {
-  useAppConfigStore,
-  useMerchantInfoStore,
-  useProfileStore,
-  useSessionStore
-} from '../../stores'
+import { loginWithOTPReq, loginWithOTPVerifyReq } from '../../requests'
+import { useProfileStore, useSessionStore } from '../../stores'
 import { useCountdown } from '../hooks'
 
 const APP_PATH = import.meta.env.BASE_URL
@@ -177,10 +169,9 @@ const OTPForm = ({
   goBack,
   triggeredByExpired
 }: IOtpFormProps) => {
+  const appInitialize = useAppInitialize()
   const navigate = useNavigate()
-  const merchantStore = useMerchantInfoStore()
   const sessionStore = useSessionStore()
-  const appConfigStore = useAppConfigStore()
   const profileStore = useProfileStore()
   const [submitting, setSubmitting] = useState(false)
   const [otp, setOtp] = useState('')
@@ -208,17 +199,7 @@ const OTPForm = ({
     user.token = token
     profileStore.setProfile(user)
 
-    const [initRes, errInit] = await initializeReq()
-    setSubmitting(false)
-    if (null != errInit) {
-      setErrMsg(errInit.message)
-      return
-    }
-
-    const { appConfig, gateways, merchantInfo } = initRes
-    appConfigStore.setAppConfig(appConfig)
-    appConfigStore.setGateway(gateways)
-    merchantStore.setMerchantInfo(merchantInfo)
+    await appInitialize()
 
     if (triggeredByExpired) {
       sessionStore.refreshCallbacks?.forEach((cb) => cb && cb())

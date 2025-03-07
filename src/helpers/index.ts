@@ -1,7 +1,7 @@
+import { useAppConfigStore } from '@/stores'
 import dayjs from 'dayjs'
-import Dinero from 'dinero.js'
+import Dinero, { Currency } from 'dinero.js'
 import passwordValidator from 'password-validator'
-import { CURRENCY } from '../constants'
 import { IPlan, PlanType, UserInvoice } from '../shared.types'
 
 export const passwordSchema = new passwordValidator()
@@ -24,7 +24,7 @@ passwordSchema
 
 export const showAmount = (
   amount: number | undefined,
-  currency: keyof typeof CURRENCY | undefined,
+  currency: string | undefined,
   ignoreFactor?: boolean
 ): string => {
   if (amount == undefined || currency == undefined) {
@@ -35,8 +35,12 @@ export const showAmount = (
     amount *= -1
   }
 
-  const c = CURRENCY[currency]
-  return `${isNegative ? '-' : ''}${c.symbol}${amount / (ignoreFactor ? 1 : c.stripe_factor)}`
+  const CURRENCIES = useAppConfigStore.getState().supportCurrency
+  const c = CURRENCIES.find((c) => c.Currency == currency)
+  if (c == undefined) {
+    return ''
+  }
+  return `${isNegative ? '-' : ''}${c.Symbol}${amount / (ignoreFactor ? 1 : c.Scale)}`
 }
 
 export const ramdonString = (length: number | null) => {
@@ -93,7 +97,8 @@ export const emailValidate = (email: string) =>
 export const normalizeAmt = (iv: UserInvoice[]) => {
   iv.forEach((v) => {
     const c = v.currency
-    const f = CURRENCY[c].stripe_factor
+    const CURRENCIES = useAppConfigStore.getState().currency
+    const f = CURRENCIES[c as Currency]!.Scale
     v.subscriptionAmount /= f
     v.subscriptionAmountExcludingTax /= f
     v.taxAmount /= f

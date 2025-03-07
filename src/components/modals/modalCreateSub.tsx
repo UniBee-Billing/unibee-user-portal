@@ -11,10 +11,10 @@ import {
   Spin,
   message
 } from 'antd'
+import { Currency } from 'dinero.js'
 import update from 'immutability-helper'
 import React, { ChangeEventHandler, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CURRENCY } from '../../constants'
 import { showAmount } from '../../helpers'
 import {
   createPreviewReq,
@@ -205,7 +205,7 @@ const Index = ({
       return <div className="text-xs text-gray-500">No promo credit used</div>
     }
     return (
-      <div className="mt-1 text-xs text-green-500">{`At most ${creditAmount} credits (${CURRENCY[credit.credit.currency].symbol}${(creditAmount * credit.credit.exchangeRate) / 100}) to be used.`}</div>
+      <div className="mt-1 text-xs text-green-500">{`At most ${creditAmount} credits (${appConfig.currency[credit.credit.currency as Currency]?.Symbol}${(creditAmount * credit.credit.exchangeRate) / 100}) to be used.`}</div>
     )
   }
 

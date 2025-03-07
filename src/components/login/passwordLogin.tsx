@@ -1,3 +1,4 @@
+import { useAppInitialize } from '@/hooks/useAppInitialize'
 import type { InputRef } from 'antd'
 import { Button, Form, Input, Modal, message } from 'antd'
 import { useEffect, useRef, useState } from 'react'
@@ -6,15 +7,9 @@ import { emailValidate, passwordSchema } from '../../helpers'
 import {
   forgetPassReq,
   forgetPassVerifyReq,
-  initializeReq,
   loginWithPasswordReq
 } from '../../requests'
-import {
-  useAppConfigStore,
-  useMerchantInfoStore,
-  useProfileStore,
-  useSessionStore
-} from '../../stores'
+import { useProfileStore, useSessionStore } from '../../stores'
 const APP_PATH = import.meta.env.BASE_URL
 
 const Index = ({
@@ -26,10 +21,9 @@ const Index = ({
   onEmailChange: (value: string) => void
   triggeredByExpired: boolean
 }) => {
+  const appInitialize = useAppInitialize()
   const profileStore = useProfileStore()
   const sessionStore = useSessionStore()
-  const appConfigStore = useAppConfigStore()
-  const merchantStore = useMerchantInfoStore()
   const [errMsg, setErrMsg] = useState('')
   const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false) // login submit
@@ -74,16 +68,7 @@ const Index = ({
     user.token = token
     profileStore.setProfile(user)
 
-    const [initRes, errInit] = await initializeReq()
-    setSubmitting(false)
-    if (null != errInit) {
-      setErrMsg(errInit.message)
-      return
-    }
-    const { appConfig, gateways, merchantInfo } = initRes
-    appConfigStore.setAppConfig(appConfig)
-    appConfigStore.setGateway(gateways)
-    merchantStore.setMerchantInfo(merchantInfo)
+    await appInitialize()
 
     if (triggeredByExpired) {
       sessionStore.refreshCallbacks?.forEach((cb) => cb && cb())
