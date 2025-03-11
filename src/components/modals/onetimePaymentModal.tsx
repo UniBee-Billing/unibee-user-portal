@@ -21,9 +21,10 @@ const Index = ({ closeModal, plan, subscriptionId }: Props) => {
   const [gatewayId, setGatewayId] = useState<undefined | number>(
     appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId
   )
-  const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setGatewayId(Number(e.target.value))
-  }
+  const onGatewayChange = (gatewayId: number) => setGatewayId(gatewayId) // React.ChangeEventHandler<HTMLInputElement> = (evt) =>
+  const [gatewayPaymentType, setGatewayPaymentType] = useState<
+    string | undefined
+  >(undefined)
 
   const onQuantityChange = (value: number | null) =>
     setQuantity(value as number)
@@ -138,7 +139,12 @@ const Index = ({ closeModal, plan, subscriptionId }: Props) => {
           </Row>
 
           <div className=" my-4 w-3/4">
-            <PaymentSelector selected={gatewayId} onSelect={onGatewayChange} />
+            <PaymentSelector
+              selected={gatewayId}
+              onSelect={onGatewayChange}
+              selectedPaymentType={gatewayPaymentType}
+              onSelectPaymentType={setGatewayPaymentType}
+            />
           </div>
 
           <div className="mt-6 flex items-center justify-end gap-4">

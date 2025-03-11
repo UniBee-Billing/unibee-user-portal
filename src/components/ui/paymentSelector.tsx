@@ -1,101 +1,163 @@
-import { showAmount } from '@/helpers'
-import { TGateway } from '@/shared.types'
+import { GatewayPaymentType, TGateway } from '@/shared.types'
 import { useAppConfigStore } from '@/stores'
-import { Col, Row } from 'antd'
-import React from 'react'
+import { CheckOutlined } from '@ant-design/icons'
+import { Divider } from 'antd'
+import React, { ChangeEventHandler, useEffect } from 'react'
 
 const Index = ({
   selected,
+  selectedPaymentType,
   onSelect,
-  showWTtips,
+  onSelectPaymentType,
   disabled
 }: {
   selected: number | undefined
-  onSelect: React.ChangeEventHandler<HTMLInputElement>
-  showWTtips?: boolean
+  selectedPaymentType: string | undefined
+  onSelect: (v: number) => void
+  onSelectPaymentType: (v: string) => void
   disabled?: boolean
 }) => {
   const appConfig = useAppConfigStore()
   const gateways = appConfig.gateway.sort(
     (a: TGateway, b: TGateway) => a.sort - b.sort
   )
-  const wire = gateways.find((g) => g.gatewayName == 'wire_transfer')
+
+  const onLabelClick: React.MouseEventHandler<HTMLLabelElement> = (e) => {
+    if (disabled) {
+      return
+    }
+
+    if (e.target instanceof HTMLInputElement) {
+      onSelect(Number(e.target.value))
+    }
+  }
+
+  const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    if (disabled) {
+      return
+    }
+    onSelect(Number(e.target.value))
+  }
+
+  useEffect(() => {
+    // some gateways like Payssion has subgateways(paymentTypes), others don't,
+    // if we select payssion, then select a paymentType, then select PayPal, which doesn't have paymentTypes, we need to deselect Paysson's paymentType.
+    if (selected != undefined) {
+      const gateway = gateways.find((g) => g.gatewayId == selected)
+      if (gateway?.gatewayPaymentTypes == undefined) {
+        onSelectPaymentType('')
+      }
+    }
+  }, [selected])
 
   return (
     <div className="flex max-h-64 w-full flex-col gap-3 overflow-y-auto pr-4">
-      {gateways.map((g) => {
-        return (
-          <label
-            key={g.gatewayId}
-            htmlFor={`payment-${g.gatewayName}`}
-            className={`flex h-12 w-full shrink-0 grow-0 cursor-pointer ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}  items-center justify-between rounded border border-solid ${selected == g.gatewayId ? 'border-blue-500' : 'border-gray-200'} px-2`}
+      {gateways.map(
+        ({
+          gatewayId,
+          gatewayName,
+          displayName,
+          gatewayIcons,
+          gatewayPaymentTypes
+        }) => (
+          <div
+            key={gatewayId}
+            className={`rounded border border-solid ${selected == gatewayId ? 'border-blue-500' : 'border-gray-200'}`}
           >
-            <div className="flex">
-              <input
-                type="radio"
-                name="payment-method"
-                id={`payment-${g.gatewayName}`}
-                value={g.gatewayId}
-                checked={g.gatewayId == selected}
-                onChange={onSelect}
-                disabled={disabled}
-              />
-              <div className="ml-2 flex justify-between">{g.displayName}</div>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              {g.gatewayIcons.map((i) => (
-                <div
-                  key={i}
-                  className="flex h-7 max-w-14 items-center justify-center"
-                >
-                  <img src={i} className="h-full w-full object-contain" />
+            <label
+              onClick={onLabelClick}
+              // key={gatewayId}
+              htmlFor={`payment-${gatewayName}`}
+              className={`flex h-12 w-full shrink-0 grow-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} items-center justify-between px-2`}
+            >
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  name={`payment-${gatewayName}`}
+                  id={`payment-${gatewayName}`}
+                  value={gatewayId}
+                  checked={gatewayId === selected}
+                  onChange={onChange}
+                  disabled={disabled}
+                />
+                <div className="ml-2 flex items-center justify-between">
+                  {displayName}
                 </div>
-              ))}
-            </div>
-          </label>
+              </div>
+              <div className="ml-3 flex items-center justify-end gap-2">
+                {gatewayIcons.map((i) => (
+                  <div
+                    key={i}
+                    className="flex h-7 max-w-14 items-center justify-center"
+                  >
+                    <img src={i} className="h-full w-full object-contain" />
+                  </div>
+                ))}
+              </div>
+            </label>
+            {gatewayPaymentTypes != null && gatewayPaymentTypes.length > 0 && (
+              <PaymentTypesSelector
+                gatewayId={gatewayId}
+                selected={selected}
+                selectedPaymentType={selectedPaymentType}
+                onSelect={onSelect}
+                onSelectPaymentType={onSelectPaymentType}
+                list={gatewayPaymentTypes}
+              />
+            )}
+          </div>
         )
-      })}
-      {wire != null && selected == wire.gatewayId && showWTtips && (
-        <div>
-          <Row style={{ marginBottom: '6px' }}>
-            <Col span={10} className=" text-xs font-bold text-gray-500">
-              Account Holder
-            </Col>
-            <Col className=" text-xs text-gray-400" span={14}>
-              {wire.bank?.accountHolder}
-            </Col>
-          </Row>
-          <Row style={{ marginBottom: '6px' }}>
-            <Col className=" text-xs font-bold text-gray-500" span={10}>
-              Minimum Amount
-            </Col>
-            <Col className=" text-xs text-gray-400" span={14}>
-              {showAmount(
-                wire.minimumAmount as number,
-                wire.currency as string
-              )}
-            </Col>
-          </Row>
-          <Row style={{ marginBottom: '6px' }}>
-            <Col className=" text-xs font-bold text-gray-500" span={10}>
-              BIC
-            </Col>
-            <Col className=" text-xs text-gray-400" span={14}>
-              {wire.bank?.bic}
-            </Col>
-          </Row>
-          <Row style={{ marginBottom: '6px' }}>
-            <Col className=" text-xs font-bold text-gray-500" span={10}>
-              IBAN
-            </Col>
-            <Col className=" text-xs text-gray-400" span={14}>
-              {wire.bank?.iban}
-            </Col>
-          </Row>
-        </div>
       )}
     </div>
   )
 }
 
 export default Index
+
+// if Payssion is not selected, then subtypes should not be selected either.
+const PaymentTypesSelector = ({
+  gatewayId,
+  selected,
+  selectedPaymentType,
+  onSelect,
+  onSelectPaymentType,
+  list
+}: {
+  gatewayId: number
+  selected: number | undefined
+  selectedPaymentType: string | undefined
+  onSelect: (v: number) => void
+  onSelectPaymentType: (v: string) => void
+  list: GatewayPaymentType[]
+}) => {
+  const onPaymentTypeSelect = (paymentType: string) => {
+    onSelectPaymentType(paymentType)
+    onSelect(gatewayId)
+  }
+
+  return (
+    <div className="mb-2 flex w-full flex-wrap gap-3 px-2">
+      <Divider style={{ margin: '2px 0' }} />
+      {list.map((p) => (
+        <div
+          key={p.paymentType}
+          className={`flex w-[48%] rounded-sm bg-gray-100 p-2 hover:cursor-pointer ${selectedPaymentType == p.paymentType && selected == gatewayId ? 'bg-blue-100' : ''}`}
+          onClick={() => onPaymentTypeSelect(p.paymentType)}
+        >
+          <div className="flex w-3/4 flex-col gap-1">
+            <div>{p.name} </div>
+            <div className="text-xs text-gray-500">{p.countryName}</div>
+          </div>
+          <div className="flex w-1/4 items-center justify-center">
+            <div>
+              {selectedPaymentType == p.paymentType &&
+                selected == gatewayId && (
+                  <CheckOutlined className="text-blue-500" />
+                )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
