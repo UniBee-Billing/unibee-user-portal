@@ -241,6 +241,66 @@ interface ISubscription {
   latestInvoice?: UserInvoice
 }
 
+export const enum MetricType {
+  LIMIT_METERED = 1,
+  CHARGE_METERED = 2,
+  CHARGE_RECURRING = 3
+}
+
+export const enum MetricAggregationType {
+  COUNT = 1,
+  COUNT_UNIQUE = 2,
+  LATEST = 3,
+  MAX = 4,
+  SUM = 5
+}
+interface IBillableMetrics {
+  id: number
+  MetricId: number // same as id, they are the same.
+  merchantId: number
+  code: string
+  metricName: string
+  metricDescription: string
+  type: MetricType
+  aggregationType: MetricAggregationType
+  aggregationProperty: string
+  gmtModify: string
+  createTime: string
+}
+export interface LimitMetricUsage {
+  metricLimit: IBillableMetrics & { TotalLimit: number }
+  CurrentUsedValue: number
+}
+export const enum MetricChargeType {
+  STANDARD = 0,
+  GRADUATED = 1
+}
+export type MetricGraduatedAmount = {
+  localId: string // not exist in BE, only for easy array manipulation in FE. localId in all other data structure are all for this purpose.
+  perAmount: number | null
+  startValue: number | null
+  endValue: number | null
+  flatAmount: number | null
+}
+export type MetricMeteredCharge = {
+  localId: string
+  metricId: number | null
+  chargeType: MetricChargeType
+  standardAmount: number | null
+  standardStartValue: number | null
+  graduatedAmounts: MetricGraduatedAmount[]
+  expanded?: boolean // not exist in BE, only for UI display. If true, and chargeType == GRADUATED: graduatedAmounts are expanded for user to update, false: collapsed.
+}
+export interface ChargedMetricUsage {
+  isRecurring: boolean
+  // metricLimit: IBillableMetrics & { TotalLimit: number }
+  merchantMetric: IBillableMetrics
+  CurrentUsedValue: number
+  totalChargeAmount: number
+  // graduatedStep
+  chargePricing: MetricMeteredCharge
+}
+
 interface ISubHistoryItem {
   merchantId: number
   userId: number

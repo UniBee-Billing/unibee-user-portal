@@ -319,6 +319,22 @@ export const getSubDetailReq = async (
   }
 }
 
+export const getMetricUsageBySubIdReq = async (
+  subId: string,
+  refreshCb?: () => void
+) => {
+  try {
+    const res = await request.get(
+      `/user/metric/sub/metric?subscriptionId=${subId}`
+    )
+    handleStatusCode(res.data.code, refreshCb)
+    return [res.data.data.userMetric, null]
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error')
+    return [null, e]
+  }
+}
+
 export const getPlanList = async ({
   type,
   productIds
