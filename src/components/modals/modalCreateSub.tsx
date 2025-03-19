@@ -84,9 +84,10 @@ const Index = ({
   const [gatewayId, setGatewayId] = useState<undefined | number>(
     appConfig.gateway.find((g) => g.gatewayName == 'stripe')?.gatewayId
   )
-  const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setGatewayId(Number(e.target.value))
-  }
+  const onGatewayChange = (gatewayId: number) => setGatewayId(gatewayId)
+  const [gatewayPaymentType, setGatewayPaymentType] = useState<
+    string | undefined
+  >(undefined)
 
   // is wire-transfer selected? Yes, then extra step is needed
   const [wireConfirmStep, setWireConfirmStep] = useState(false)
@@ -128,6 +129,7 @@ const Index = ({
       vatNumber,
       vatCountryCode: selectedCountry,
       gatewayId: gatewayId as number,
+      gatewayPaymentType: gatewayPaymentType,
       refreshCb: createPreview,
       discountCode: discountCode,
       applyPromoCredit: creditAmount != null && creditAmount > 0,
@@ -356,6 +358,7 @@ const Index = ({
       vatCountryCode: selectedCountry, // preview?.vatCountryCode as string,
       vatNumber, // preview?.vatNumber as string,
       gatewayId,
+      gatewayPaymentType: gatewayPaymentType,
       discountCode: discountCode,
       applyPromoCredit: creditAmount != null && creditAmount > 0,
       applyPromoCreditAmount: creditAmount ?? 0
@@ -399,7 +402,7 @@ const Index = ({
   // payment method change will cause VAT re-calclulation
   useEffect(() => {
     createPreview()
-  }, [selectedCountry, gatewayId])
+  }, [selectedCountry, gatewayId, gatewayPaymentType])
 
   return (
     <Modal
@@ -458,13 +461,10 @@ const Index = ({
             ))}
             <Divider />
             <Row>
-              <Col span={14}>
+              <Col span={12}>
                 <Row>
                   <Col span={12}>VAT number</Col>
                   <Col span={12}>Country</Col>
-                  {/* <Col span={8} style={{ marginLeft: '2px' }}>
-                Payment method
-          </Col> */}
                 </Row>
                 <Row>
                   <Col span={12}>
@@ -549,16 +549,17 @@ const Index = ({
                     </>
                   )}
               </Col>
-              <Col span={10}>
+              <Col span={12}>
                 <Row>
                   <Col>Payment method</Col>
                 </Row>
                 <Row>
-                  <Col span={20}>
+                  <Col span={22}>
                     <PaymentSelector
                       selected={gatewayId}
+                      selectedPaymentType={gatewayPaymentType}
                       onSelect={onGatewayChange}
-                      showWTtips={true}
+                      onSelectPaymentType={setGatewayPaymentType}
                       disabled={loading || submitting}
                     />
                   </Col>

@@ -1,4 +1,8 @@
-import { SubscriptionStatus } from './shared.types'
+import {
+  MetricAggregationType,
+  MetricChargeType,
+  SubscriptionStatus
+} from './shared.types'
 
 export const REFUND_STATUS: { [key: number]: string } = {
   10: 'Pending',
@@ -18,6 +22,21 @@ export const SUBSCRIPTION_STATUS: Record<
   [SubscriptionStatus.INCOMPLETE]: { label: 'Incomplete', color: 'cyan' },
   [SubscriptionStatus.PROCESSING]: { label: 'Processing', color: 'blue' },
   [SubscriptionStatus.FAILED]: { label: 'Failed', color: '#b71c1c' }
+}
+
+export const METRIC_CHARGE_TYPE: Record<MetricChargeType, { label: string }> = {
+  [MetricChargeType.STANDARD]: { label: 'Standard pricing' },
+  [MetricChargeType.GRADUATED]: { label: 'Graduated pricing' }
+}
+export const METRICS_AGGREGATE_TYPE: Record<
+  MetricAggregationType,
+  { label: string }
+> = {
+  [MetricAggregationType.COUNT]: { label: 'count' },
+  [MetricAggregationType.COUNT_UNIQUE]: { label: 'count unique' },
+  [MetricAggregationType.LATEST]: { label: 'latest' },
+  [MetricAggregationType.MAX]: { label: 'max' },
+  [MetricAggregationType.SUM]: { label: 'sum' }
 }
 
 export const SUBSCRIPTION_HISTORY_STATUS: { [key: number]: string } = {

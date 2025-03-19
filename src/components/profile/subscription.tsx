@@ -28,7 +28,7 @@ import CancelSubModal from '../modals/modalCancelPendingSub'
 import ModalResumeOrTerminateSub from '../modals/modalTerminateOrResumeSub'
 import LongTextPopover from '../ui/longTextPopover'
 import { DiscountCodeStatus, SubscriptionStatusTag } from '../ui/statusTag'
-
+import MeteringUsage from './meteringUsage'
 const APP_PATH = import.meta.env.BASE_URL // default is / (if no --base specified in build cmd)
 
 const Index = ({
@@ -41,7 +41,6 @@ const Index = ({
   normalizeSub: (sub: ISubscription) => ISubscription
 }) => {
   const location = useLocation()
-  // const appConfigStore = useAppConfigStore();
   const [loading, setLoading] = useState(false)
   const [subscription, setSubscription] = useState<ISubscription | undefined>(
     subDetail
@@ -102,6 +101,16 @@ const Index = ({
             {subscription.unfinishedSubscriptionPendingUpdate && (
               <PendingUpdateSection subInfo={subscription} />
             )}
+            <Divider
+              orientation="left"
+              style={{ margin: '32px 0', color: '#757575' }}
+            >
+              Usage-based Billing
+            </Divider>
+            <MeteringUsage
+              subId={subscription.subscriptionId}
+              currency={subscription.currency}
+            />
           </>
         )}
       </Spin>
@@ -563,7 +572,6 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
             )}
         </Col>
       </Row>
-
       <Row style={rowStyle}>
         <Col span={4} style={colStyle}>
           First Pay
@@ -584,7 +592,6 @@ const SubscriptionInfoSection = ({ subInfo, refresh }: ISubSectionProps) => {
             )?.gatewayName}
         </Col>
       </Row>
-
       {subInfo && subInfo.status == 2 && (
         <div className="mx-0 my-6 flex items-center justify-start gap-9">
           <Button

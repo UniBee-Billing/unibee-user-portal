@@ -24,7 +24,6 @@ const handleStatusCode = (code: number, refreshCb?: () => void) => {
   if (code == 61) {
     // TODO: use Enum to define the code
     // session expired || role/permissions changed(need relogin)
-    console.log('pusing cb into refreshCb', refreshCb)
     updateSessionCb(refreshCb)
     throw new ExpiredError('Session expired')
   }
@@ -320,6 +319,22 @@ export const getSubDetailReq = async (
   }
 }
 
+export const getMetricUsageBySubIdReq = async (
+  subId: string,
+  refreshCb?: () => void
+) => {
+  try {
+    const res = await request.get(
+      `/user/metric/sub/metric?subscriptionId=${subId}`
+    )
+    handleStatusCode(res.data.code, refreshCb)
+    return [res.data.data.userMetric, null]
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error('Unknown error')
+    return [null, e]
+  }
+}
+
 export const getPlanList = async ({
   type,
   productIds
@@ -404,6 +419,7 @@ type TCreatePreviewReq = {
   vatNumber: string | null
   vatCountryCode: string | null
   gatewayId: number
+  gatewayPaymentType?: string
   refreshCb: () => void
   discountCode?: string
   applyPromoCredit?: boolean
@@ -417,6 +433,7 @@ export const createPreviewReq = async ({
   vatNumber,
   vatCountryCode,
   gatewayId,
+  gatewayPaymentType,
   refreshCb,
   discountCode,
   applyPromoCredit,
@@ -425,6 +442,7 @@ export const createPreviewReq = async ({
   const urlPath = 'create_preview'
   const body = {
     gatewayId,
+    gatewayPaymentType,
     planId,
     newPlanId: planId,
     quantity: 1,
@@ -513,6 +531,7 @@ type TCreateSubscriptionReq = {
   vatCountryCode: string
   vatNumber: string
   gatewayId: number
+  gatewayPaymentType?: string
   discountCode?: string
   applyPromoCredit?: boolean
   applyPromoCreditAmount?: number
@@ -525,6 +544,7 @@ export const createSubscriptionReq = async ({
   vatCountryCode,
   vatNumber,
   gatewayId,
+  gatewayPaymentType,
   discountCode,
   applyPromoCredit,
   applyPromoCreditAmount
@@ -533,6 +553,7 @@ export const createSubscriptionReq = async ({
     planId,
     quantity: 1,
     gatewayId,
+    gatewayPaymentType,
     addonParams: addons,
     confirmTotalAmount,
     confirmCurrency,

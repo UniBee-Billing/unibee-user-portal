@@ -44,20 +44,24 @@ const Index = () => {
   const [resetPasswordModal, setResetPasswordModal] = useState(false)
   const togglePasswordModal = () => setResetPasswordModal(!resetPasswordModal)
   const profileStore = useProfileStore()
-  const [gatewayId, setGatewayId] = useState(0) // payment gateway is not a antd native radio component, I have to manually update its value here
+  const [gatewayId, setGatewayId] = useState<number | undefined>(undefined) // payment gateway is not a antd native radio component, I have to manually update its value here
+  const onGatewayChange = (gatewayId: number) => setGatewayId(gatewayId) // React.ChangeEventHandler<HTMLInputElement> = (evt) =>
+  const [gatewayPaymentType, setGatewayPaymentType] = useState<
+    string | undefined
+  >(undefined)
 
   const filterOption = (
     input: string,
     option?: { label: string; value: string }
   ) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
 
-  const onGatewayChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setGatewayId(Number(e.target.value))
-  }
-
   const onSave = async () => {
     const u = JSON.parse(JSON.stringify(form.getFieldsValue()))
-    u.gatewayId = gatewayId
+    if (gatewayId != undefined) {
+      u.gatewayId = gatewayId
+      u.gatewayPaymentType = gatewayPaymentType
+    }
+
     setLoading(true)
     const [saveProfileRes, err] = await saveProfileReq(u)
     setLoading(false)
@@ -84,6 +88,7 @@ const Index = () => {
     setProfile(user)
     form.setFieldsValue(user)
     setGatewayId(user.gatewayId)
+    setGatewayPaymentType(user.gatewayPaymentType)
     setCountryList(
       countryList.map((c: Country) => ({
         countryCode: c.countryCode,
@@ -335,8 +340,9 @@ const Index = () => {
             >
               <PaymentSelector
                 selected={gatewayId}
+                selectedPaymentType={gatewayPaymentType}
                 onSelect={onGatewayChange}
-                showWTtips={false}
+                onSelectPaymentType={setGatewayPaymentType}
               />
             </Form.Item>
           </Col>
