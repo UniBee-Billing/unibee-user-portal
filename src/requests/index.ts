@@ -6,9 +6,6 @@ import { request } from './client'
 
 const session = useSessionStore.getState()
 const appConfig = useAppConfigStore.getState()
-const stripeGatewayId = appConfig.gateway.find(
-  (g) => g.gatewayName == 'stripe'
-)?.gatewayId
 
 const updateSessionCb = (refreshCb?: () => void) => {
   const refreshCallbacks = update(session.refreshCallbacks, {
@@ -818,12 +815,12 @@ export const getCountryList = async () => {
   }
 }
 
-export const getPaymentMethodListReq = async (refreshCb: () => void) => {
+export const getPaymentMethodListReq = async (stripeGatewayId: number) => {
   try {
     const res = await request.get(
       `/user/payment/method_list?gatewayId=${stripeGatewayId}`
     )
-    handleStatusCode(res.data.code, refreshCb)
+    handleStatusCode(res.data.code)
     return [res.data.data.methodList, null]
   } catch (err) {
     const e = err instanceof Error ? err : new Error('Unknown error')
@@ -833,13 +830,15 @@ export const getPaymentMethodListReq = async (refreshCb: () => void) => {
 
 export const addPaymentMethodReq = async ({
   currency,
-  redirectUrl
+  redirectUrl,
+  gatewayId
 }: {
   currency?: string
   subscriptionId?: string
   redirectUrl: string
+  gatewayId: number
 }) => {
-  const body = { currency, redirectUrl, gatewayId: stripeGatewayId }
+  const body = { currency, redirectUrl, gatewayId }
   try {
     const res = await request.post('/user/payment/method_new', body)
     handleStatusCode(res.data.code)
@@ -855,6 +854,9 @@ export const removePaymentMethodReq = async ({
 }: {
   paymentMethodId: string
 }) => {
+  const stripeGatewayId = appConfig.gateway.find(
+    (g) => g.gatewayName == 'stripe'
+  )?.gatewayId
   const body = { gatewayId: stripeGatewayId, paymentMethodId }
   try {
     const res = await request.post('/user/payment/method_delete', body)
@@ -874,6 +876,9 @@ export const changePaymentMethodReq = async ({
   paymentMethodId: string
   subscriptionId: string
 }) => {
+  const stripeGatewayId = appConfig.gateway.find(
+    (g) => g.gatewayName == 'stripe'
+  )?.gatewayId
   const body = { paymentMethodId, subscriptionId, gatewayId: stripeGatewayId }
   try {
     const res = await request.post('/user/subscription/change_gateway', body)
@@ -888,11 +893,13 @@ export const changePaymentMethodReq = async ({
 // globally change payment method, applies to all current and future subscription
 //https://api.unibee.top/
 export const changeGlobalPaymentMethodReq = async ({
-  paymentMethodId
+  paymentMethodId,
+  gatewayId
 }: {
   paymentMethodId: string
+  gatewayId: number
 }) => {
-  const body = { paymentMethodId, gatewayId: stripeGatewayId }
+  const body = { paymentMethodId, gatewayId }
   try {
     const res = await request.post('/user/change_gateway', body)
     handleStatusCode(res.data.code)
