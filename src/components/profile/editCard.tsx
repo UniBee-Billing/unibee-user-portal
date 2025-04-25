@@ -4,6 +4,7 @@ import {
   getPaymentMethodListReq,
   removePaymentMethodReq
 } from '@/requests'
+import { useAppConfigStore } from '@/stores'
 import {
   LoadingOutlined,
   MinusOutlined,
@@ -50,7 +51,10 @@ interface Method {
 }
 
 const Index = ({ defaultPaymentId, refresh }: Props) => {
-  // const appConfigStore = useAppConfigStore();
+  const appConfigStore = useAppConfigStore()
+  const stripeGatewayId = appConfigStore.gateway.find(
+    (g) => g.gatewayName == 'stripe'
+  )?.gatewayId
   const [loading, setLoading] = useState(false)
   const [cards, setCards] = useState<TCard[]>([])
   const [paymentId, setDefaultPaymentMethod] = useState(defaultPaymentId)
@@ -62,6 +66,7 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
     }
     setLoading(true)
     const [_, err] = await changeGlobalPaymentMethodReq({
+      gatewayId: stripeGatewayId!,
       paymentMethodId: paymentId
     })
     setLoading(false)
@@ -75,7 +80,8 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
   const addCard = async () => {
     setLoading(true)
     const [addCardRes, err] = await addPaymentMethodReq({
-      redirectUrl: `${window.location.origin}/add-payment-method-result`
+      redirectUrl: `${window.location.origin}/add-payment-method-result`,
+      gatewayId: stripeGatewayId!
     })
     setLoading(false)
     if (null != err) {
@@ -107,7 +113,7 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
 
   const fetchCards = async () => {
     setLoading(true)
-    const [methodList, err] = await getPaymentMethodListReq(fetchCards)
+    const [methodList, err] = await getPaymentMethodListReq(stripeGatewayId!)
     setLoading(false)
     if (null != err) {
       message.error(err.message)
