@@ -1,11 +1,10 @@
 import axios from 'axios'
 import update from 'immutability-helper'
 import { ExpiredError, IProfile } from '../shared.types'
-import { useAppConfigStore, useProfileStore, useSessionStore } from '../stores'
+import { useProfileStore, useSessionStore } from '../stores'
 import { request } from './client'
 
 const session = useSessionStore.getState()
-const appConfig = useAppConfigStore.getState()
 
 const updateSessionCb = (refreshCb?: () => void) => {
   const refreshCallbacks = update(session.refreshCallbacks, {
@@ -850,38 +849,15 @@ export const addPaymentMethodReq = async ({
 }
 
 export const removePaymentMethodReq = async ({
+  gatewayId,
   paymentMethodId
 }: {
+  gatewayId: number
   paymentMethodId: string
 }) => {
-  const stripeGatewayId = appConfig.gateway.find(
-    (g) => g.gatewayName == 'stripe'
-  )?.gatewayId
-  const body = { gatewayId: stripeGatewayId, paymentMethodId }
+  const body = { gatewayId, paymentMethodId }
   try {
     const res = await request.post('/user/payment/method_delete', body)
-    handleStatusCode(res.data.code)
-    return [res.data.data, null]
-  } catch (err) {
-    const e = err instanceof Error ? err : new Error('Unknown error')
-    return [null, e]
-  }
-}
-
-// change the current subscription's payment method
-export const changePaymentMethodReq = async ({
-  paymentMethodId,
-  subscriptionId
-}: {
-  paymentMethodId: string
-  subscriptionId: string
-}) => {
-  const stripeGatewayId = appConfig.gateway.find(
-    (g) => g.gatewayName == 'stripe'
-  )?.gatewayId
-  const body = { paymentMethodId, subscriptionId, gatewayId: stripeGatewayId }
-  try {
-    const res = await request.post('/user/subscription/change_gateway', body)
     handleStatusCode(res.data.code)
     return [res.data.data, null]
   } catch (err) {
