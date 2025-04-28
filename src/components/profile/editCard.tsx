@@ -94,6 +94,7 @@ const Index = ({ defaultPaymentId, refresh }: Props) => {
   const removeCard = async (paymentMethodId: string) => {
     setLoading(true)
     const [_, err] = await removePaymentMethodReq({
+      gatewayId: stripeGatewayId!,
       paymentMethodId
     })
     if (null != err) {
